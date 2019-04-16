@@ -1,6 +1,8 @@
 package network
 
-import ma "github.com/multiformats/go-multiaddr"
+import (
+	ma "github.com/multiformats/go-multiaddr"
+)
 
 // NotifyBundle implements Notifiee by calling any of the functions set on it,
 // and nop'ing if they are unset. This is the easy way to register for
@@ -59,3 +61,17 @@ func (nb *NotifyBundle) ClosedStream(n Network, s Stream) {
 		nb.ClosedStreamF(n, s)
 	}
 }
+
+// Global noop notifiee. Do not change.
+var GlobalNoopNotifiee = &NoopNotifiee{}
+
+type NoopNotifiee struct{}
+
+var _ Notifiee = (*NoopNotifiee)(nil)
+
+func (nn *NoopNotifiee) Connected(n Network, c Conn)              {}
+func (nn *NoopNotifiee) Disconnected(n Network, c Conn)           {}
+func (nn *NoopNotifiee) Listen(n Network, addr ma.Multiaddr)      {}
+func (nn *NoopNotifiee) ListenClose(n Network, addr ma.Multiaddr) {}
+func (nn *NoopNotifiee) OpenedStream(Network, Stream)             {}
+func (nn *NoopNotifiee) ClosedStream(Network, Stream)             {}

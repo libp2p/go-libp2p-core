@@ -6,8 +6,6 @@ import (
 
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
-
-	ma "github.com/multiformats/go-multiaddr"
 )
 
 // ConnManager tracks connections to peers, and allows consumers to associate metadata
@@ -60,26 +58,3 @@ type TagInfo struct {
 	// Conns maps connection ids (such as remote multiaddr) to their creation time.
 	Conns map[string]time.Time
 }
-
-type NullConnMgr struct{}
-
-var _ ConnManager = (*NullConnMgr)(nil)
-
-func (_ NullConnMgr) TagPeer(peer.ID, string, int)   {}
-func (_ NullConnMgr) UntagPeer(peer.ID, string)      {}
-func (_ NullConnMgr) GetTagInfo(peer.ID) *TagInfo    { return &TagInfo{} }
-func (_ NullConnMgr) TrimOpenConns(context.Context)  {}
-func (_ NullConnMgr) Notifee() network.Notifiee      { return &cmNotifee{} }
-func (_ NullConnMgr) Protect(peer.ID, string)        {}
-func (_ NullConnMgr) Unprotect(peer.ID, string) bool { return false }
-
-type cmNotifee struct{}
-
-var _ network.Notifiee = (*cmNotifee)(nil)
-
-func (nn *cmNotifee) Connected(n network.Network, c network.Conn)      {}
-func (nn *cmNotifee) Disconnected(n network.Network, c network.Conn)   {}
-func (nn *cmNotifee) Listen(n network.Network, addr ma.Multiaddr)      {}
-func (nn *cmNotifee) ListenClose(n network.Network, addr ma.Multiaddr) {}
-func (nn *cmNotifee) OpenedStream(network.Network, network.Stream)     {}
-func (nn *cmNotifee) ClosedStream(network.Network, network.Stream)     {}
