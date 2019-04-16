@@ -1,7 +1,5 @@
 module github.com/libp2p/go-libp2p-core
 
-go 1.11
-
 require (
 	github.com/coreos/go-semver v0.3.0
 	github.com/ipfs/go-cid v0.0.1
