@@ -8,8 +8,9 @@ import (
 
 // PeerSet is a threadsafe set of peers
 type PeerSet struct {
-	ps   map[peer.ID]struct{}
-	lk   sync.RWMutex
+	lk sync.RWMutex
+	ps map[peer.ID]struct{}
+
 	size int
 }
 

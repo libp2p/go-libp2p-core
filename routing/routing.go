@@ -81,7 +81,7 @@ type Routing interface {
 // PubKeyFetcher is an interfaces that should be implemented by value stores
 // that can optimize retrieval of public keys.
 //
-// TODO(steb): Consider removing, see #22.
+// TODO(steb): Consider removing, see https://github.com/libp2p/go-libp2p-routing/issues/22.
 type PubKeyFetcher interface {
 	// GetPublicKey returns the public key for the given peer.
 	GetPublicKey(context.Context, peer.ID) (ci.PubKey, error)

@@ -77,7 +77,7 @@ type Listener interface {
 }
 
 // Network is an inet.Network with methods for managing transports.
-type TransportBasedNetwork interface {
+type TransportNetwork interface {
 	network.Network
 
 	// AddTransport adds a transport to this Network.
