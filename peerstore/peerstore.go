@@ -21,7 +21,7 @@ var (
 	AddressTTL = time.Hour
 
 	// TempAddrTTL is the ttl used for a short lived address
-	TempAddrTTL = time.Second * 10
+	TempAddrTTL = time.Minute * 2
 
 	// ProviderAddrTTL is the TTL of an address we've received from a provider.
 	// This is also a temporary address, but lasts longer. After this expires,
