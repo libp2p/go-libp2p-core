@@ -2,16 +2,11 @@ package network
 
 import (
 	"context"
-	"errors"
 	"io"
 
 	"github.com/jbenet/goprocess"
-	"github.com/libp2p/go-libp2p-core/mux"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/peerstore"
-	"github.com/libp2p/go-libp2p-core/protocol"
-
-	ic "github.com/libp2p/go-libp2p-crypto"
 
 	ma "github.com/multiformats/go-multiaddr"
 )
@@ -21,24 +16,6 @@ import (
 // to bunch it up into multiple read/writes when the whole message is
 // a single, large serialized object.
 const MessageSizeMax = 1 << 22 // 4 MB
-
-// Stream represents a bidirectional channel between two agents in
-// a libp2p network. "agent" is as granular as desired, potentially
-// being a "request -> reply" pair, or whole protocols.
-//
-// Streams are backed by a multiplexer underneath the hood.
-type Stream interface {
-	mux.MuxStream
-
-	Protocol() protocol.ID
-	SetProtocol(id protocol.ID)
-
-	// Stat returns metadata pertaining to this stream.
-	Stat() Stat
-
-	// Conn returns the connection this stream is part of.
-	Conn() Conn
-}
 
 // Direction represents which peer in a stream initiated a connection.
 type Direction int
@@ -52,6 +29,25 @@ const (
 	DirOutbound
 )
 
+// Connectedness signals the capacity for a connection with a given node.
+// It is used to signal to services and other peers whether a node is reachable.
+type Connectedness int
+
+const (
+	// NotConnected means no connection to peer, and no extra information (default)
+	NotConnected Connectedness = iota
+
+	// Connected means has an open, live connection to peer
+	Connected
+
+	// CanConnect means recently connected to peer, terminated gracefully
+	CanConnect
+
+	// CannotConnect means recently attempted connecting but failed to connect.
+	// (should signal "made effort, failed")
+	CannotConnect
+)
+
 // Stat stores metadata pertaining to a given Stream/Conn.
 type Stat struct {
 	Direction Direction
@@ -61,54 +57,6 @@ type Stat struct {
 // StreamHandler is the type of function used to listen for
 // streams opened by the remote side.
 type StreamHandler func(Stream)
-
-// ConnSecurity is the interface that one can mix into a connection interface to
-// give it the security methods.
-type ConnSecurity interface {
-	// LocalPeer returns our peer ID
-	LocalPeer() peer.ID
-
-	// LocalPrivateKey returns our private key
-	LocalPrivateKey() ic.PrivKey
-
-	// RemotePeer returns the peer ID of the remote peer.
-	RemotePeer() peer.ID
-
-	// RemotePublicKey returns the public key of the remote peer.
-	RemotePublicKey() ic.PubKey
-}
-
-// ConnMultiaddrs is an interface mixin for connection types that provide multiaddr
-// addresses for the endpoints.
-type ConnMultiaddrs interface {
-	// LocalMultiaddr returns the local Multiaddr associated
-	// with this connection
-	LocalMultiaddr() ma.Multiaddr
-
-	// RemoteMultiaddr returns the remote Multiaddr associated
-	// with this connection
-	RemoteMultiaddr() ma.Multiaddr
-}
-
-// Conn is a connection to a remote peer. It multiplexes streams.
-// Usually there is no need to use a Conn directly, but it may
-// be useful to get information about the peer on the other side:
-//  stream.Conn().RemotePeer()
-type Conn interface {
-	io.Closer
-
-	ConnSecurity
-	ConnMultiaddrs
-
-	// NewStream constructs a new Stream over this conn.
-	NewStream() (Stream, error)
-
-	// GetStreams returns all open streams over this conn.
-	GetStreams() []Stream
-
-	// Stat stores metadata pertaining to this conn.
-	Stat() Stat
-}
 
 // ConnHandler is the type of function used to listen for
 // connections opened by the remote side.
@@ -149,18 +97,10 @@ type Network interface {
 	Process() goprocess.Process
 }
 
-// There are no addresses associated with a peer when they were needed.
-var ErrNoRemoteAddrs = errors.New("no remote addresses")
-
-// ErrNoConn is returned when attempting to open a stream to a peer with the NoDial
-// option and no usable connection is available.
-var ErrNoConn = errors.New("no usable connection to peer")
-
 // Dialer represents a service that can dial out to peers
 // (this is usually just a Network, but other services may not need the whole
 // stack, and thus it becomes easier to mock)
 type Dialer interface {
-
 	// Peerstore returns the internal peerstore
 	// This is useful to tell the dialer about a new address for a peer.
 	// Or use one of the public keys found out over the network.
@@ -190,38 +130,4 @@ type Dialer interface {
 	// Notify/StopNotify register and unregister a notifiee for signals
 	Notify(Notifiee)
 	StopNotify(Notifiee)
-}
-
-// Connectedness signals the capacity for a connection with a given node.
-// It is used to signal to services and other peers whether a node is reachable.
-type Connectedness int
-
-const (
-	// NotConnected means no connection to peer, and no extra information (default)
-	NotConnected Connectedness = iota
-
-	// Connected means has an open, live connection to peer
-	Connected
-
-	// CanConnect means recently connected to peer, terminated gracefully
-	CanConnect
-
-	// CannotConnect means recently attempted connecting but failed to connect.
-	// (should signal "made effort, failed")
-	CannotConnect
-)
-
-// Notifiee is an interface for an object wishing to receive
-// notifications from a Network.
-type Notifiee interface {
-	Listen(Network, ma.Multiaddr)      // called when network starts listening on an addr
-	ListenClose(Network, ma.Multiaddr) // called when network stops listening on an addr
-	Connected(Network, Conn)           // called when a connection opened
-	Disconnected(Network, Conn)        // called when a connection closed
-	OpenedStream(Network, Stream)      // called when a stream opened
-	ClosedStream(Network, Stream)      // called when a stream closed
-
-	// TODO
-	// PeerConnected(Network, peer.ID)    // called when a peer connected
-	// PeerDisconnected(Network, peer.ID) // called when a peer disconnected
 }

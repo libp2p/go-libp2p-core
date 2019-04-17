@@ -11,7 +11,7 @@ import (
 var ErrReset = errors.New("stream reset")
 
 // Stream is a bidirectional io pipe within a connection.
-type MuxStream interface {
+type MuxedStream interface {
 	io.Reader
 	io.Writer
 
@@ -29,7 +29,7 @@ type MuxStream interface {
 }
 
 // NoOpHandler do nothing. Resets streams as soon as they are opened.
-var NoOpHandler = func(s MuxStream) { s.Reset() }
+var NoOpHandler = func(s MuxedStream) { s.Reset() }
 
 // MuxedConn is a stream-multiplexing connection to a remote peer.
 type MuxedConn interface {
@@ -41,10 +41,10 @@ type MuxedConn interface {
 	IsClosed() bool
 
 	// OpenStream creates a new stream.
-	OpenStream() (MuxStream, error)
+	OpenStream() (MuxedStream, error)
 
 	// AcceptStream accepts a stream opened by the other side.
-	AcceptStream() (MuxStream, error)
+	AcceptStream() (MuxedStream, error)
 }
 
 // Transport constructs go-stream-muxer compatible connections.

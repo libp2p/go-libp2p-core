@@ -54,7 +54,7 @@ type Options struct {
 	msgMax    int
 }
 
-func fullClose(t *testing.T, s mux.MuxStream) {
+func fullClose(t *testing.T, s mux.MuxedStream) {
 	if err := s.Close(); err != nil {
 		t.Error(err)
 		s.Reset()
@@ -94,7 +94,7 @@ func debugLog(t *testing.T, s string, args ...interface{}) {
 	}
 }
 
-func echoStream(t *testing.T, s mux.MuxStream) {
+func echoStream(t *testing.T, s mux.MuxedStream) {
 	defer s.Close()
 	// echo everything
 	var err error
@@ -169,7 +169,7 @@ func SubtestStress(t *testing.T, ta, tb transport.Transport, maddr ma.Multiaddr,
 		rateLimitChan <- struct{}{}
 	}
 
-	writeStream := func(s mux.MuxStream, bufs chan<- []byte) {
+	writeStream := func(s mux.MuxedStream, bufs chan<- []byte) {
 		debugLog(t, "writeStream %p, %d msgNum", s, opt.msgNum)
 
 		for i := 0; i < opt.msgNum; i++ {
@@ -183,7 +183,7 @@ func SubtestStress(t *testing.T, ta, tb transport.Transport, maddr ma.Multiaddr,
 		}
 	}
 
-	readStream := func(s mux.MuxStream, bufs <-chan []byte) {
+	readStream := func(s mux.MuxedStream, bufs <-chan []byte) {
 		debugLog(t, "readStream %p, %d msgNum", s, opt.msgNum)
 
 		buf2 := make([]byte, msgsize)

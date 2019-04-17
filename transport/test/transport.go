@@ -18,7 +18,7 @@ import (
 var testData = []byte("this is some test data")
 
 type streamAndConn struct {
-	stream mux.MuxStream
+	stream mux.MuxedStream
 	conn   transport.UpgradedConn
 }
 

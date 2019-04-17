@@ -6,7 +6,6 @@ import (
 	"errors"
 
 	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/libp2p/go-libp2p-core/routing/options"
 	ci "github.com/libp2p/go-libp2p-crypto"
 
 	cid "github.com/ipfs/go-cid"
@@ -45,10 +44,10 @@ type PeerRouting interface {
 type ValueStore interface {
 
 	// PutValue adds value corresponding to given Key.
-	PutValue(context.Context, string, []byte, ...options.Option) error
+	PutValue(context.Context, string, []byte, ...Option) error
 
 	// GetValue searches for the value corresponding to given Key.
-	GetValue(context.Context, string, ...options.Option) ([]byte, error)
+	GetValue(context.Context, string, ...Option) ([]byte, error)
 
 	// SearchValue searches for better and better values from this value
 	// store corresponding to the given Key. By default implementations must
@@ -60,7 +59,7 @@ type ValueStore interface {
 	//
 	// Implementations of this methods won't return ErrNotFound. When a value
 	// couldn't be found, the channel will get closed without passing any results
-	SearchValue(context.Context, string, ...options.Option) (<-chan []byte, error)
+	SearchValue(context.Context, string, ...Option) (<-chan []byte, error)
 }
 
 // IpfsRouting is the combination of different routing types that IPFS uses.

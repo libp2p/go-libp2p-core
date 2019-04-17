@@ -1,4 +1,4 @@
-package options
+package routing
 
 // Option is a single routing option.
 type Option func(opts *Options) error

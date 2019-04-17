@@ -1,5 +1,10 @@
 package pnet
 
+// ErrNotInPrivateNetwork is an error that should be returned by libp2p when it
+// tries to dial with ForcePrivateNetwork set and no PNet Protector
+var ErrNotInPrivateNetwork = NewError("private network was not configured but" +
+	" is enforced by the environment")
+
 // Error is error type for ease of detecting PNet errors
 type Error interface {
 	IsPNetError() bool
