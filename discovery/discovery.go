@@ -46,3 +46,19 @@ func (opts *DiscoveryOpts) Apply(options ...DiscoveryOpt) error {
 	}
 	return nil
 }
+
+// TTL is an option that provides a hint for the duration of an advertisement
+func TTL(ttl time.Duration) DiscoveryOpt {
+	return func(opts *DiscoveryOpts) error {
+		opts.Ttl = ttl
+		return nil
+	}
+}
+
+// Limit is an option that provides an upper bound on the peer count for discovery
+func Limit(limit int) DiscoveryOpt {
+	return func(opts *DiscoveryOpts) error {
+		opts.Limit = limit
+		return nil
+	}
+}
