@@ -1,3 +1,4 @@
+// Package connmgr provides connection tracking and management interfaces for libp2p.
 package connmgr
 
 import (

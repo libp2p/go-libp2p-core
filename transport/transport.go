@@ -1,3 +1,4 @@
+// Package transport provides core transport interfaces for libp2p.
 package transport
 
 import (

@@ -1,3 +1,4 @@
+// Package network provides core networking abstractions for libp2p.
 package network
 
 import (

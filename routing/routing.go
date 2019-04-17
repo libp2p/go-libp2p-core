@@ -1,4 +1,4 @@
-// package routing defines the interface for a routing system used by ipfs.
+// Package routing provides interfaces for peer routing and content routing in libp2p.
 package routing
 
 import (

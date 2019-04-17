@@ -1,3 +1,4 @@
+// Package mux provides stream multiplexing interfaces for libp2p.
 package mux
 
 import (

@@ -1,3 +1,4 @@
+// Package metrics provides metrics collection and reporting interfaces for libp2p.
 package metrics
 
 import (

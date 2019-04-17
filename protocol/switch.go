@@ -1,3 +1,4 @@
+// Package protocol provides core interfaces for protocol routing and negotiation in libp2p.
 package protocol
 
 import (
