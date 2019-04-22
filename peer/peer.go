@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	ic "github.com/libp2p/go-libp2p-crypto"
+	ic "github.com/libp2p/go-libp2p-core/crypto"
 	b58 "github.com/mr-tron/base58/base58"
 	mh "github.com/multiformats/go-multihash"
 )

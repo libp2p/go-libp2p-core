@@ -8,7 +8,7 @@ import (
 
 	"github.com/libp2p/go-libp2p-core/peer"
 
-	ci "github.com/libp2p/go-libp2p-crypto"
+	ci "github.com/libp2p/go-libp2p-core/crypto"
 	mh "github.com/multiformats/go-multihash"
 )
 

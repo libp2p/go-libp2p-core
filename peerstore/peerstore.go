@@ -9,7 +9,7 @@ import (
 
 	"github.com/libp2p/go-libp2p-core/peer"
 
-	ic "github.com/libp2p/go-libp2p-crypto"
+	ic "github.com/libp2p/go-libp2p-core/crypto"
 
 	ma "github.com/multiformats/go-multiaddr"
 )
