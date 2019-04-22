@@ -7,22 +7,22 @@ import (
 	ma "github.com/multiformats/go-multiaddr"
 )
 
-// PeerInfo is a small struct used to pass around a peer with
+// AddrInfo is a small struct used to pass around a peer with
 // a set of addresses (and later, keys?).
-type Info struct {
+type AddrInfo struct {
 	ID    ID
 	Addrs []ma.Multiaddr
 }
 
-var _ fmt.Stringer = Info{}
+var _ fmt.Stringer = AddrInfo{}
 
-func (pi Info) String() string {
+func (pi AddrInfo) String() string {
 	return fmt.Sprintf("{%v: %v}", pi.ID, pi.Addrs)
 }
 
 var ErrInvalidAddr = fmt.Errorf("invalid p2p multiaddr")
 
-func InfoFromP2pAddr(m ma.Multiaddr) (*Info, error) {
+func AddrInfoFromP2pAddr(m ma.Multiaddr) (*AddrInfo, error) {
 	if m == nil {
 		return nil, ErrInvalidAddr
 	}
@@ -53,13 +53,13 @@ func InfoFromP2pAddr(m ma.Multiaddr) (*Info, error) {
 		addrs = append(addrs, ma.Join(parts[:len(parts)-1]...))
 	}
 
-	return &Info{
+	return &AddrInfo{
 		ID:    id,
 		Addrs: addrs,
 	}, nil
 }
 
-func InfoToP2pAddrs(pi *Info) ([]ma.Multiaddr, error) {
+func AddrInfoToP2pAddrs(pi *AddrInfo) ([]ma.Multiaddr, error) {
 	var addrs []ma.Multiaddr
 	tpl := "/" + ma.ProtocolWithCode(ma.P_P2P).Name + "/"
 	for _, addr := range pi.Addrs {
@@ -72,7 +72,7 @@ func InfoToP2pAddrs(pi *Info) ([]ma.Multiaddr, error) {
 	return addrs, nil
 }
 
-func (pi *Info) Loggable() map[string]interface{} {
+func (pi *AddrInfo) Loggable() map[string]interface{} {
 	return map[string]interface{}{
 		"peerID": pi.ID.Pretty(),
 		"addrs":  pi.Addrs,

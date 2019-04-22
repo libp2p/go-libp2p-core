@@ -27,7 +27,7 @@ type ContentRouting interface {
 	Provide(context.Context, cid.Cid, bool) error
 
 	// Search for peers who are able to provide a given key
-	FindProvidersAsync(context.Context, cid.Cid, int) <-chan peer.Info
+	FindProvidersAsync(context.Context, cid.Cid, int) <-chan peer.AddrInfo
 }
 
 // PeerRouting is a way to find information about certain peers.
@@ -35,9 +35,9 @@ type ContentRouting interface {
 // or even a DHT.
 type PeerRouting interface {
 	// Find specific Peer
-	// FindPeer searches for a peer with given ID, returns a peer.Info
+	// FindPeer searches for a peer with given ID, returns a peer.AddrInfo
 	// with relevant addresses.
-	FindPeer(context.Context, peer.ID) (peer.Info, error)
+	FindPeer(context.Context, peer.ID) (peer.AddrInfo, error)
 }
 
 // ValueStore is a basic Put/Get interface.

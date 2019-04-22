@@ -62,7 +62,7 @@ type Peerstore interface {
 	// PeerInfo returns a peer.PeerInfo struct for given peer.ID.
 	// This is a small slice of the information Peerstore has on
 	// that peer, useful to other services.
-	PeerInfo(peer.ID) peer.Info
+	PeerInfo(peer.ID) peer.AddrInfo
 
 	GetProtocols(peer.ID) ([]string, error)
 	AddProtocols(peer.ID, ...string) error

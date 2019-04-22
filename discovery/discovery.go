@@ -16,7 +16,7 @@ type Advertiser interface {
 // Discoverer is an interface for peer discovery
 type Discoverer interface {
 	// FindPeers discovers peers providing a service
-	FindPeers(ctx context.Context, ns string, opts ...Option) (<-chan peer.Info, error)
+	FindPeers(ctx context.Context, ns string, opts ...Option) (<-chan peer.AddrInfo, error)
 }
 
 // Discovery is an interface that combines service advertisement and peer discovery

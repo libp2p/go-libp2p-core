@@ -6,7 +6,7 @@ import (
 	ma "github.com/multiformats/go-multiaddr"
 )
 
-func (pi Info) MarshalJSON() ([]byte, error) {
+func (pi AddrInfo) MarshalJSON() ([]byte, error) {
 	out := make(map[string]interface{})
 	out["ID"] = pi.ID.Pretty()
 	var addrs []string
@@ -17,7 +17,7 @@ func (pi Info) MarshalJSON() ([]byte, error) {
 	return json.Marshal(out)
 }
 
-func (pi *Info) UnmarshalJSON(b []byte) error {
+func (pi *AddrInfo) UnmarshalJSON(b []byte) error {
 	var data map[string]interface{}
 	err := json.Unmarshal(b, &data)
 	if err != nil {

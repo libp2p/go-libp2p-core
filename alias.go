@@ -1,4 +1,4 @@
-// Package core provides aliases for foundational, central go-libp2p primitives for convenient access.
+// Package core provides convenient access to foundational, central go-libp2p primitives via type aliases.
 package core
 
 import (
@@ -26,10 +26,10 @@ type PeerID = peer.ID
 // Refer to the docs on that type for more info.
 type ProtocolID = protocol.ID
 
-// PeerInfo aliases peer.Info.
+// PeerAddrInfo aliases peer.AddrInfo.
 //
 // Refer to the docs on that type for more info.
-type PeerInfo = peer.Info
+type PeerAddrInfo = peer.AddrInfo
 
 // CONSTRUCTIONS.
 

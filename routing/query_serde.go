@@ -19,7 +19,7 @@ func (qe *QueryEvent) UnmarshalJSON(b []byte) error {
 	temp := struct {
 		ID        string
 		Type      int
-		Responses []*peer.Info
+		Responses []*peer.AddrInfo
 		Extra     string
 	}{}
 	err := json.Unmarshal(b, &temp)

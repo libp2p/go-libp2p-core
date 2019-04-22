@@ -26,7 +26,7 @@ const (
 type QueryEvent struct {
 	ID        peer.ID
 	Type      QueryEventType
-	Responses []*peer.Info
+	Responses []*peer.AddrInfo
 	Extra     string
 }
 

@@ -38,7 +38,7 @@ type Host interface {
 	// peerstore. If there is not an active connection, Connect will issue a
 	// h.Network.Dial, and block until a connection is open, or an error is
 	// returned. // TODO: Relay + NAT.
-	Connect(ctx context.Context, pi peer.Info) error
+	Connect(ctx context.Context, pi peer.AddrInfo) error
 
 	// SetStreamHandler sets the protocol handler on the Host's Mux.
 	// This is equivalent to:
