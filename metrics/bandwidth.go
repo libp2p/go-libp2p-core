@@ -1,26 +1,20 @@
 package metrics
 
 import (
+	"github.com/libp2p/go-flow-metrics"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
 )
 
-type Stats struct {
-	TotalIn  int64
-	TotalOut int64
-	RateIn   float64
-	RateOut  float64
-}
-
 type BandwidthCounter struct {
-	totalIn  Meter
-	totalOut Meter
+	totalIn  flow.Meter
+	totalOut flow.Meter
 
-	protocolIn  MeterRegistry
-	protocolOut MeterRegistry
+	protocolIn  flow.MeterRegistry
+	protocolOut flow.MeterRegistry
 
-	peerIn  MeterRegistry
-	peerOut MeterRegistry
+	peerIn  flow.MeterRegistry
+	peerOut flow.MeterRegistry
 }
 
 func NewBandwidthCounter() *BandwidthCounter {

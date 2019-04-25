@@ -5,6 +5,13 @@ import (
 	"github.com/libp2p/go-libp2p-core/protocol"
 )
 
+type Stats struct {
+	TotalIn  int64
+	TotalOut int64
+	RateIn   float64
+	RateOut  float64
+}
+
 type Reporter interface {
 	LogSentMessage(int64)
 	LogRecvMessage(int64)

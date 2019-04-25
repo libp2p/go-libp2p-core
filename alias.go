@@ -9,8 +9,6 @@ import (
 	"github.com/multiformats/go-multiaddr"
 )
 
-// ENTITIES.
-
 // Multiaddr aliases the Multiaddr type from github.com/multiformats/go-multiaddr.
 //
 // Refer to the docs on that type for more info.
@@ -30,8 +28,6 @@ type ProtocolID = protocol.ID
 //
 // Refer to the docs on that type for more info.
 type PeerAddrInfo = peer.AddrInfo
-
-// CONSTRUCTIONS.
 
 // Host aliases host.Host.
 //
