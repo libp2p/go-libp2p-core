@@ -1,4 +1,5 @@
-// Package transport provides core transport interfaces for libp2p.
+// Package transport provides the Transport interface, which represents
+// the devices and network protocols used to send and recieve data.
 package transport
 
 import (
@@ -23,8 +24,11 @@ var DialTimeout = 60 * time.Second
 // protocol selection as well as the handshake, if applicable.
 var AcceptTimeout = 60 * time.Second
 
-// UpgradedConn is a connection that is is an extension of the net.Conn interface that provides multiaddr
-// information, and an accessor for the transport used to create the conn
+// An UpgradedConn represents a connection that has been through the
+// "connection upgrade" process, which converts a "raw" network connection
+// into one that supports stream multiplexing and encryption. UpgradedConn
+// also provides accessors for the local and remote multiaddrs used to
+// establish the connection and an accessor for the underlying Transport.
 type UpgradedConn interface {
 	mux.MuxedConn
 	network.ConnSecurity
@@ -35,9 +39,16 @@ type UpgradedConn interface {
 }
 
 // Transport represents any device by which you can connect to and accept
-// connections from other peers. The built-in transports provided are TCP and UTP
-// but many more can be implemented, sctp, audio signals, sneakernet, UDT, a
-// network of drones carrying usb flash drives, and so on.
+// connections from other peers.
+//
+// The Transport interface allows you to open connections to other peers
+// by dialing them, and also lets you listen for incoming connections.
+//
+// Connections returned by Dial and passed into Listeners are of type
+// UpgradedConn, which means that they have been upgraded to support
+// stream multiplexing and connection security (encryption and authentication).
+//
+// For a conceptual overview, see https://docs.libp2p.io/concepts/transport/
 type Transport interface {
 	// Dial dials a remote peer. It should try to reuse local listener
 	// addresses if possible but it may choose not to.
@@ -68,7 +79,7 @@ type Transport interface {
 
 // Listener is an interface closely resembling the net.Listener interface.  The
 // only real difference is that Accept() returns Conn's of the type in this
-// package, and also exposes a Multiaddr method as opposed to a regular Addr
+// package, and also exposes a Multiaddr method as well as a regular Addr
 // method
 type Listener interface {
 	Accept() (UpgradedConn, error)
