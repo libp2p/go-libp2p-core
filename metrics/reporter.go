@@ -6,6 +6,8 @@ import (
 	"github.com/libp2p/go-libp2p-core/protocol"
 )
 
+// Stats represents a point-in-time snapshot of bandwidth metrics
+// TODO(yusef): clarify units for Rate fields
 type Stats struct {
 	TotalIn  int64
 	TotalOut int64
@@ -13,6 +15,7 @@ type Stats struct {
 	RateOut  float64
 }
 
+// Reporter provides methods for logging and retrieving metrics.
 type Reporter interface {
 	LogSentMessage(int64)
 	LogRecvMessage(int64)

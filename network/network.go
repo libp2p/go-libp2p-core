@@ -2,7 +2,7 @@
 //
 // The network package provides the high-level Network interface for interacting
 // with other libp2p peers, which is the primary public API for initiating and
-// accepting data streams
+// accepting connections to remote peers.
 package network
 
 import (

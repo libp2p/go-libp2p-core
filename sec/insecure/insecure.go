@@ -1,3 +1,6 @@
+// Package insecure provides an insecure, unencrypted implementation of the the SecureConn and SecureTransport interfaces.
+//
+// Recommended only for testing and other non-production usage.
 package insecure
 
 import (
@@ -15,7 +18,8 @@ import (
 const ID = "/plaintext/1.0.0"
 
 // Transport is a no-op stream security transport. It provides no
-// security and simply wraps connections in blank
+// security and simply wraps connections with the secure transport
+// interface.
 type Transport struct {
 	id peer.ID
 }

@@ -42,7 +42,9 @@ func GenerateRSAKeyPair(bits int, src io.Reader) (PrivKey, PubKey, error) {
 	return &RsaPrivateKey{sk: priv}, &RsaPublicKey{pk}, nil
 }
 
-// Verify compares a signature against input data
+// Verify compares a signature against input data.
+// In the case of RSA keys, verification applies PKCS1v15 RSA signature verification
+// upon the SHA-256 hash of the input data.
 func (pk *RsaPublicKey) Verify(data, sig []byte) (bool, error) {
 	hashed := sha256.Sum256(data)
 	err := rsa.VerifyPKCS1v15(pk.k, crypto.SHA256, hashed[:], sig)
@@ -61,11 +63,13 @@ func (pk *RsaPublicKey) Bytes() ([]byte, error) {
 	return MarshalPublicKey(pk)
 }
 
+// Raw returns a binary representation of the key in a type-specific format.
+// In the case of RSA keys, returns 
 func (pk *RsaPublicKey) Raw() ([]byte, error) {
 	return x509.MarshalPKIXPublicKey(pk.k)
 }
 
-// Encrypt returns encrypted bytes from the inpu data
+// Encrypt returns encrypted bytes from the input data
 func (pk *RsaPublicKey) Encrypt(b []byte) ([]byte, error) {
 	return rsa.EncryptPKCS1v15(rand.Reader, pk.k, b)
 }

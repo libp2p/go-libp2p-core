@@ -1,4 +1,9 @@
 // Package connmgr provides connection tracking and management interfaces for libp2p.
+//
+// The ConnManager interface exported from this package allows libp2p to enforce an
+// upper bound on the total number of open connections, which prevents us from
+// overwhelming routers with too many connections. Without such a mechanism, many
+// consumer routers will begin to fail and behave erratically given enough connections.
 package connmgr
 
 import (
@@ -13,6 +18,9 @@ import (
 // with each peer.
 //
 // It enables connections to be trimmed based on implementation-defined heuristics.
+// The ConnManager allows libp2p to enforce an upper bound on the total number of
+// open connections. Without such a bound, we risk overwhelming and breaking some
+// routers (especially consumer models).
 type ConnManager interface {
 
 	// TagPeer tags a peer with a string, associating a weight with the tag.

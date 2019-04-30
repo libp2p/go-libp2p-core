@@ -1,4 +1,7 @@
 // Package mux provides stream multiplexing interfaces for libp2p.
+//
+// For a conceptual overview of stream multiplexing in libp2p, see
+// https://docs.libp2p.io/concepts/stream-multiplexing/
 package mux
 
 import (
@@ -38,8 +41,10 @@ var NoOpHandler = func(s MuxedStream) { s.Reset() }
 // A MuxedConn allows a single net.Conn connection to carry many logically
 // independent bidirectional streams of binary data.
 //
-// For a conceptual overview of stream multiplexing, see
-// https://docs.libp2p.io/concepts/stream-multiplexing/
+// Together with network.ConnSecurity, MuxedConn is a component of the
+// transport.UpgradedConn interface, which represents a "raw" network
+// connection that has been "upgraded" to support the libp2p "table stakes"
+// of secure communication and stream multiplexing.
 type MuxedConn interface {
 	// Close closes the stream muxer and the the underlying net.Conn.
 	io.Closer

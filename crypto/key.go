@@ -1,6 +1,6 @@
-// Package crypto implements various cryptographic utilities used by ipfs.
-// This includes a Public and Private key interface and an RSA key implementation
-// that satisfies it.
+// Package crypto implements various cryptographic utilities used by libp2p.
+// This includes a Public and Private key interface and key implementations
+// for supported key algorithms.
 package crypto
 
 import (
@@ -86,8 +86,7 @@ type Key interface {
 	Type() pb.KeyType
 }
 
-// PrivKey represents a private key that can be used to generate a public key,
-// sign data, and decrypt data that was encrypted with a public key
+// PrivKey represents a private key that can be used to generate a public key and sign data
 type PrivKey interface {
 	Key
 
@@ -98,7 +97,7 @@ type PrivKey interface {
 	GetPublic() PubKey
 }
 
-// PubKey is a public key
+// PubKey is a public key that can be used to verifiy data signed with the corresponding private key
 type PubKey interface {
 	Key
 
@@ -194,7 +193,7 @@ func KeyStretcher(cipherType string, hashType string, secret []byte) (StretchedK
 		cipherKeySize = 32
 	case "Blowfish":
 		ivSize = 8
-		// Note: 24 arbitrarily selected, needs more thought
+		// Note: cypherKeySize arbitrarily selected, needs more thought
 		cipherKeySize = 32
 	}
 
@@ -340,7 +339,7 @@ func ConfigEncodeKey(b []byte) string {
 	return base64.StdEncoding.EncodeToString(b)
 }
 
-// KeyEqual checks whether two
+// KeyEqual checks whether two Keys are equivalent (have identical byte representations)
 func KeyEqual(k1, k2 Key) bool {
 	if k1 == k2 {
 		return true
