@@ -7,8 +7,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 )
 
-// NullConnMgr is a ConnMgr that provides no functionality. It is used by go-libp2p-blankhost
-// to satisfy the ConnMgr interface.
+// NullConnMgr is a ConnMgr that provides no functionality.
 type NullConnMgr struct{}
 
 var _ ConnManager = (*NullConnMgr)(nil)
