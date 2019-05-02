@@ -10,7 +10,7 @@
 [![Build Status](https://travis-ci.org/libp2p/go-libp2p-core.svg?branch=master)](https://travis-ci.org/libp2p/go-libp2p-core)
 [![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
 
-> Home to the interfaces and abstractions that make up go-libp2p.
+> Home to the interfaces and abstractions that make up go-libp2p. Action taking place in the [genesis PR](https://github.com/libp2p/go-libp2p-core/pull/1).
 
 ## Install
 
