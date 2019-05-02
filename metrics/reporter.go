@@ -6,8 +6,10 @@ import (
 	"github.com/libp2p/go-libp2p-core/protocol"
 )
 
-// Stats represents a point-in-time snapshot of bandwidth metrics
-// TODO(yusef): clarify units for Rate fields
+// Stats represents a point-in-time snapshot of bandwidth metrics.
+//
+// The TotalIn and TotalOut fields record bytes sent / received to date.
+// The RateIn and RateOut fields record bytes sent / received per second.
 type Stats struct {
 	TotalIn  int64
 	TotalOut int64
