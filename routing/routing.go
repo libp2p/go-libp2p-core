@@ -21,7 +21,7 @@ var ErrNotSupported = errors.New("routing: operation or key not supported")
 // ContentRouting is a value provider layer of indirection. It is used to find
 // information about who has what content.
 //
-// Content is identified by Cid (short for content ID), which encodes a hash
+// Content is identified by CID (content identifier), which encodes a hash
 // of the identified content in a future-proof manner.
 type ContentRouting interface {
 	// Provide adds the given cid to the content routing system. If 'true' is
