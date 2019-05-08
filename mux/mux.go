@@ -51,6 +51,5 @@ type MuxedConn interface {
 type Multiplexer interface {
 
 	// NewConn constructs a new connection
-	// TODO rename to Wrap / Multiplex
 	NewConn(c net.Conn, isServer bool) (MuxedConn, error)
 }

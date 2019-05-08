@@ -1,18 +1,15 @@
-package testutil
+package tpeer
 
 import (
 	"io"
 	"math/rand"
-	"sync/atomic"
+	"testing"
 	"time"
 
 	"github.com/libp2p/go-libp2p-core/peer"
 
-	ci "github.com/libp2p/go-libp2p-core/crypto"
 	mh "github.com/multiformats/go-multihash"
 )
-
-var generatedPairs int64 = 0
 
 func RandPeerID() (peer.ID, error) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -24,17 +21,10 @@ func RandPeerID() (peer.ID, error) {
 	return peer.ID(h), nil
 }
 
-func RandTestKeyPair(bits int) (ci.PrivKey, ci.PubKey, error) {
-	seed := time.Now().UnixNano()
-
-	// workaround for low time resolution
-	seed += atomic.AddInt64(&generatedPairs, 1) << 32
-
-	r := rand.New(rand.NewSource(seed))
-	return ci.GenerateKeyPairWithReader(ci.RSA, bits, r)
-}
-
-func SeededTestKeyPair(seed int64) (ci.PrivKey, ci.PubKey, error) {
-	r := rand.New(rand.NewSource(seed))
-	return ci.GenerateKeyPairWithReader(ci.RSA, 512, r)
+func RandPeerIDFatal(t testing.TB) peer.ID {
+	p, err := RandPeerID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return p
 }

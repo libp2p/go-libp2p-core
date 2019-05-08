@@ -7,13 +7,14 @@ import (
 	"strings"
 	"testing"
 
-	ic "github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
+	tpeer "github.com/libp2p/go-libp2p-core/peer/test"
 
-	tu "github.com/libp2p/go-libp2p-core/peer/test"
-	mh "github.com/multiformats/go-multihash"
+	ic "github.com/libp2p/go-libp2p-core/crypto"
+	tcrypto "github.com/libp2p/go-libp2p-core/crypto/test"
 
 	b58 "github.com/mr-tron/base58/base58"
+	mh "github.com/multiformats/go-multihash"
 )
 
 var gen1 keyset // generated
@@ -48,7 +49,7 @@ type keyset struct {
 
 func (ks *keyset) generate() error {
 	var err error
-	ks.sk, ks.pk, err = tu.RandTestKeyPair(512)
+	ks.sk, ks.pk, err = tcrypto.RandTestKeyPair(ic.RSA, 512)
 	if err != nil {
 		return err
 	}
@@ -216,7 +217,7 @@ func TestValidate(t *testing.T) {
 	}
 
 	// Non-empty peer ID validates
-	p, err := tu.RandPeerID()
+	p, err := tpeer.RandPeerID()
 	if err != nil {
 		t.Fatal(err)
 	}
