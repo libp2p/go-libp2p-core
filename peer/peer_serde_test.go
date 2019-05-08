@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/libp2p/go-libp2p-core/peer/test"
+	. "github.com/libp2p/go-libp2p-testing/peer"
 )
 
 func TestPeerSerdePB(t *testing.T) {
-	id, err := testutil.RandPeerID()
+	id, err := RandPeerID()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +27,7 @@ func TestPeerSerdePB(t *testing.T) {
 }
 
 func TestPeerSerdeJSON(t *testing.T) {
-	id, err := testutil.RandPeerID()
+	id, err := RandPeerID()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +45,7 @@ func TestPeerSerdeJSON(t *testing.T) {
 }
 
 func TestBinaryMarshaler(t *testing.T) {
-	id, err := testutil.RandPeerID()
+	id, err := RandPeerID()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,7 +64,7 @@ func TestBinaryMarshaler(t *testing.T) {
 }
 
 func TestTextMarshaler(t *testing.T) {
-	id, err := testutil.RandPeerID()
+	id, err := RandPeerID()
 	if err != nil {
 		t.Fatal(err)
 	}
