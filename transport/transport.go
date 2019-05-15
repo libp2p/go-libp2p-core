@@ -22,9 +22,9 @@ var DialTimeout = 60 * time.Second
 // protocol selection as well as the handshake, if applicable.
 var AcceptTimeout = 60 * time.Second
 
-// UpgradedConn is a connection that is is an extension of the net.Conn interface that provides multiaddr
+// CapableConn is a connection that is is an extension of the net.Conn interface that provides multiaddr
 // information, and an accessor for the transport used to create the conn
-type UpgradedConn interface {
+type CapableConn interface {
 	mux.MuxedConn
 	network.ConnSecurity
 	network.ConnMultiaddrs
@@ -40,7 +40,7 @@ type UpgradedConn interface {
 type Transport interface {
 	// Dial dials a remote peer. It should try to reuse local listener
 	// addresses if possible but it may choose not to.
-	Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) (UpgradedConn, error)
+	Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) (CapableConn, error)
 
 	// CanDial returns true if this transport knows how to dial the given
 	// multiaddr.
@@ -70,7 +70,7 @@ type Transport interface {
 // package, and also exposes a Multiaddr method as opposed to a regular Addr
 // method
 type Listener interface {
-	Accept() (UpgradedConn, error)
+	Accept() (CapableConn, error)
 	Close() error
 	Addr() net.Addr
 	Multiaddr() ma.Multiaddr
