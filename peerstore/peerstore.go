@@ -1,3 +1,5 @@
+// Package peerstore provides types and interfaces for local storage of address information, 
+// metadata, and public key material about libp2p peers.
 package peerstore
 
 import (

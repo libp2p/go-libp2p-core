@@ -1,3 +1,9 @@
+// Package connmgr provides connection tracking and management interfaces for libp2p.
+//
+// The ConnManager interface exported from this package allows libp2p to enforce an
+// upper bound on the total number of open connections. To avoid service disruptions,
+// connections can be tagged with metadata and optionally "protected" to ensure that
+// essential connections are not arbitrarily cut.
 package connmgr
 
 import (
@@ -12,6 +18,8 @@ import (
 // with each peer.
 //
 // It enables connections to be trimmed based on implementation-defined heuristics.
+// The ConnManager allows libp2p to enforce an upper bound on the total number of
+// open connections.
 type ConnManager interface {
 
 	// TagPeer tags a peer with a string, associating a weight with the tag.

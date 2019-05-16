@@ -1,3 +1,4 @@
+// Package sec provides secure connection and transport interfaces for libp2p.
 package sec
 
 import (

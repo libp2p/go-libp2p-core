@@ -1,4 +1,4 @@
-// package routing defines the interface for a routing system used by ipfs.
+// Package routing provides interfaces for peer routing and content routing in libp2p.
 package routing
 
 import (
@@ -20,6 +20,9 @@ var ErrNotSupported = errors.New("routing: operation or key not supported")
 
 // ContentRouting is a value provider layer of indirection. It is used to find
 // information about who has what content.
+//
+// Content is identified by CID (content identifier), which encodes a hash
+// of the identified content in a future-proof manner.
 type ContentRouting interface {
 	// Provide adds the given cid to the content routing system. If 'true' is
 	// passed, it also announces it, otherwise it is just kept in the local
@@ -30,7 +33,7 @@ type ContentRouting interface {
 	FindProvidersAsync(context.Context, cid.Cid, int) <-chan peer.AddrInfo
 }
 
-// PeerRouting is a way to find information about certain peers.
+// PeerRouting is a way to find address information about certain peers.
 // This can be implemented by a simple lookup table, a tracking server,
 // or even a DHT.
 type PeerRouting interface {
@@ -62,7 +65,7 @@ type ValueStore interface {
 	SearchValue(context.Context, string, ...Option) (<-chan []byte, error)
 }
 
-// IpfsRouting is the combination of different routing types that IPFS uses.
+// Routing is the combination of different routing types supported by libp2p.
 // It can be satisfied by a single item (such as a DHT) or multiple different
 // pieces that are more optimized to each task.
 type Routing interface {

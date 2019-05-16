@@ -1,3 +1,6 @@
+// Package host provides the core Host interface for libp2p.
+//
+// Host represents a single libp2p node in a peer-to-peer network.
 package host
 
 import (

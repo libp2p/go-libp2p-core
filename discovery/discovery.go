@@ -1,3 +1,4 @@
+// Package discovery provides service advertisement and peer discovery interfaces for libp2p.
 package discovery
 
 import (

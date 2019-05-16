@@ -21,7 +21,7 @@ type Ed25519PublicKey struct {
 	k ed25519.PublicKey
 }
 
-// GenerateEd25519Key generate a new ed25519 private and public key pair.
+// GenerateEd25519Key generates a new ed25519 private and public key pair.
 func GenerateEd25519Key(src io.Reader) (PrivKey, PubKey, error) {
 	pub, priv, err := ed25519.GenerateKey(src)
 	if err != nil {
