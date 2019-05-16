@@ -32,8 +32,8 @@ type MuxedStream interface {
 	SetWriteDeadline(time.Time) error
 }
 
-// NoOpHandler does nothing. It resets streams as soon as they are opened.
-var NoOpHandler = func(s MuxedStream) { s.Reset() }
+// NoopHandler do nothing. Resets streams as soon as they are opened.
+var NoopHandler = func(s MuxedStream) { s.Reset() }
 
 // MuxedConn represents a connection to a remote peer that has been
 // extended to support stream multiplexing.
@@ -66,6 +66,5 @@ type MuxedConn interface {
 type Multiplexer interface {
 
 	// NewConn constructs a new connection
-	// TODO rename to Wrap / Multiplex
 	NewConn(c net.Conn, isServer bool) (MuxedConn, error)
 }

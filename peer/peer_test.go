@@ -8,12 +8,13 @@ import (
 	"testing"
 
 	ic "github.com/libp2p/go-libp2p-core/crypto"
-	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p-testing/crypto"
 
-	tu "github.com/libp2p/go-libp2p-core/peer/test"
-	mh "github.com/multiformats/go-multihash"
+	. "github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p-testing/peer"
 
 	b58 "github.com/mr-tron/base58/base58"
+	mh "github.com/multiformats/go-multihash"
 )
 
 var gen1 keyset // generated
@@ -48,7 +49,7 @@ type keyset struct {
 
 func (ks *keyset) generate() error {
 	var err error
-	ks.sk, ks.pk, err = tu.RandTestKeyPair(512)
+	ks.sk, ks.pk, err = tcrypto.RandTestKeyPair(ic.RSA, 512)
 	if err != nil {
 		return err
 	}
@@ -91,7 +92,7 @@ func (ks *keyset) load(hpkp, skBytesStr string) error {
 func TestIDMatchesPublicKey(t *testing.T) {
 
 	test := func(ks keyset) {
-		p1, err := peer.IDB58Decode(ks.hpkp)
+		p1, err := IDB58Decode(ks.hpkp)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -104,7 +105,7 @@ func TestIDMatchesPublicKey(t *testing.T) {
 			t.Fatal("p1 does not match pk")
 		}
 
-		p2, err := peer.IDFromPublicKey(ks.pk)
+		p2, err := IDFromPublicKey(ks.pk)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -126,7 +127,7 @@ func TestIDMatchesPublicKey(t *testing.T) {
 func TestIDMatchesPrivateKey(t *testing.T) {
 
 	test := func(ks keyset) {
-		p1, err := peer.IDB58Decode(ks.hpkp)
+		p1, err := IDB58Decode(ks.hpkp)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -139,7 +140,7 @@ func TestIDMatchesPrivateKey(t *testing.T) {
 			t.Fatal("p1 does not match sk")
 		}
 
-		p2, err := peer.IDFromPrivateKey(ks.sk)
+		p2, err := IDFromPrivateKey(ks.sk)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -162,7 +163,7 @@ func TestPublicKeyExtraction(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	id, err := peer.IDFromPublicKey(originalPub)
+	id, err := IDFromPublicKey(originalPub)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -179,7 +180,7 @@ func TestPublicKeyExtraction(t *testing.T) {
 	}
 
 	// Test invalid multihash (invariant of the type of public key)
-	pk, err := peer.ID("").ExtractPublicKey()
+	pk, err := ID("").ExtractPublicKey()
 	if err == nil {
 		t.Fatal("expected an error")
 	}
@@ -193,12 +194,12 @@ func TestPublicKeyExtraction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rsaId, err := peer.IDFromPublicKey(rsaPub)
+	rsaId, err := IDFromPublicKey(rsaPub)
 	if err != nil {
 		t.Fatal(err)
 	}
 	extractedRsaPub, err := rsaId.ExtractPublicKey()
-	if err != peer.ErrNoPublicKey {
+	if err != ErrNoPublicKey {
 		t.Fatal(err)
 	}
 	if extractedRsaPub != nil {
@@ -208,15 +209,15 @@ func TestPublicKeyExtraction(t *testing.T) {
 
 func TestValidate(t *testing.T) {
 	// Empty peer ID invalidates
-	err := peer.ID("").Validate()
+	err := ID("").Validate()
 	if err == nil {
 		t.Error("expected error")
-	} else if err != peer.ErrEmptyPeerID {
-		t.Error("expected error message: " + peer.ErrEmptyPeerID.Error())
+	} else if err != ErrEmptyPeerID {
+		t.Error("expected error message: " + ErrEmptyPeerID.Error())
 	}
 
 	// Non-empty peer ID validates
-	p, err := tu.RandPeerID()
+	p, err := tpeer.RandPeerID()
 	if err != nil {
 		t.Fatal(err)
 	}

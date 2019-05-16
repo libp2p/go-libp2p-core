@@ -24,12 +24,18 @@ var DialTimeout = 60 * time.Second
 // protocol selection as well as the handshake, if applicable.
 var AcceptTimeout = 60 * time.Second
 
-// An UpgradedConn represents a connection that has been through the
-// "connection upgrade" process, which converts a "raw" network connection
-// into one that supports stream multiplexing and encryption. UpgradedConn
-// also provides accessors for the local and remote multiaddrs used to
+// A CapableConn represents a connection that has offers the basic
+// capabilities required by libp2p: stream multiplexing, encryption and
+// peer authentication.
+//
+// These capabilities may be natively provided by the transport, or they
+// may be shimmed via the "connection upgrade" process, which converts a
+// "raw" network connection into one that supports such capabilities by
+// layering an encryption channel and a stream multiplexer.
+//
+// CapableConn provides accessors for the local and remote multiaddrs used to
 // establish the connection and an accessor for the underlying Transport.
-type UpgradedConn interface {
+type CapableConn interface {
 	mux.MuxedConn
 	network.ConnSecurity
 	network.ConnMultiaddrs
@@ -52,7 +58,7 @@ type UpgradedConn interface {
 type Transport interface {
 	// Dial dials a remote peer. It should try to reuse local listener
 	// addresses if possible but it may choose not to.
-	Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) (UpgradedConn, error)
+	Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) (CapableConn, error)
 
 	// CanDial returns true if this transport knows how to dial the given
 	// multiaddr.
@@ -82,7 +88,7 @@ type Transport interface {
 // package, and also exposes a Multiaddr method as opposed to a regular Addr
 // method
 type Listener interface {
-	Accept() (UpgradedConn, error)
+	Accept() (CapableConn, error)
 	Close() error
 	Addr() net.Addr
 	Multiaddr() ma.Multiaddr
