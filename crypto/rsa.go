@@ -18,18 +18,18 @@ import (
 // hash so this is a reasonable absolute minimum.
 var ErrRsaKeyTooSmall = errors.New("rsa keys must be >= 512 bits to be useful")
 
-// RsaPrivateKey is an rsa private key.
+// RsaPrivateKey is an RSA private key.
 type RsaPrivateKey struct {
 	sk *rsa.PrivateKey
 	pk *rsa.PublicKey
 }
 
-// RsaPublicKey is an rsa public key.
+// RsaPublicKey is an RSA public key.
 type RsaPublicKey struct {
 	k *rsa.PublicKey
 }
 
-// GenerateRSAKeyPair generates a new rsa private and public key.
+// GenerateRSAKeyPair generates a new RSA private and public key.
 func GenerateRSAKeyPair(bits int, src io.Reader) (PrivKey, PubKey, error) {
 	if bits < 512 {
 		return nil, nil, ErrRsaKeyTooSmall
@@ -119,7 +119,7 @@ func (sk *RsaPrivateKey) Equals(k Key) bool {
 	return KeyEqual(sk, k)
 }
 
-// UnmarshalRsaPrivateKey returns a private key from the input x509 bytes.
+// UnmarshalRsaPrivateKey returns a private key from the input X.509 bytes.
 func UnmarshalRsaPrivateKey(b []byte) (PrivKey, error) {
 	sk, err := x509.ParsePKCS1PrivateKey(b)
 	if err != nil {
@@ -131,12 +131,12 @@ func UnmarshalRsaPrivateKey(b []byte) (PrivKey, error) {
 	return &RsaPrivateKey{sk: sk}, nil
 }
 
-// MarshalRsaPrivateKey returns the x509 bytes of the private key.
+// MarshalRsaPrivateKey returns the X.509 bytes of the private key.
 func MarshalRsaPrivateKey(k *RsaPrivateKey) []byte {
 	return x509.MarshalPKCS1PrivateKey(k.sk)
 }
 
-// UnmarshalRsaPublicKey returns a public key from the input x509 bytes.
+// UnmarshalRsaPublicKey returns a public key from the input X.509 bytes.
 func UnmarshalRsaPublicKey(b []byte) (PubKey, error) {
 	pub, err := x509.ParsePKIXPublicKey(b)
 	if err != nil {
@@ -152,7 +152,7 @@ func UnmarshalRsaPublicKey(b []byte) (PubKey, error) {
 	return &RsaPublicKey{pk}, nil
 }
 
-// MarshalRsaPublicKey returns the x509 bytes from the public key.
+// MarshalRsaPublicKey returns the X.509 bytes from the public key.
 func MarshalRsaPublicKey(k *RsaPublicKey) ([]byte, error) {
 	return x509.MarshalPKIXPublicKey(k.k)
 }

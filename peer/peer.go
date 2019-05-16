@@ -39,12 +39,12 @@ const maxInlineKeyLength = 42
 // hash output as a multihash. See IDFromPublicKey for details.
 type ID string
 
-// Pretty returns a base58-encoded string representation of the ID
+// Pretty returns a base58-encoded string representation of the ID.
 func (id ID) Pretty() string {
 	return IDB58Encode(id)
 }
 
-// Loggable returns a pretty peer ID string in loggable JSON format
+// Loggable returns a pretty peer ID string in loggable JSON format.
 func (id ID) Loggable() map[string]interface{} {
 	return map[string]interface{}{
 		"peerID": id.Pretty(),
@@ -69,12 +69,12 @@ func (id ID) ShortString() string {
 	return fmt.Sprintf("<peer.ID %s*%s>", pid[:2], pid[len(pid)-6:])
 }
 
-// MatchesPrivateKey tests whether this ID was derived from the secret key sk
+// MatchesPrivateKey tests whether this ID was derived from the secret key sk.
 func (id ID) MatchesPrivateKey(sk ic.PrivKey) bool {
 	return id.MatchesPublicKey(sk.GetPublic())
 }
 
-// MatchesPublicKey tests whether this ID was derived from the public key pk
+// MatchesPublicKey tests whether this ID was derived from the public key pk.
 func (id ID) MatchesPublicKey(pk ic.PubKey) bool {
 	oid, err := IDFromPublicKey(pk)
 	if err != nil {
@@ -102,7 +102,7 @@ func (id ID) ExtractPublicKey() (ic.PubKey, error) {
 	return pk, nil
 }
 
-// Validate checks if ID is empty or not
+// Validate checks if ID is empty or not.
 func (id ID) Validate() error {
 	if id == ID("") {
 		return ErrEmptyPeerID
@@ -111,8 +111,8 @@ func (id ID) Validate() error {
 	return nil
 }
 
-// IDFromString casts a string to ID type, and validates
-// the id to make sure it is a multihash.
+// IDFromString casts a string to the ID type, and validates
+// the value to make sure it is a multihash.
 func IDFromString(s string) (ID, error) {
 	if _, err := mh.Cast([]byte(s)); err != nil {
 		return ID(""), err
@@ -120,8 +120,8 @@ func IDFromString(s string) (ID, error) {
 	return ID(s), nil
 }
 
-// IDFromBytes casts a byte slice to ID type, and validates
-// the id to make sure it is a multihash.
+// IDFromBytes casts a byte slice to the ID type, and validates
+// the value to make sure it is a multihash.
 func IDFromBytes(b []byte) (ID, error) {
 	if _, err := mh.Cast(b); err != nil {
 		return ID(""), err
@@ -159,7 +159,7 @@ func IDHexEncode(id ID) string {
 	return hex.EncodeToString([]byte(id))
 }
 
-// IDFromPublicKey returns the Peer ID corresponding to the public key pk
+// IDFromPublicKey returns the Peer ID corresponding to the public key pk.
 func IDFromPublicKey(pk ic.PubKey) (ID, error) {
 	b, err := pk.Bytes()
 	if err != nil {
@@ -173,7 +173,7 @@ func IDFromPublicKey(pk ic.PubKey) (ID, error) {
 	return ID(hash), nil
 }
 
-// IDFromPrivateKey returns the Peer ID corresponding to the secret key sk
+// IDFromPrivateKey returns the Peer ID corresponding to the secret key sk.
 func IDFromPrivateKey(sk ic.PrivKey) (ID, error) {
 	return IDFromPublicKey(sk.GetPublic())
 }

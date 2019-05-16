@@ -2,7 +2,7 @@ package network
 
 import "errors"
 
-// ErrNoRemoteAddrs is returned when there are no addresses associated with a peer when they were needed.
+// ErrNoRemoteAddrs is returned when there are no addresses associated with a peer during a dial.
 var ErrNoRemoteAddrs = errors.New("no remote addresses")
 
 // ErrNoConn is returned when attempting to open a stream to a peer with the NoDial

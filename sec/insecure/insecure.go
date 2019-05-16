@@ -18,8 +18,8 @@ import (
 const ID = "/plaintext/1.0.0"
 
 // Transport is a no-op stream security transport. It provides no
-// security and simply wraps connections with the secure transport
-// interface.
+// security and simply mocks the security and identity methods to
+// return peer IDs known ahead of time.
 type Transport struct {
 	id peer.ID
 }

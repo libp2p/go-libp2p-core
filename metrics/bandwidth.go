@@ -21,7 +21,7 @@ type BandwidthCounter struct {
 	peerOut flow.MeterRegistry
 }
 
-// NewBandwidthCounter creates a new BandwidthCounter
+// NewBandwidthCounter creates a new BandwidthCounter.
 func NewBandwidthCounter() *BandwidthCounter {
 	return new(BandwidthCounter)
 }
@@ -39,14 +39,14 @@ func (bwc *BandwidthCounter) LogRecvMessage(size int64) {
 }
 
 // LogSentMessageStream records the size of an outgoing message over a single logical stream.
-// Bandwidth is associated with the given protocol.ID and peer.ID
+// Bandwidth is associated with the given protocol.ID and peer.ID.
 func (bwc *BandwidthCounter) LogSentMessageStream(size int64, proto protocol.ID, p peer.ID) {
 	bwc.protocolOut.Get(string(proto)).Mark(uint64(size))
 	bwc.peerOut.Get(string(p)).Mark(uint64(size))
 }
 
 // LogRecvMessageStream records the size of an incoming message over a single logical stream.
-// Bandwidth is associated with the given protocol.ID and peer.ID
+// Bandwidth is associated with the given protocol.ID and peer.ID.
 func (bwc *BandwidthCounter) LogRecvMessageStream(size int64, proto protocol.ID, p peer.ID) {
 	bwc.protocolIn.Get(string(proto)).Mark(uint64(size))
 	bwc.peerIn.Get(string(p)).Mark(uint64(size))

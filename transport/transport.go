@@ -45,7 +45,7 @@ type UpgradedConn interface {
 // by dialing them, and also lets you listen for incoming connections.
 //
 // Connections returned by Dial and passed into Listeners are of type
-// UpgradedConn, which means that they have been upgraded to support
+// CapableConn, which means that they have been upgraded to support
 // stream multiplexing and connection security (encryption and authentication).
 //
 // For a conceptual overview, see https://docs.libp2p.io/concepts/transport/
@@ -77,9 +77,9 @@ type Transport interface {
 	Proxy() bool
 }
 
-// Listener is an interface closely resembling the net.Listener interface.  The
+// Listener is an interface closely resembling the net.Listener interface. The
 // only real difference is that Accept() returns Conn's of the type in this
-// package, and also exposes a Multiaddr method as well as a regular Addr
+// package, and also exposes a Multiaddr method as opposed to a regular Addr
 // method
 type Listener interface {
 	Accept() (UpgradedConn, error)

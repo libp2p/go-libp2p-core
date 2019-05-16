@@ -42,8 +42,8 @@ var NoOpHandler = func(s MuxedStream) { s.Reset() }
 // independent bidirectional streams of binary data.
 //
 // Together with network.ConnSecurity, MuxedConn is a component of the
-// transport.UpgradedConn interface, which represents a "raw" network
-// connection that has been "upgraded" to support the libp2p "table stakes"
+// transport.CapableConn interface, which represents a "raw" network
+// connection that has been "upgraded" to support the libp2p capabilities
 // of secure communication and stream multiplexing.
 type MuxedConn interface {
 	// Close closes the stream muxer and the the underlying net.Conn.
@@ -60,7 +60,7 @@ type MuxedConn interface {
 	AcceptStream() (MuxedStream, error)
 }
 
-// Multiplexer "wraps" a net.Conn with a stream multiplexing
+// Multiplexer wraps a net.Conn with a stream multiplexing
 // implementation and returns a MuxedConn that supports opening
 // multiple streams over the underlying net.Conn
 type Multiplexer interface {

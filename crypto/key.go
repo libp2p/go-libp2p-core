@@ -339,7 +339,7 @@ func ConfigEncodeKey(b []byte) string {
 	return base64.StdEncoding.EncodeToString(b)
 }
 
-// KeyEqual checks whether two Keys are equivalent (have identical byte representations)
+// KeyEqual checks whether two Keys are equivalent (have identical byte representations).
 func KeyEqual(k1, k2 Key) bool {
 	if k1 == k2 {
 		return true
