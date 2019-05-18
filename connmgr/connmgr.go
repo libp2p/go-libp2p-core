@@ -28,6 +28,13 @@ type ConnManager interface {
 	// Untag removes the tagged value from the peer.
 	UntagPeer(p peer.ID, tag string)
 
+	// UpsertTag updates an existing tag or inserts a new one.
+	//
+	// The connection manager calls the upsert function supplying the current
+	// value of the tag (or zero if inexistent). The return value is used as
+	// the new value of the tag.
+	UpsertTag(p peer.ID, tag string, upsert func(int) int)
+
 	// GetTagInfo returns the metadata associated with the peer,
 	// or nil if no metadata has been recorded for the peer.
 	GetTagInfo(p peer.ID) *TagInfo
