@@ -60,6 +60,9 @@ type ConnManager interface {
 	// The return value indicates whether the peer continues to be protected after this call, by way of a different tag.
 	// See notes on Protect() for more info.
 	Unprotect(id peer.ID, tag string) (protected bool)
+
+	// Close closes the connection manager and stops background processes
+	Close() error
 }
 
 // TagInfo stores metadata associated with a peer.
