@@ -12,5 +12,6 @@ require (
 	github.com/mr-tron/base58 v1.1.1
 	github.com/multiformats/go-multiaddr v0.0.2
 	github.com/multiformats/go-multihash v0.0.1
+	github.com/spacemonkeygo/openssl v0.0.0-20181017203307-c2dcc5cca94a
 	golang.org/x/crypto v0.0.0-20190225124518-7f87c0fbb88b
 )
