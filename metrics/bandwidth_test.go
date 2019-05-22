@@ -78,20 +78,44 @@ func TestBandwidthCounter(t *testing.T) {
 		}
 	}
 
+	assertProtocols := func(check func(Stats)) {
+		byProtocol := bwc.GetBandwidthByProtocol()
+		if len(byProtocol) != 2 {
+			t.Errorf("expected 2 protocols, got %d", len(byProtocol))
+		}
+		for i := 0; i < 2; i++ {
+			p := protocol.ID(fmt.Sprintf("proto-%d", i))
+			for _, stats := range [...]Stats{bwc.GetBandwidthForProtocol(p), byProtocol[p]} {
+				check(stats)
+			}
+		}
+	}
+
+	assertPeers := func(check func(Stats)) {
+		byPeer := bwc.GetBandwidthByPeer()
+		if len(byPeer) != 100 {
+			t.Errorf("expected 100 peers, got %d", len(byPeer))
+		}
+		for i := 0; i < 100; i++ {
+			p := peer.ID(fmt.Sprintf("peer-%d", i))
+			for _, stats := range [...]Stats{bwc.GetBandwidthForPeer(p), byPeer[p]} {
+				check(stats)
+			}
+		}
+	}
+
 	close(start)
 	time.Sleep(2*time.Second + 100*time.Millisecond)
 
-	for i := 0; i < 100; i++ {
-		stats := bwc.GetBandwidthForPeer(peer.ID(fmt.Sprintf("peer-%d", i)))
+	assertPeers(func(stats Stats) {
 		assertApproxEq(t, 2000, stats.RateOut)
 		assertApproxEq(t, 1000, stats.RateIn)
-	}
+	})
 
-	for i := 0; i < 2; i++ {
-		stats := bwc.GetBandwidthForProtocol(protocol.ID(fmt.Sprintf("proto-%d", i)))
+	assertProtocols(func(stats Stats) {
 		assertApproxEq(t, 100000, stats.RateOut)
 		assertApproxEq(t, 50000, stats.RateIn)
-	}
+	})
 
 	{
 		stats := bwc.GetBandwidthTotals()
@@ -101,17 +125,16 @@ func TestBandwidthCounter(t *testing.T) {
 
 	wg.Wait()
 	time.Sleep(1 * time.Second)
-	for i := 0; i < 100; i++ {
-		stats := bwc.GetBandwidthForPeer(peer.ID(fmt.Sprintf("peer-%d", i)))
+
+	assertPeers(func(stats Stats) {
 		assertEq(t, 8000, stats.TotalOut)
 		assertEq(t, 4000, stats.TotalIn)
-	}
+	})
 
-	for i := 0; i < 2; i++ {
-		stats := bwc.GetBandwidthForProtocol(protocol.ID(fmt.Sprintf("proto-%d", i)))
+	assertProtocols(func(stats Stats) {
 		assertEq(t, 400000, stats.TotalOut)
 		assertEq(t, 200000, stats.TotalIn)
-	}
+	})
 
 	{
 		stats := bwc.GetBandwidthTotals()
@@ -127,6 +150,7 @@ func assertEq(t *testing.T, expected, actual int64) {
 }
 
 func assertApproxEq(t *testing.T, expected, actual float64) {
+	t.Helper()
 	margin := expected * acceptableError
 	if !(math.Abs(expected-actual) <= margin) {
 		t.Errorf("expected %f (±%f), got %f", expected, margin, actual)

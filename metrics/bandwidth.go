@@ -94,3 +94,60 @@ func (bwc *BandwidthCounter) GetBandwidthTotals() (out Stats) {
 		RateOut:  outSnap.Rate,
 	}
 }
+
+// GetBandwidthByPeer returns a map of all remembered peers and the bandwidth
+// metrics with respect to each. This method may be very expensive.
+func (bwc *BandwidthCounter) GetBandwidthByPeer() map[peer.ID]Stats {
+	peers := make(map[peer.ID]Stats)
+
+	bwc.peerIn.ForEach(func(p string, meter *flow.Meter) {
+		id := peer.ID(p)
+		snap := meter.Snapshot()
+
+		stat := peers[id]
+		stat.TotalIn = int64(snap.Total)
+		stat.RateIn = snap.Rate
+		peers[id] = stat
+	})
+
+	bwc.peerOut.ForEach(func(p string, meter *flow.Meter) {
+		id := peer.ID(p)
+		snap := meter.Snapshot()
+
+		stat := peers[id]
+		stat.TotalOut = int64(snap.Total)
+		stat.RateOut = snap.Rate
+		peers[id] = stat
+	})
+
+	return peers
+}
+
+// GetBandwidthByProtocol returns a map of all remembered protocols and
+// the bandwidth metrics with respect to each. This method may be moderately
+// expensive.
+func (bwc *BandwidthCounter) GetBandwidthByProtocol() map[protocol.ID]Stats {
+	protocols := make(map[protocol.ID]Stats)
+
+	bwc.protocolIn.ForEach(func(p string, meter *flow.Meter) {
+		id := protocol.ID(p)
+		snap := meter.Snapshot()
+
+		stat := protocols[id]
+		stat.TotalIn = int64(snap.Total)
+		stat.RateIn = snap.Rate
+		protocols[id] = stat
+	})
+
+	bwc.protocolOut.ForEach(func(p string, meter *flow.Meter) {
+		id := protocol.ID(p)
+		snap := meter.Snapshot()
+
+		stat := protocols[id]
+		stat.TotalOut = int64(snap.Total)
+		stat.RateOut = snap.Rate
+		protocols[id] = stat
+	})
+
+	return protocols
+}

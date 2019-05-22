@@ -26,4 +26,6 @@ type Reporter interface {
 	GetBandwidthForPeer(peer.ID) Stats
 	GetBandwidthForProtocol(protocol.ID) Stats
 	GetBandwidthTotals() Stats
+	GetBandwidthByPeer() map[peer.ID]Stats
+	GetBandwidthByProtocol() map[protocol.ID]Stats
 }
