@@ -65,10 +65,3 @@ func AllViews() []*view.View {
 	})
 	return views
 }
-
-func AllViews() (views []*view.View) {
-	for _, v := range registeredViews {
-		views = append(views, v...)
-	}
-	return
-}
