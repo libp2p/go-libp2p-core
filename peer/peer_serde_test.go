@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/libp2p/go-libp2p-core/peer"
-	. "github.com/libp2p/go-libp2p-testing/peer"
+	. "github.com/libp2p/go-libp2p-core/test"
 )
 
 func TestPeerSerdePB(t *testing.T) {
