@@ -7,7 +7,7 @@ import (
 
 	. "github.com/libp2p/go-libp2p-core/crypto"
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
-	"github.com/libp2p/go-libp2p-testing/crypto"
+	"github.com/libp2p/go-libp2p-core/test"
 )
 
 func TestKeys(t *testing.T) {
@@ -17,7 +17,7 @@ func TestKeys(t *testing.T) {
 }
 
 func testKeyType(typ int, t *testing.T) {
-	sk, pk, err := tcrypto.RandTestKeyPair(typ, 512)
+	sk, pk, err := test.RandTestKeyPair(typ, 512)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -114,7 +114,7 @@ func testKeyEquals(t *testing.T, k Key) {
 		t.Fatal("Key not equal to key with same bytes.")
 	}
 
-	sk, pk, err := tcrypto.RandTestKeyPair(RSA, 512)
+	sk, pk, err := test.RandTestKeyPair(RSA, 512)
 	if err != nil {
 		t.Fatal(err)
 	}
