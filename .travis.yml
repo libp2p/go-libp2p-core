@@ -8,10 +8,10 @@ go:
 
 env:
   global:
-    - GOTFLAGS="-race"
-  matrix:
     - BUILD_DEPTYPE=gomod
-
+  matrix:
+    - GOTFLAGS="-race"
+    - GOTFLAGS="-race -tags=openssl"
 
 # disable travis install
 install:
