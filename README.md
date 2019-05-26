@@ -23,7 +23,3 @@ Check out the [GoDocs](https://godoc.org/github.com/libp2p/go-libp2p-core).
 ## License
 
 Dual-licensed under MIT and ASLv2, by way of the [Permissive License Stack](https://protocol.ai/blog/announcing-the-permissive-license-stack/).
-
----
-
-The last gx published version of this module was: 2.0.19: QmaCTz9RkrU13bm9kMB54f7atgqM4qkjDZpRwRoJiWXEqs
