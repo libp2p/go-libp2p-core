@@ -7,9 +7,8 @@ import (
 	"go.opencensus.io/stats/view"
 )
 
-// A map of application namespace strings to registered view slices
-// Can be considered map[string][]*views.View
-var registeredViews = sync.Map{}
+var registeredViews = map[string][]*view.View{}
+var mutex = sync.Mutex{}
 
 type ErrNamespace struct {
 	Namespace string
@@ -33,15 +32,17 @@ func (e ErrDuplicateNamespaceRegistration) Error() string {
 // RegisterViews accepts a namespace and a slice of Views, which will be registered
 // with opencensus and maintained in the global registered views map
 func RegisterViews(namespace string, views ...*view.View) error {
-	_, loaded := registeredViews.LoadOrStore(namespace, views)
-	if loaded {
+	mutex.Lock()
+	_, ok := registeredViews[namespace]
+	if !ok {
 		return ErrDuplicateNamespaceRegistration{Namespace: namespace}
 	}
 
 	if err := view.Register(views...); err != nil {
-		registeredViews.Delete(namespace)
+		delete(registeredViews, namespace)
 		return err
 	}
+	mutex.Unlock()
 
 	return nil
 }
@@ -49,19 +50,22 @@ func RegisterViews(namespace string, views ...*view.View) error {
 // LookupViews returns all views for a Namespace name. Returns an error if the
 // Namespace has not been registered.
 func LookupViews(name string) ([]*view.View, error) {
-	views, ok := registeredViews.Load(name)
+	mutex.Lock()
+	views, ok := registeredViews[name]
+	mutex.Unlock()
 	if !ok {
 		return nil, ErrUnregisteredNamespace{Namespace: name}
 	}
-	return views.([]*view.View), nil
+	return views, nil
 }
 
 // AllViews returns all registered views as a single slice
 func AllViews() []*view.View {
 	var views []*view.View
-	registeredViews.Range(func(key interface{}, values interface{}) bool {
-		views = append(views, values.([]*view.View)...)
-		return true
-	})
+	mutex.Lock()
+	for _, vs := range registeredViews {
+		views = append(views, vs...)
+	}
+	mutex.Unlock()
 	return views
 }
