@@ -8,7 +8,7 @@ import (
 )
 
 var registeredViews = map[string][]*view.View{}
-var mutex = sync.Mutex{}
+var mutex = new(sync.Mutex)
 
 type ErrNamespace struct {
 	Namespace string
