@@ -34,8 +34,10 @@ func (e ErrDuplicateNamespaceRegistration) Error() string {
 func RegisterViews(namespace string, views ...*view.View) error {
 	mutex.Lock()
 	_, ok := registeredViews[namespace]
-	if !ok {
+	if ok {
 		return ErrDuplicateNamespaceRegistration{Namespace: namespace}
+	} else {
+		registeredViews[namespace] = views
 	}
 
 	if err := view.Register(views...); err != nil {
@@ -52,11 +54,13 @@ func RegisterViews(namespace string, views ...*view.View) error {
 func LookupViews(name string) ([]*view.View, error) {
 	mutex.Lock()
 	views, ok := registeredViews[name]
-	mutex.Unlock()
+	defer mutex.Unlock()
 	if !ok {
 		return nil, ErrUnregisteredNamespace{Namespace: name}
 	}
-	return views, nil
+	response := make([]*view.View, len(views))
+	copy(response, views)
+	return response, nil
 }
 
 // AllViews returns all registered views as a single slice
