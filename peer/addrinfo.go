@@ -47,6 +47,9 @@ func AddrInfoToP2pAddrs(pi *AddrInfo) ([]ma.Multiaddr, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(pi.Addrs) == 0 {
+		return []ma.Multiaddr{p2ppart}, nil
+	}
 	for _, addr := range pi.Addrs {
 		addrs = append(addrs, addr.Encapsulate(p2ppart))
 	}
