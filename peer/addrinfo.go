@@ -2,7 +2,6 @@ package peer
 
 import (
 	"fmt"
-	"strings"
 
 	ma "github.com/multiformats/go-multiaddr"
 )
@@ -27,47 +26,29 @@ func AddrInfoFromP2pAddr(m ma.Multiaddr) (*AddrInfo, error) {
 		return nil, ErrInvalidAddr
 	}
 
-	// make sure it's a P2P addr
-	parts := ma.Split(m)
-	if len(parts) < 1 {
+	transport, p2ppart := ma.SplitLast(m)
+	if p2ppart == nil || p2ppart.Protocol().Code != ma.P_P2P {
 		return nil, ErrInvalidAddr
 	}
-
-	// TODO(lgierth): we shouldn't assume /p2p is the last part
-	p2ppart := parts[len(parts)-1]
-	if p2ppart.Protocols()[0].Code != ma.P_P2P {
-		return nil, ErrInvalidAddr
-	}
-
-	// make sure the /p2p value parses as a peer.ID
-	peerIdParts := strings.Split(p2ppart.String(), "/")
-	peerIdStr := peerIdParts[len(peerIdParts)-1]
-	id, err := IDB58Decode(peerIdStr)
+	id, err := IDFromBytes(p2ppart.RawValue())
 	if err != nil {
 		return nil, err
 	}
-
-	// we might have received just an /p2p part, which means there's no addr.
-	var addrs []ma.Multiaddr
-	if len(parts) > 1 {
-		addrs = append(addrs, ma.Join(parts[:len(parts)-1]...))
+	info := &AddrInfo{ID: id}
+	if transport != nil {
+		info.Addrs = []ma.Multiaddr{transport}
 	}
-
-	return &AddrInfo{
-		ID:    id,
-		Addrs: addrs,
-	}, nil
+	return info, nil
 }
 
 func AddrInfoToP2pAddrs(pi *AddrInfo) ([]ma.Multiaddr, error) {
 	var addrs []ma.Multiaddr
-	tpl := "/" + ma.ProtocolWithCode(ma.P_P2P).Name + "/"
+	p2ppart, err := ma.NewComponent("p2p", IDB58Encode(pi.ID))
+	if err != nil {
+		return nil, err
+	}
 	for _, addr := range pi.Addrs {
-		p2paddr, err := ma.NewMultiaddr(tpl + IDB58Encode(pi.ID))
-		if err != nil {
-			return nil, err
-		}
-		addrs = append(addrs, addr.Encapsulate(p2paddr))
+		addrs = append(addrs, addr.Encapsulate(p2ppart))
 	}
 	return addrs, nil
 }
