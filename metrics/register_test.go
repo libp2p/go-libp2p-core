@@ -75,7 +75,10 @@ func TestRegisteringViews(t *testing.T) {
 			t.Fatal("incorrect view lookup, received name:", views[0].Name)
 		}
 	})
+}
 
+func TestAllViews(t *testing.T) {
+	registeredViews = make(map[string][]*view.View)
 	t.Run("test retrieving all views", func(t *testing.T) {
 		views := []*view.View{newTestView("all-views-0"), newTestView("all-views-1"), newTestView("all-views-2")}
 
