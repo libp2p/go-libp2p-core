@@ -2,7 +2,6 @@ package peer
 
 import (
 	"fmt"
-	"strings"
 
 	ma "github.com/multiformats/go-multiaddr"
 )
@@ -22,52 +21,71 @@ func (pi AddrInfo) String() string {
 
 var ErrInvalidAddr = fmt.Errorf("invalid p2p multiaddr")
 
-func AddrInfoFromP2pAddr(m ma.Multiaddr) (*AddrInfo, error) {
+// AddrInfosFromP2pAddrs converts a set of Multiaddrs to a set of AddrInfos.
+func AddrInfosFromP2pAddrs(maddrs ...ma.Multiaddr) ([]AddrInfo, error) {
+	m := make(map[ID][]ma.Multiaddr)
+	for _, maddr := range maddrs {
+		transport, id := SplitAddr(maddr)
+		if id == "" {
+			return nil, ErrInvalidAddr
+		}
+		if transport == nil {
+			if _, ok := m[id]; !ok {
+				m[id] = nil
+			}
+		} else {
+			m[id] = append(m[id], transport)
+		}
+	}
+	ais := make([]AddrInfo, 0, len(m))
+	for id, maddrs := range m {
+		ais = append(ais, AddrInfo{ID: id, Addrs: maddrs})
+	}
+	return ais, nil
+}
+
+// SplitAddr splits a p2p Multiaddr into a transport multiaddr and a peer ID.
+//
+// * Returns a nil transport if the address only contains a /p2p part.
+// * Returns a empty peer ID if the address doesn't contain a /p2p part.
+func SplitAddr(m ma.Multiaddr) (transport ma.Multiaddr, id ID) {
 	if m == nil {
-		return nil, ErrInvalidAddr
+		return nil, ""
 	}
 
-	// make sure it's a P2P addr
-	parts := ma.Split(m)
-	if len(parts) < 1 {
+	transport, p2ppart := ma.SplitLast(m)
+	if p2ppart == nil || p2ppart.Protocol().Code != ma.P_P2P {
+		return m, ""
+	}
+	id = ID(p2ppart.RawValue()) // already validated by the multiaddr library.
+	return transport, id
+}
+
+// AddrInfoFromP2pAddr converts a Multiaddr to an AddrInfo.
+func AddrInfoFromP2pAddr(m ma.Multiaddr) (*AddrInfo, error) {
+	transport, id := SplitAddr(m)
+	if id == "" {
 		return nil, ErrInvalidAddr
 	}
-
-	// TODO(lgierth): we shouldn't assume /p2p is the last part
-	p2ppart := parts[len(parts)-1]
-	if p2ppart.Protocols()[0].Code != ma.P_P2P {
-		return nil, ErrInvalidAddr
+	info := &AddrInfo{ID: id}
+	if transport != nil {
+		info.Addrs = []ma.Multiaddr{transport}
 	}
+	return info, nil
+}
 
-	// make sure the /p2p value parses as a peer.ID
-	peerIdParts := strings.Split(p2ppart.String(), "/")
-	peerIdStr := peerIdParts[len(peerIdParts)-1]
-	id, err := IDB58Decode(peerIdStr)
+// AddrInfoToP2pAddr converts an AddrInfo to a list of Multiaddrs.
+func AddrInfoToP2pAddrs(pi *AddrInfo) ([]ma.Multiaddr, error) {
+	var addrs []ma.Multiaddr
+	p2ppart, err := ma.NewComponent("p2p", IDB58Encode(pi.ID))
 	if err != nil {
 		return nil, err
 	}
-
-	// we might have received just an /p2p part, which means there's no addr.
-	var addrs []ma.Multiaddr
-	if len(parts) > 1 {
-		addrs = append(addrs, ma.Join(parts[:len(parts)-1]...))
+	if len(pi.Addrs) == 0 {
+		return []ma.Multiaddr{p2ppart}, nil
 	}
-
-	return &AddrInfo{
-		ID:    id,
-		Addrs: addrs,
-	}, nil
-}
-
-func AddrInfoToP2pAddrs(pi *AddrInfo) ([]ma.Multiaddr, error) {
-	var addrs []ma.Multiaddr
-	tpl := "/" + ma.ProtocolWithCode(ma.P_P2P).Name + "/"
 	for _, addr := range pi.Addrs {
-		p2paddr, err := ma.NewMultiaddr(tpl + IDB58Encode(pi.ID))
-		if err != nil {
-			return nil, err
-		}
-		addrs = append(addrs, addr.Encapsulate(p2paddr))
+		addrs = append(addrs, addr.Encapsulate(p2ppart))
 	}
 	return addrs, nil
 }
