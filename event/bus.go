@@ -1,5 +1,7 @@
 package event
 
+import "io"
+
 // SubscriptionOpt represents a subscriber option. Use the options exposed by the implementation of choice.
 type SubscriptionOpt = func(interface{}) error
 
@@ -9,11 +11,16 @@ type EmitterOpt = func(interface{}) error
 // CancelFunc closes a subscriber.
 type CancelFunc = func()
 
-// EmitFunc emits events. If any channel subscribed to the topic is blocked,
-// calls to EmitFunc will block.
-//
-// Calling this function with wrong event type will cause a panic.
-type EmitFunc = func(evt interface{})
+// Emitter represents an actor that emits events onto the eventbus.
+type Emitter interface {
+	io.Closer
+
+	// Emit emits an event onto the eventbus. If any channel subscribed to the topic is blocked,
+	// calls to Emit will block.
+	//
+	// Calling this function with wrong event type will cause a panic.
+	Emit(evt interface{})
+}
 
 // Bus is an interface to type-based event delivery system
 type Bus interface {
@@ -34,9 +41,9 @@ type Bus interface {
 	// select output type
 	//
 	// Example:
-	// emit, err := eventbus.Emitter(new(EventT))
-	// defer emit.Close() // MUST call this after being done with the emitter
+	// em, err := eventbus.Emitter(new(EventT))
+	// defer em.Close() // MUST call this after being done with the emitter
 	//
-	// emit(EventT{})
-	Emitter(eventType interface{}, opts ...EmitterOpt) (EmitFunc, error)
+	// em.Emit(EventT{})
+	Emitter(eventType interface{}, opts ...EmitterOpt) (Emitter, error)
 }
