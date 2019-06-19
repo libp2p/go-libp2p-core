@@ -12,6 +12,8 @@ import (
 	"github.com/libp2p/go-libp2p-core/peerstore"
 	"github.com/libp2p/go-libp2p-core/protocol"
 
+	"github.com/libp2p/go-eventbus"
+
 	ma "github.com/multiformats/go-multiaddr"
 )
 
@@ -68,4 +70,7 @@ type Host interface {
 
 	// ConnManager returns this hosts connection manager
 	ConnManager() connmgr.ConnManager
+
+	// EventBus returns the hosts eventbus
+	EventBus() event.Bus
 }
