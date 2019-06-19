@@ -7,7 +7,7 @@ import (
 	"context"
 
 	"github.com/libp2p/go-libp2p-core/connmgr"
-	"github.com/libp2p/go-libp2p-core/events"
+	"github.com/libp2p/go-libp2p-core/event"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/peerstore"
@@ -71,5 +71,5 @@ type Host interface {
 	ConnManager() connmgr.ConnManager
 
 	// EventBus returns the hosts eventbus
-	EventBus() events.Bus
+	EventBus() event.Bus
 }
