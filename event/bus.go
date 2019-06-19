@@ -22,11 +22,12 @@ type Emitter interface {
 	Emit(evt interface{})
 }
 
-// Bus is an interface to type-based event delivery system
+// Bus is an interface for a type-based event delivery system.
 type Bus interface {
-	// Subscribe creates new subscription. Failing to drain the channel will cause
-	// publishers to get blocked. CancelFunc is guaranteed to return after last send
-	// to the channel
+	// Subscribe creates a new subscription.
+	//
+	// Failing to drain the channel may cause publishers to block. CancelFunc must return after
+	// last send to the channel.
 	//
 	// Example:
 	// ch := make(chan EventT, 10)
@@ -35,15 +36,13 @@ type Bus interface {
 	// defer cancel()
 	Subscribe(typedChan interface{}, opts ...SubscriptionOpt) (CancelFunc, error)
 
-	// Emitter creates new emitter
+	// Emitter creates a new event emitter.
 	//
-	// eventType accepts typed nil pointers, and uses the type information to
-	// select output type
+	// eventType accepts typed nil pointers, and uses the type information for wiring purposes.
 	//
 	// Example:
 	// em, err := eventbus.Emitter(new(EventT))
 	// defer em.Close() // MUST call this after being done with the emitter
-	//
 	// em.Emit(EventT{})
 	Emitter(eventType interface{}, opts ...EmitterOpt) (Emitter, error)
 }
