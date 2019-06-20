@@ -12,5 +12,5 @@ require (
 	github.com/multiformats/go-multiaddr v0.0.4
 	github.com/multiformats/go-multihash v0.0.5
 	github.com/spacemonkeygo/openssl v0.0.0-20181017203307-c2dcc5cca94a
-	golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5
+	golang.org/x/crypto v0.0.0-20190618222545-ea8f1a30c443
 )
