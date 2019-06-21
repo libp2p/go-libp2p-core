@@ -31,17 +31,30 @@ type Subscription interface {
 type Bus interface {
 	// Subscribe creates a new subscription.
 	//
+	// EventType must be a pointer to a event type or an array of pointers
+	//
 	// Failing to drain the channel may cause publishers to block. CancelFunc must return after
 	// last send to the channel.
 	//
-	// Example:
+	// Simple Example:
 	// sub, err := eventbus.Subscribe(new(EventType))
 	// defer sub.Close()
 	// for e := range sub.Out() {
 	//   event := e.(EventType) // guaranteed safe
 	//   [...]
 	// }
-	// TODO: update doc
+	//
+	// Multi-Type Example:
+	// sub, err := eventbus.Subscribe([]interface{}{new(EventA), new(EventB)})
+	// defer sub.Close()
+	// for e := range sub.Out() {
+	//   select e.(type):
+	//     case EventA:
+	//       [...]
+	//     case EventB:
+	//       [...]
+	//   }
+	// }
 	Subscribe(eventType interface{}, opts ...SubscriptionOpt) (Subscription, error)
 
 	// Emitter creates a new event emitter.
