@@ -22,6 +22,11 @@ type Emitter interface {
 	Emit(evt interface{})
 }
 
+type Subscription interface {
+	Out() <-chan interface{}
+	Close() error
+}
+
 // Bus is an interface for a type-based event delivery system.
 type Bus interface {
 	// Subscribe creates a new subscription.
@@ -30,11 +35,14 @@ type Bus interface {
 	// last send to the channel.
 	//
 	// Example:
-	// ch := make(chan EventT, 10)
-	// defer close(ch)
-	// cancel, err := eventbus.Subscribe(ch)
-	// defer cancel()
-	Subscribe(typedChan interface{}, opts ...SubscriptionOpt) (CancelFunc, error)
+	// sub, err := eventbus.Subscribe(new(EventType))
+	// defer sub.Close()
+	// for e := range sub.Out() {
+	//   event := e.(EventType) // guaranteed safe
+	//   [...]
+	// }
+	// TODO: update doc
+	Subscribe(eventType interface{}, opts ...SubscriptionOpt) (Subscription, error)
 
 	// Emitter creates a new event emitter.
 	//
