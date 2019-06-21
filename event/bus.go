@@ -22,27 +22,53 @@ type Emitter interface {
 	Emit(evt interface{})
 }
 
+// Subscription represents a subscription to one or multiple event types.
+type Subscription interface {
+	io.Closer
+
+	// Out returns the channel from which to consume events.
+	Out() <-chan interface{}
+}
+
 // Bus is an interface for a type-based event delivery system.
 type Bus interface {
-	// Subscribe creates a new subscription.
+	// Subscribe creates a new Subscription.
 	//
-	// Failing to drain the channel may cause publishers to block. CancelFunc must return after
-	// last send to the channel.
+	// eventType can be either a pointer to a single event type, or a slice of pointers to
+	// subscribe to multiple event types at once, under a single subscription (and channel).
 	//
-	// Example:
-	// ch := make(chan EventT, 10)
-	// defer close(ch)
-	// cancel, err := eventbus.Subscribe(ch)
-	// defer cancel()
-	Subscribe(typedChan interface{}, opts ...SubscriptionOpt) (CancelFunc, error)
+	// Failing to drain the channel may cause publishers to block.
+	//
+	// Simple example
+	//
+	//  sub, err := eventbus.Subscribe(new(EventType))
+	//  defer sub.Close()
+	//  for e := range sub.Out() {
+	//    event := e.(EventType) // guaranteed safe
+	//    [...]
+	//  }
+	//
+	// Multi-type example
+	//
+	//  sub, err := eventbus.Subscribe([]interface{}{new(EventA), new(EventB)})
+	//  defer sub.Close()
+	//  for e := range sub.Out() {
+	//    select e.(type):
+	//      case EventA:
+	//        [...]
+	//      case EventB:
+	//        [...]
+	//    }
+	//  }
+	Subscribe(eventType interface{}, opts ...SubscriptionOpt) (Subscription, error)
 
 	// Emitter creates a new event emitter.
 	//
 	// eventType accepts typed nil pointers, and uses the type information for wiring purposes.
 	//
 	// Example:
-	// em, err := eventbus.Emitter(new(EventT))
-	// defer em.Close() // MUST call this after being done with the emitter
-	// em.Emit(EventT{})
+	//  em, err := eventbus.Emitter(new(EventT))
+	//  defer em.Close() // MUST call this after being done with the emitter
+	//  em.Emit(EventT{})
 	Emitter(eventType interface{}, opts ...EmitterOpt) (Emitter, error)
 }
