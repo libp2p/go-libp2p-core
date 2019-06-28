@@ -7,7 +7,7 @@ import (
 
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 
-	openssl "github.com/spacemonkeygo/openssl"
+	openssl "github.com/libp2p/go-openssl"
 )
 
 // define these as separate types so we can add more key types later and reuse
@@ -63,15 +63,21 @@ func (pk *opensslPublicKey) Raw() ([]byte, error) {
 
 // Equals checks whether this key is equal to another
 func (pk *opensslPublicKey) Equals(k Key) bool {
-	a, err := pk.Raw()
-	if err != nil {
-		return false
+	k0, ok := k.(*RsaPublicKey)
+	if !ok {
+		a, err := pk.Raw()
+		if err != nil {
+			return false
+		}
+		b, err := k.Raw()
+		if err != nil {
+			return false
+		}
+
+		return bytes.Equal(a, b)
 	}
-	b, err := k.Raw()
-	if err != nil {
-		return false
-	}
-	return bytes.Equal(a, b)
+
+	return pk.key.Equal(k0.opensslPublicKey.key)
 }
 
 // Sign returns a signature of the input data
@@ -104,13 +110,19 @@ func (sk *opensslPrivateKey) Raw() ([]byte, error) {
 
 // Equals checks whether this key is equal to another
 func (sk *opensslPrivateKey) Equals(k Key) bool {
-	a, err := sk.Raw()
-	if err != nil {
-		return false
+	k0, ok := k.(*RsaPrivateKey)
+	if !ok {
+		a, err := sk.Raw()
+		if err != nil {
+			return false
+		}
+		b, err := k.Raw()
+		if err != nil {
+			return false
+		}
+
+		return bytes.Equal(a, b)
 	}
-	b, err := k.Raw()
-	if err != nil {
-		return false
-	}
-	return bytes.Equal(a, b)
+
+	return sk.key.Equal(k0.opensslPrivateKey.key)
 }
