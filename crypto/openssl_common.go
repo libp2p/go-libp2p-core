@@ -3,6 +3,8 @@
 package crypto
 
 import (
+	"bytes"
+
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 
 	openssl "github.com/spacemonkeygo/openssl"
@@ -61,7 +63,15 @@ func (pk *opensslPublicKey) Raw() ([]byte, error) {
 
 // Equals checks whether this key is equal to another
 func (pk *opensslPublicKey) Equals(k Key) bool {
-	return KeyEqual(pk, k)
+	a, err := pk.Raw()
+	if err != nil {
+		return false
+	}
+	b, err := k.Raw()
+	if err != nil {
+		return false
+	}
+	return bytes.Equal(a, b)
 }
 
 // Sign returns a signature of the input data
@@ -94,5 +104,13 @@ func (sk *opensslPrivateKey) Raw() ([]byte, error) {
 
 // Equals checks whether this key is equal to another
 func (sk *opensslPrivateKey) Equals(k Key) bool {
-	return KeyEqual(sk, k)
+	a, err := sk.Raw()
+	if err != nil {
+		return false
+	}
+	b, err := k.Raw()
+	if err != nil {
+		return false
+	}
+	return bytes.Equal(a, b)
 }
