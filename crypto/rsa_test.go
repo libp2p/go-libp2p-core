@@ -2,6 +2,7 @@ package crypto
 
 import (
 	"crypto/rand"
+	mrand "math/rand"
 	"testing"
 )
 
@@ -98,5 +99,17 @@ func TestRSAMarshalLoop(t *testing.T) {
 
 	if !pub.Equals(pubNew) || !pubNew.Equals(pub) {
 		t.Fatal("keys are not equal")
+	}
+}
+
+func BenchmarkRSAKeyEqualsCheck(b *testing.B) {
+	r := mrand.New(mrand.NewSource(42))
+	_, k1, _ := GenerateRSAKeyPair(2048, r)
+	_, k2, _ := GenerateRSAKeyPair(2048, r)
+
+	for i := 0; i < b.N; i++ {
+		if k1.Equals(k2) {
+			b.Fatal("this bad")
+		}
 	}
 }
