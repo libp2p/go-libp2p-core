@@ -3,7 +3,6 @@
 package crypto
 
 import (
-	"bytes"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
@@ -67,15 +66,7 @@ func (pk *RsaPublicKey) Equals(k Key) bool {
 	// make sure this is an rsa public key
 	other, ok := (k).(*RsaPublicKey)
 	if !ok {
-		a, err := pk.Raw()
-		if err != nil {
-			return false
-		}
-		b, err := k.Raw()
-		if err != nil {
-			return false
-		}
-		return bytes.Equal(a, b)
+		return basicEquals(pk, k)
 	}
 
 	return pk.k.N.Cmp(other.k.N) == 0 && pk.k.E == other.k.E
@@ -111,15 +102,7 @@ func (sk *RsaPrivateKey) Equals(k Key) bool {
 	// make sure this is an rsa public key
 	other, ok := (k).(*RsaPrivateKey)
 	if !ok {
-		a, err := sk.Raw()
-		if err != nil {
-			return false
-		}
-		b, err := k.Raw()
-		if err != nil {
-			return false
-		}
-		return bytes.Equal(a, b)
+		return basicEquals(sk, k)
 	}
 
 	a := sk.sk

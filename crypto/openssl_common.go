@@ -3,8 +3,6 @@
 package crypto
 
 import (
-	"bytes"
-
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 
 	openssl "github.com/libp2p/go-openssl"
@@ -65,16 +63,7 @@ func (pk *opensslPublicKey) Raw() ([]byte, error) {
 func (pk *opensslPublicKey) Equals(k Key) bool {
 	k0, ok := k.(*RsaPublicKey)
 	if !ok {
-		a, err := pk.Raw()
-		if err != nil {
-			return false
-		}
-		b, err := k.Raw()
-		if err != nil {
-			return false
-		}
-
-		return bytes.Equal(a, b)
+		return basicEquals(pk, k)
 	}
 
 	return pk.key.Equal(k0.opensslPublicKey.key)
@@ -112,16 +101,7 @@ func (sk *opensslPrivateKey) Raw() ([]byte, error) {
 func (sk *opensslPrivateKey) Equals(k Key) bool {
 	k0, ok := k.(*RsaPrivateKey)
 	if !ok {
-		a, err := sk.Raw()
-		if err != nil {
-			return false
-		}
-		b, err := k.Raw()
-		if err != nil {
-			return false
-		}
-
-		return bytes.Equal(a, b)
+		return basicEquals(sk, k)
 	}
 
 	return sk.key.Equal(k0.opensslPrivateKey.key)

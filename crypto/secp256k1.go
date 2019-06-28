@@ -66,7 +66,7 @@ func (k *Secp256k1PrivateKey) Raw() ([]byte, error) {
 func (k *Secp256k1PrivateKey) Equals(o Key) bool {
 	sk, ok := o.(*Secp256k1PrivateKey)
 	if !ok {
-		return false
+		return basicEquals(k, o)
 	}
 
 	return k.D.Cmp(sk.D) == 0
@@ -107,7 +107,7 @@ func (k *Secp256k1PublicKey) Raw() ([]byte, error) {
 func (k *Secp256k1PublicKey) Equals(o Key) bool {
 	sk, ok := o.(*Secp256k1PublicKey)
 	if !ok {
-		return false
+		return basicEquals(k, o)
 	}
 
 	return (*btcec.PublicKey)(k).IsEqual((*btcec.PublicKey)(sk))
