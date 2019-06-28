@@ -4,7 +4,6 @@
 package crypto
 
 import (
-	"bytes"
 	"crypto/elliptic"
 	"crypto/hmac"
 	"crypto/rand"
@@ -345,7 +344,9 @@ func KeyEqual(k1, k2 Key) bool {
 		return true
 	}
 
-	b1, err1 := k1.Bytes()
-	b2, err2 := k2.Bytes()
-	return bytes.Equal(b1, b2) && err1 == err2
+	if k1.Type() != k2.Type() {
+		return false
+	}
+
+	return k1.Equals(k2)
 }
