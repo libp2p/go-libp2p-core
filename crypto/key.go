@@ -290,7 +290,22 @@ func PublicKeyFromProto(pmes *pb.PublicKey) (PubKey, error) {
 		return nil, ErrBadKeyType
 	}
 
-	return um(pmes.GetData())
+	data := pmes.GetData()
+
+	pk, err := um(data)
+	if err != nil {
+		return nil, err
+	}
+
+	switch tpk := pk.(type) {
+	case *RsaPublicKey:
+		bcopy := make([]byte, len(data))
+		copy(bcopy, data)
+
+		tpk.cached = bcopy
+	}
+
+	return pk, nil
 }
 
 // MarshalPublicKey converts a public key object into a protobuf serialized
