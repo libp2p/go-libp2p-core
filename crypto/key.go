@@ -363,7 +363,9 @@ func KeyEqual(k1, k2 Key) bool {
 		return true
 	}
 
-	b1, err1 := k1.Bytes()
-	b2, err2 := k2.Bytes()
-	return subtle.ConstantTimeCompare(b1, b2) == 1 && err1 == err2
+	if k1.Type() != k2.Type() {
+		return false
+	}
+
+	return k1.Equals(k2)
 }
