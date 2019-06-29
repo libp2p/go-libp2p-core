@@ -115,10 +115,6 @@ func (sk *RsaPrivateKey) Equals(k Key) bool {
 		return false
 	}
 
-	if a.D.Cmp(b.D) != 0 {
-		return false
-	}
-
 	return true
 }
 
