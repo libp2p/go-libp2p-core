@@ -69,7 +69,7 @@ func (k *Secp256k1PrivateKey) Equals(o Key) bool {
 		return basicEquals(k, o)
 	}
 
-	return k.D.Cmp(sk.D) == 0
+	return k.GetPublic().Equals(sk.GetPublic())
 }
 
 // Sign returns a signature from input data

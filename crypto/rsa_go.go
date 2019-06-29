@@ -108,14 +108,11 @@ func (sk *RsaPrivateKey) Equals(k Key) bool {
 	a := sk.sk
 	b := other.sk
 
+	// Don't care about constant time. We're only comparing the public half.
 	if a.PublicKey.N.Cmp(b.PublicKey.N) != 0 {
 		return false
 	}
 	if a.PublicKey.E != b.PublicKey.E {
-		return false
-	}
-
-	if a.D.Cmp(b.D) != 0 {
 		return false
 	}
 

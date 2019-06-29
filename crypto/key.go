@@ -4,7 +4,6 @@
 package crypto
 
 import (
-	"bytes"
 	"crypto/elliptic"
 	"crypto/hmac"
 	"crypto/rand"
@@ -380,5 +379,5 @@ func basicEquals(k1, k2 Key) bool {
 	if err != nil {
 		return false
 	}
-	return bytes.Equal(a, b)
+	return subtle.ConstantTimeCompare(a, b) == 1
 }
