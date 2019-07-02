@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto"
 	"crypto/ecdsa"
+	"crypto/ed25519"
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
@@ -15,7 +16,6 @@ import (
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 	"github.com/libp2p/go-libp2p-core/test"
 	sha256 "github.com/minio/sha256-simd"
-	"golang.org/x/crypto/ed25519"
 )
 
 func TestKeys(t *testing.T) {
