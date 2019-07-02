@@ -2,13 +2,12 @@ package crypto
 
 import (
 	"bytes"
+	"crypto/ed25519"
 	"errors"
 	"fmt"
 	"io"
 
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
-
-	"golang.org/x/crypto/ed25519"
 )
 
 // Ed25519PrivateKey is an ed25519 private key.
