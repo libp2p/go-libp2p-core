@@ -21,7 +21,7 @@ type RsaPublicKey struct {
 
 // GenerateRSAKeyPair generates a new rsa private and public key
 func GenerateRSAKeyPair(bits int, _ io.Reader) (PrivKey, PubKey, error) {
-	if bits < 512 {
+	if bits < MinRsaKeyBits {
 		return nil, nil, ErrRsaKeyTooSmall
 	}
 
