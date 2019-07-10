@@ -4,12 +4,12 @@
 package crypto
 
 import (
-	"bytes"
 	"crypto/elliptic"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha1"
 	"crypto/sha512"
+	"crypto/subtle"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -347,5 +347,5 @@ func KeyEqual(k1, k2 Key) bool {
 
 	b1, err1 := k1.Bytes()
 	b2, err2 := k2.Bytes()
-	return bytes.Equal(b1, b2) && err1 == err2
+	return subtle.ConstantTimeCompare(b1, b2) == 1 && err1 == err2
 }

@@ -115,7 +115,7 @@ func (ePriv *ECDSAPrivateKey) Raw() ([]byte, error) {
 	return x509.MarshalECPrivateKey(ePriv.priv)
 }
 
-// Equals compares to private keys
+// Equals compares two private keys
 func (ePriv *ECDSAPrivateKey) Equals(o Key) bool {
 	oPriv, ok := o.(*ECDSAPrivateKey)
 	if !ok {
