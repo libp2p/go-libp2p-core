@@ -143,6 +143,8 @@ func GenerateEKeyPair(curveName string) ([]byte, GenSharedKey, error) {
 		curve = elliptic.P384()
 	case "P-521":
 		curve = elliptic.P521()
+	default:
+		return nil, nil, fmt.Errorf("unknown curve name")
 	}
 
 	priv, x, y, err := elliptic.GenerateKey(curve, rand.Reader)
