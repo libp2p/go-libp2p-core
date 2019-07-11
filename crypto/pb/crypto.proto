@@ -1,6 +1,7 @@
 syntax = "proto2";
 
 package crypto.pb;
+option go_package = "github.com/libp2p/go-libp2p-core/crypto/pb";
 
 enum KeyType {
 	RSA = 0;
