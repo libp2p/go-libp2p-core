@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+package plaintext.pb;
+
+// TODO(yusef): can we add the dir to the include path and avoid relative import?
+import "crypto/pb/crypto.proto";
+
+message Exchange {
+    optional bytes id = 1;
+    optional crypto.pb.PublicKey pubkey = 2;
+}
