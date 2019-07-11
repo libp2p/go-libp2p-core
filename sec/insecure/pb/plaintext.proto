@@ -2,8 +2,7 @@ syntax = "proto2";
 
 package plaintext.pb;
 
-// TODO(yusef): can we add the dir to the include path and avoid relative import?
-import "crypto/pb/crypto.proto";
+import "github.com/libp2p/go-libp2p-core/crypto/pb/crypto.proto";
 
 message Exchange {
     optional bytes id = 1;
