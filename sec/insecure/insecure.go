@@ -57,8 +57,8 @@ func (t *Transport) LocalPrivateKey() ci.PrivKey {
 // with each other, or if a network error occurs during the ID exchange.
 func (t *Transport) SecureInbound(ctx context.Context, insecure net.Conn) (sec.SecureConn, error) {
 	conn := &Conn{
-		Conn:  insecure,
-		local: t.id,
+		Conn:         insecure,
+		local:        t.id,
 		localPrivKey: t.key,
 	}
 
@@ -80,8 +80,8 @@ func (t *Transport) SecureInbound(ctx context.Context, insecure net.Conn) (sec.S
 // also fail if a network error occurs during the ID exchange.
 func (t *Transport) SecureOutbound(ctx context.Context, insecure net.Conn, p peer.ID) (sec.SecureConn, error) {
 	conn := &Conn{
-		Conn:  insecure,
-		local: t.id,
+		Conn:         insecure,
+		local:        t.id,
 		localPrivKey: t.key,
 	}
 

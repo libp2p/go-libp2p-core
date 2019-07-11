@@ -36,7 +36,6 @@ func newTestTransport(t *testing.T, typ, bits int) *Transport {
 	}
 }
 
-
 // Create a new pair of connected TCP sockets.
 func newConnPair(t *testing.T) (net.Conn, net.Conn) {
 	lstnr, err := net.Listen("tcp", "localhost:0")
