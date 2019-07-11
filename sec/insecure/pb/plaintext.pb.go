@@ -4,9 +4,9 @@
 package plaintext_pb
 
 import (
-	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 	fmt "fmt"
 	proto "github.com/gogo/protobuf/proto"
+	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 	io "io"
 	math "math"
 )
