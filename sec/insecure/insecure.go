@@ -127,7 +127,7 @@ func makeExchangeMessage(privkey ci.PrivKey) (*pb.Exchange, error) {
 }
 
 func (ic *Conn) runHandshakeSync(ctx context.Context) error {
-	const maxSize = 1<<16
+	const maxSize = 1 << 16
 	reader := ggio.NewDelimitedReader(ic.Conn, maxSize)
 	writer := ggio.NewDelimitedWriter(ic.Conn)
 

@@ -279,7 +279,6 @@ func UnmarshalPublicKey(data []byte) (PubKey, error) {
 	return PublicKeyFromProto(*pmes)
 }
 
-
 // PublicKeyFromProto converts an unserialized protobuf PublicKey message
 // into its representative object. To convert a serialized public key,
 // see UnmarshalPublicKey.
