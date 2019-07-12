@@ -6,6 +6,7 @@ package insecure
 import (
 	"context"
 	"fmt"
+	"github.com/libp2p/go-libp2p-core/network"
 	"net"
 
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -127,8 +128,7 @@ func makeExchangeMessage(privkey ci.PrivKey) (*pb.Exchange, error) {
 }
 
 func (ic *Conn) runHandshakeSync(ctx context.Context) error {
-	const maxSize = 1 << 16
-	reader := ggio.NewDelimitedReader(ic.Conn, maxSize)
+	reader := ggio.NewDelimitedReader(ic.Conn, network.MessageSizeMax)
 	writer := ggio.NewDelimitedWriter(ic.Conn)
 
 	// Generate an Exchange message
