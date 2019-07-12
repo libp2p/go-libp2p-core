@@ -2,6 +2,7 @@ package crypto
 
 import (
 	"bytes"
+	"crypto/subtle"
 	"errors"
 	"fmt"
 	"io"
@@ -70,7 +71,7 @@ func (k *Ed25519PrivateKey) Equals(o Key) bool {
 		return false
 	}
 
-	return bytes.Equal(k.k, edk.k)
+	return subtle.ConstantTimeCompare(k.k, edk.k) == 1
 }
 
 // GetPublic returns an ed25519 public key from a private key.
