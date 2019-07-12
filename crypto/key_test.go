@@ -145,3 +145,15 @@ func (pk testkey) Raw() ([]byte, error) {
 func (pk testkey) Equals(k Key) bool {
 	return KeyEqual(pk, k)
 }
+
+func TestUnknownCurveErrors(t *testing.T) {
+	_, _, err := GenerateEKeyPair("P-256")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, _, err = GenerateEKeyPair("error-please")
+	if err == nil {
+		t.Fatal("expected invalid key type to error")
+	}
+}
