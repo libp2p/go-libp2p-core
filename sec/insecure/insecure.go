@@ -6,13 +6,12 @@ package insecure
 import (
 	"context"
 	"fmt"
-	"github.com/gogo/protobuf/proto"
-	"github.com/libp2p/go-msgio"
 	"net"
 
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/sec"
 
+	ggio "github.com/gogo/protobuf/io"
 	ci "github.com/libp2p/go-libp2p-core/crypto"
 	pb "github.com/libp2p/go-libp2p-core/sec/insecure/pb"
 )
@@ -22,8 +21,10 @@ import (
 const ID = "/plaintext/2.0.0"
 
 // Transport is a no-op stream security transport. It provides no
-// security and simply mocks the security and identity methods to
-// return peer IDs known ahead of time.
+// security and simply mocks the security methods. Identity methods
+// return the local peer's ID and private key, and whatever the remote
+// peer presents as their ID and public key.
+// No authentication of the remote identity is performed.
 type Transport struct {
 	id  peer.ID
 	key ci.PrivKey
@@ -37,7 +38,7 @@ func New(id peer.ID, key ci.PrivKey) *Transport {
 	}
 }
 
-// LocalPeer returns the transports local peer ID.
+// LocalPeer returns the transport's local peer ID.
 func (t *Transport) LocalPeer() peer.ID {
 	return t.id
 }
@@ -95,10 +96,6 @@ func (t *Transport) SecureOutbound(ctx context.Context, insecure net.Conn, p pee
 			p, conn.remote)
 	}
 
-	if !p.MatchesPublicKey(conn.remotePubKey) {
-		return nil, fmt.Errorf("remote public key does not match expected peer ID")
-	}
-
 	return conn, nil
 }
 
@@ -130,7 +127,9 @@ func makeExchangeMessage(privkey ci.PrivKey) (*pb.Exchange, error) {
 }
 
 func (ic *Conn) runHandshakeSync(ctx context.Context) error {
-	insecureM := msgio.NewReadWriter(ic.Conn)
+	const maxSize = 1<<16
+	reader := ggio.NewDelimitedReader(ic.Conn, maxSize)
+	writer := ggio.NewDelimitedWriter(ic.Conn)
 
 	// Generate an Exchange message
 	msg, err := makeExchangeMessage(ic.localPrivKey)
@@ -138,19 +137,14 @@ func (ic *Conn) runHandshakeSync(ctx context.Context) error {
 		return err
 	}
 
-	msgBytes, err := proto.Marshal(msg)
-	if err != nil {
-		return err
-	}
-
 	// Send our Exchange and read theirs
-	remoteExchangeBytes, err := readWriteMsg(insecureM, msgBytes)
+	err = writer.WriteMsg(msg)
 	if err != nil {
 		return err
 	}
 
 	remoteMsg := new(pb.Exchange)
-	err = proto.Unmarshal(remoteExchangeBytes, remoteMsg)
+	err = reader.ReadMsg(remoteMsg)
 	if err != nil {
 		return err
 	}
@@ -177,28 +171,6 @@ func (ic *Conn) runHandshakeSync(ctx context.Context) error {
 	ic.remotePubKey = remotePubkey
 	ic.remote = remoteID
 	return nil
-}
-
-// read and write a message at the same time.
-func readWriteMsg(c msgio.ReadWriter, out []byte) ([]byte, error) {
-	wresult := make(chan error)
-	go func() {
-		wresult <- c.WriteMsg(out)
-	}()
-
-	msg, err1 := c.ReadMsg()
-
-	// Always wait for the read to finish.
-	err2 := <-wresult
-
-	if err1 != nil {
-		return nil, err1
-	}
-	if err2 != nil {
-		c.ReleaseMsg(msg)
-		return nil, err2
-	}
-	return msg, nil
 }
 
 // LocalPeer returns the local peer ID.
