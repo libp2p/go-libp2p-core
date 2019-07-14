@@ -278,44 +278,27 @@ func UnmarshalPublicKey(data []byte) (PubKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	return PublicKeyFromProto(*pmes)
-}
 
-// PublicKeyFromProto converts an unserialized protobuf PublicKey message
-// into its representative object. To convert a serialized public key,
-// see UnmarshalPublicKey.
-func PublicKeyFromProto(keyMessage pb.PublicKey) (PubKey, error) {
-	um, ok := PubKeyUnmarshallers[keyMessage.GetType()]
+	um, ok := PubKeyUnmarshallers[pmes.GetType()]
 	if !ok {
 		return nil, ErrBadKeyType
 	}
 
-	return um(keyMessage.GetData())
+	return um(pmes.GetData())
 }
 
 // MarshalPublicKey converts a public key object into a protobuf serialized
 // public key
 func MarshalPublicKey(k PubKey) ([]byte, error) {
-	pbmes, err := PublicKeyToProto(k)
-	if err != nil {
-		return nil, err
-	}
-
-	return proto.Marshal(pbmes)
-}
-
-// PublicKeyToProto converts a public key object into an unserialized protobuf
-// PublicKey message.
-func PublicKeyToProto(k PubKey) (*pb.PublicKey, error) {
+	pbmes := new(pb.PublicKey)
+	pbmes.Type = k.Type()
 	data, err := k.Raw()
 	if err != nil {
 		return nil, err
 	}
-
-	pbmes := new(pb.PublicKey)
-	pbmes.Type = k.Type()
 	pbmes.Data = data
-	return pbmes, nil
+
+	return proto.Marshal(pbmes)
 }
 
 // UnmarshalPrivateKey converts a protobuf serialized private key into its
