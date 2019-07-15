@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+check-compat() (
+	set -e
+	go run github.com/smola/gocompat/cmd/gocompat compare --git-refs="remotes/origin/master..$(git rev-parse HEAD)" --go1compat ./...
+)
+
+export GO111MODULE=on
+if [[ "$TRAVIS" == "true" ]]; then
+	git fetch origin master:remotes/origin/master > /dev/null 2>&1
+fi
+
+if ! check-compat; then
+	echo ">> API Compatibility broken!!"
+	exit 1
+fi
+
+
