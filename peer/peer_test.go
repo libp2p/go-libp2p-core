@@ -153,6 +153,51 @@ func TestIDMatchesPrivateKey(t *testing.T) {
 	test(man)
 }
 
+func TestIDEncoding(t *testing.T) {
+	test := func(ks keyset) {
+		p1, err := IDB58Decode(ks.hpkp)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if ks.hpk != string(p1) {
+			t.Error("p1 and hpk differ")
+		}
+
+		c := ToCid(p1)
+		p2, err := FromCid(c)
+		if err != nil || p1 != p2 {
+			t.Fatal("failed to round-trip through CID:", err)
+		}
+		p3, err := Decode(c.String())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if p3 != p1 {
+			t.Fatal("failed to round trip through CID string")
+		}
+
+		if ks.hpkp != Encode(p1) {
+			t.Fatal("should always encode peer IDs as base58 by default")
+		}
+	}
+
+	test(gen1)
+	test(gen2)
+	test(man)
+
+	exampleCid := "bafkreifoybygix7fh3r3g5rqle3wcnhqldgdg4shzf4k3ulyw3gn7mabt4"
+	_, err := Decode(exampleCid)
+	if err == nil {
+		t.Fatal("should refuse to decode a non-peer ID CID")
+	}
+
+	c := ToCid("")
+	if c.Defined() {
+		t.Fatal("cid of empty peer ID should have been undefined")
+	}
+}
+
 func TestPublicKeyExtraction(t *testing.T) {
 	t.Skip("disabled until libp2p/go-libp2p-crypto#51 is fixed")
 	// Happy path
