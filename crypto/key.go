@@ -191,6 +191,8 @@ func KeyStretcher(cipherType string, hashType string, secret []byte) (StretchedK
 	case "AES-256":
 		ivSize = 16
 		cipherKeySize = 32
+	default:
+		panic("Unrecognized cipher, programmer error?")
 	}
 
 	hmacKeySize := 20
