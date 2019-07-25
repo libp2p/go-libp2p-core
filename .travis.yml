@@ -17,8 +17,15 @@ env:
 install:
   - true
 
-script:
-  - bash <(curl -s https://raw.githubusercontent.com/ipfs/ci-helpers/master/travis-ci/run-standard-tests.sh)
+script: bash <(curl -s https://raw.githubusercontent.com/ipfs/ci-helpers/master/travis-ci/run-standard-tests.sh)
+
+jobs:
+  include:
+    - stage: "Test"
+      script: "./compat-check"
+      name: "API compatibility test"
+      env:
+        - GOTFLAGS=""
 
 
 cache:
