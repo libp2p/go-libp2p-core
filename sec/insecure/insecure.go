@@ -103,7 +103,7 @@ func (t *Transport) SecureOutbound(ctx context.Context, insecure net.Conn, p pee
 		return nil, err
 	}
 
-	if p != conn.remote {
+	if t.key != nil && p != conn.remote {
 		return nil, fmt.Errorf("remote peer sent unexpected peer ID. expected=%s received=%s",
 			p, conn.remote)
 	}
