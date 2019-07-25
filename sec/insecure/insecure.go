@@ -75,7 +75,7 @@ func (t *Transport) SecureInbound(ctx context.Context, insecure net.Conn) (sec.S
 		localPrivKey: t.key,
 	}
 
-	err := conn.runHandshakeSync(ctx)
+	err := conn.runHandshakeSync()
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (t *Transport) SecureOutbound(ctx context.Context, insecure net.Conn, p pee
 		localPrivKey: t.key,
 	}
 
-	err := conn.runHandshakeSync(ctx)
+	err := conn.runHandshakeSync()
 	if err != nil {
 		return nil, err
 	}
@@ -138,14 +138,14 @@ func makeExchangeMessage(pubkey ci.PubKey) (*pb.Exchange, error) {
 	}, nil
 }
 
-func (ic *Conn) runHandshakeSync(ctx context.Context) error {
-	reader := ggio.NewDelimitedReader(ic.Conn, network.MessageSizeMax)
-	writer := ggio.NewDelimitedWriter(ic.Conn)
-
+func (ic *Conn) runHandshakeSync() error {
 	// If we were initialized without keys, behave as in plaintext/1.0.0 (do nothing)
 	if ic.localPrivKey == nil {
 		return nil
 	}
+
+	reader := ggio.NewDelimitedReader(ic.Conn, network.MessageSizeMax)
+	writer := ggio.NewDelimitedWriter(ic.Conn)
 
 	// Generate an Exchange message
 	msg, err := makeExchangeMessage(ic.localPrivKey.GetPublic())
