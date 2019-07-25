@@ -6,13 +6,12 @@ package insecure
 import (
 	"context"
 	"fmt"
-	"github.com/libp2p/go-libp2p-core/network"
 	"net"
 
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/sec"
+	"github.com/libp2p/go-msgio"
 
-	ggio "github.com/gogo/protobuf/io"
 	ci "github.com/libp2p/go-libp2p-core/crypto"
 	pb "github.com/libp2p/go-libp2p-core/sec/insecure/pb"
 )
@@ -144,9 +143,7 @@ func (ic *Conn) runHandshakeSync() error {
 		return nil
 	}
 
-	reader := ggio.NewDelimitedReader(ic.Conn, network.MessageSizeMax)
-	writer := ggio.NewDelimitedWriter(ic.Conn)
-
+	rw := msgio.NewReadWriter(ic.Conn)
 	// Generate an Exchange message
 	msg, err := makeExchangeMessage(ic.localPrivKey.GetPublic())
 	if err != nil {
@@ -154,13 +151,7 @@ func (ic *Conn) runHandshakeSync() error {
 	}
 
 	// Send our Exchange and read theirs
-	err = writer.WriteMsg(msg)
-	if err != nil {
-		return err
-	}
-
-	remoteMsg := new(pb.Exchange)
-	err = reader.ReadMsg(remoteMsg)
+	remoteMsg, err := readWriteMsg(rw, msg)
 	if err != nil {
 		return err
 	}
@@ -187,6 +178,34 @@ func (ic *Conn) runHandshakeSync() error {
 	ic.remotePubKey = remotePubkey
 	ic.remote = remoteID
 	return nil
+}
+
+// read and write a message at the same time.
+func readWriteMsg(c msgio.ReadWriter, out *pb.Exchange) (*pb.Exchange, error) {
+	outBytes, err := out.Marshal()
+	if err != nil {
+		return nil, err
+	}
+	wresult := make(chan error)
+	go func() {
+		wresult <- c.WriteMsg(outBytes)
+	}()
+
+	msg, err1 := c.ReadMsg()
+
+	// Always wait for the read to finish.
+	err2 := <-wresult
+
+	if err1 != nil {
+		return nil, err1
+	}
+	if err2 != nil {
+		c.ReleaseMsg(msg)
+		return nil, err2
+	}
+	inMsg := new(pb.Exchange)
+	err = inMsg.Unmarshal(msg)
+	return inMsg, err
 }
 
 // LocalPeer returns the local peer ID.
