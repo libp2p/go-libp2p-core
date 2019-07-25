@@ -32,7 +32,7 @@ type Transport struct {
 }
 
 // New constructs a new insecure transport.
-// This function is deprecated. Please use NewWithIdentity instead.
+// Deprecated: use NewWithIdentity instead.
 func New(id peer.ID) *Transport {
 	return &Transport{
 		id: id,
