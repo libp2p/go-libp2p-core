@@ -5,10 +5,10 @@ import (
 	"os"
 )
 
-// UnsafeRsaKeyEnv is an environment variable which, when set, lowers the
+// WeakRsaKeyEnv is an environment variable which, when set, lowers the
 // minimum required bits of RSA keys to 512. This should be used exclusively in
 // test situations.
-const UnsafeRsaKeyEnv = "LIBP2P_ALLOW_WEAK_RSA_KEYS"
+const WeakRsaKeyEnv = "LIBP2P_ALLOW_WEAK_RSA_KEYS"
 
 var MinRsaKeyBits = 2048
 
@@ -17,7 +17,7 @@ var MinRsaKeyBits = 2048
 var ErrRsaKeyTooSmall error
 
 func init() {
-	if _, ok := os.LookupEnv(UnsafeRsaKeyEnv); ok {
+	if _, ok := os.LookupEnv(WeakRsaKeyEnv); ok {
 		MinRsaKeyBits = 512
 	}
 
