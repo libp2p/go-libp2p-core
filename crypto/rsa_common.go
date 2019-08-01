@@ -8,7 +8,7 @@ import (
 // UnsafeRsaKeyEnv is an environment variable which, when set, lowers the
 // minimum required bits of RSA keys to 512. This should be used exclusively in
 // test situations.
-const UnsafeRsaKeyEnv = "LIBP2P_ALLOW_UNSAFE_RSA_KEYS"
+const UnsafeRsaKeyEnv = "LIBP2P_ALLOW_WEAK_RSA_KEYS"
 
 var MinRsaKeyBits = 2048
 
