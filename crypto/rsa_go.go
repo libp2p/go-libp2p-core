@@ -109,14 +109,7 @@ func (sk *RsaPrivateKey) Equals(k Key) bool {
 	b := other.sk
 
 	// Don't care about constant time. We're only comparing the public half.
-	if a.PublicKey.N.Cmp(b.PublicKey.N) != 0 {
-		return false
-	}
-	if a.PublicKey.E != b.PublicKey.E {
-		return false
-	}
-
-	return true
+	return a.PublicKey.N.Cmp(b.PublicKey.N) == 0 && a.PublicKey.E == b.PublicKey.E
 }
 
 // UnmarshalRsaPrivateKey returns a private key from the input x509 bytes
