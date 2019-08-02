@@ -119,7 +119,7 @@ func (ePriv *ECDSAPrivateKey) Raw() ([]byte, error) {
 func (ePriv *ECDSAPrivateKey) Equals(o Key) bool {
 	oPriv, ok := o.(*ECDSAPrivateKey)
 	if !ok {
-		return false
+		return basicEquals(ePriv, o)
 	}
 
 	return ePriv.priv.D.Cmp(oPriv.priv.D) == 0
@@ -163,7 +163,7 @@ func (ePub ECDSAPublicKey) Raw() ([]byte, error) {
 func (ePub *ECDSAPublicKey) Equals(o Key) bool {
 	oPub, ok := o.(*ECDSAPublicKey)
 	if !ok {
-		return false
+		return basicEquals(ePub, o)
 	}
 
 	return ePub.pub.X != nil && ePub.pub.Y != nil && oPub.pub.X != nil && oPub.pub.Y != nil &&

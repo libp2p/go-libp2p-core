@@ -63,7 +63,13 @@ func (pk *RsaPublicKey) Raw() ([]byte, error) {
 
 // Equals checks whether this key is equal to another
 func (pk *RsaPublicKey) Equals(k Key) bool {
-	return KeyEqual(pk, k)
+	// make sure this is an rsa public key
+	other, ok := (k).(*RsaPublicKey)
+	if !ok {
+		return basicEquals(pk, k)
+	}
+
+	return pk.k.N.Cmp(other.k.N) == 0 && pk.k.E == other.k.E
 }
 
 // Sign returns a signature of the input data
@@ -93,7 +99,17 @@ func (sk *RsaPrivateKey) Raw() ([]byte, error) {
 
 // Equals checks whether this key is equal to another
 func (sk *RsaPrivateKey) Equals(k Key) bool {
-	return KeyEqual(sk, k)
+	// make sure this is an rsa public key
+	other, ok := (k).(*RsaPrivateKey)
+	if !ok {
+		return basicEquals(sk, k)
+	}
+
+	a := sk.sk
+	b := other.sk
+
+	// Don't care about constant time. We're only comparing the public half.
+	return a.PublicKey.N.Cmp(b.PublicKey.N) == 0 && a.PublicKey.E == b.PublicKey.E
 }
 
 // UnmarshalRsaPrivateKey returns a private key from the input x509 bytes
