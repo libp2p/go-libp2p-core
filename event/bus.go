@@ -19,7 +19,7 @@ type Emitter interface {
 	// calls to Emit will block.
 	//
 	// Calling this function with wrong event type will cause a panic.
-	Emit(evt interface{})
+	Emit(evt interface{}) error
 }
 
 // Subscription represents a subscription to one or multiple event types.
