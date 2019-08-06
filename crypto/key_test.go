@@ -145,3 +145,23 @@ func (pk testkey) Raw() ([]byte, error) {
 func (pk testkey) Equals(k Key) bool {
 	return KeyEqual(pk, k)
 }
+
+func TestPanicOnUnknownCipherType(t *testing.T) {
+	passed := false
+	defer func() {
+		if !passed {
+			t.Fatal("expected known cipher and hash to succeed")
+		}
+		err := recover()
+		errStr, ok := err.(string)
+		if !ok {
+			t.Fatal("expected string in panic")
+		}
+		if errStr != "Unrecognized cipher, programmer error?" {
+			t.Fatal("expected \"Unrecognized cipher, programmer error?\"")
+		}
+	}()
+	KeyStretcher("AES-256", "SHA1", []byte("foo"))
+	passed = true
+	KeyStretcher("Fooba", "SHA1", []byte("foo"))
+}
