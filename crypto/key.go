@@ -182,7 +182,11 @@ type StretchedKeys struct {
 }
 
 // KeyStretcher returns a set of keys for each party by stretching the shared key.
-// (myIV, theirIV, myCipherKey, theirCipherKey, myMACKey, theirMACKey)
+// (myIV, theirIV, myCipherKey, theirCipherKey, myMACKey, theirMACKey).
+// This function accepts the following cipher types:
+// - AES-128
+// - AES-256
+// The function will panic upon receiving an unknown cipherType
 func KeyStretcher(cipherType string, hashType string, secret []byte) (StretchedKeys, StretchedKeys) {
 	var cipherKeySize int
 	var ivSize int
@@ -193,10 +197,8 @@ func KeyStretcher(cipherType string, hashType string, secret []byte) (StretchedK
 	case "AES-256":
 		ivSize = 16
 		cipherKeySize = 32
-	case "Blowfish":
-		ivSize = 8
-		// Note: cypherKeySize arbitrarily selected, needs more thought
-		cipherKeySize = 32
+	default:
+		panic("Unrecognized cipher, programmer error?")
 	}
 
 	hmacKeySize := 20
