@@ -12,7 +12,7 @@ require (
 	github.com/minio/sha256-simd v0.1.0
 	github.com/mr-tron/base58 v1.1.2
 	github.com/multiformats/go-multiaddr v0.0.4
-	github.com/multiformats/go-multihash v0.0.5
+	github.com/multiformats/go-multihash v0.0.7
 	github.com/smola/gocompat v0.2.0
 	go.opencensus.io v0.21.0
 	golang.org/x/crypto v0.0.0-20190618222545-ea8f1a30c443
