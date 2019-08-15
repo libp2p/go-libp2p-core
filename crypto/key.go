@@ -301,10 +301,7 @@ func PublicKeyFromProto(pmes *pb.PublicKey) (PubKey, error) {
 
 	switch tpk := pk.(type) {
 	case *RsaPublicKey:
-		bcopy := make([]byte, len(data))
-		copy(bcopy, data)
-
-		tpk.cached = bcopy
+		tpk.cached, _ = pmes.Marshal()
 	}
 
 	return pk, nil
