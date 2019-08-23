@@ -162,7 +162,7 @@ func (ic *Conn) runHandshakeSync() error {
 		return err
 	}
 
-	remoteID, err := peer.IDFromPublicKey(remotePubkey)
+	remoteID, err := peer.IDFromBytes(remoteMsg.Id)
 	if err != nil {
 		return err
 	}
