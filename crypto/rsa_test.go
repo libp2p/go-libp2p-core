@@ -1,24 +1,32 @@
 package crypto
 
 import (
-	"crypto/rand"
+	"math/rand"
 	"testing"
 )
 
-func TestRSABasicSignAndVerify(t *testing.T) {
-	priv, pub, err := GenerateRSAKeyPair(512, rand.Reader)
-	if err != nil {
-		t.Fatal(err)
-	}
+var (
+	testPk PubKey
+	testSk PrivKey
+)
 
+func init() {
+	var err error
+	testSk, testPk, err = GenerateRSAKeyPair(2048, rand.New(rand.NewSource(42)))
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestRSABasicSignAndVerify(t *testing.T) {
 	data := []byte("hello! and welcome to some awesome crypto primitives")
 
-	sig, err := priv.Sign(data)
+	sig, err := testSk.Sign(data)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ok, err := pub.Verify(data, sig)
+	ok, err := testPk.Verify(data, sig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +37,7 @@ func TestRSABasicSignAndVerify(t *testing.T) {
 
 	// change data
 	data[0] = ^data[0]
-	ok, err = pub.Verify(data, sig)
+	ok, err = testPk.Verify(data, sig)
 	if err == nil {
 		t.Fatal("should have produced a verification error")
 	}
@@ -40,25 +48,20 @@ func TestRSABasicSignAndVerify(t *testing.T) {
 }
 
 func TestRSASmallKey(t *testing.T) {
-	_, _, err := GenerateRSAKeyPair(384, rand.Reader)
+	_, _, err := GenerateRSAKeyPair(512, rand.New(rand.NewSource(42)))
 	if err != ErrRsaKeyTooSmall {
 		t.Fatal("should have refused to create small RSA key")
 	}
 }
 
 func TestRSASignZero(t *testing.T) {
-	priv, pub, err := GenerateRSAKeyPair(512, rand.Reader)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	data := make([]byte, 0)
-	sig, err := priv.Sign(data)
+	sig, err := testSk.Sign(data)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ok, err := pub.Verify(data, sig)
+	ok, err := testPk.Verify(data, sig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,12 +71,7 @@ func TestRSASignZero(t *testing.T) {
 }
 
 func TestRSAMarshalLoop(t *testing.T) {
-	priv, pub, err := GenerateRSAKeyPair(512, rand.Reader)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	privB, err := priv.Bytes()
+	privB, err := testSk.Bytes()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,11 +81,11 @@ func TestRSAMarshalLoop(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !priv.Equals(privNew) || !privNew.Equals(priv) {
+	if !testSk.Equals(privNew) || !privNew.Equals(testSk) {
 		t.Fatal("keys are not equal")
 	}
 
-	pubB, err := pub.Bytes()
+	pubB, err := testPk.Bytes()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -96,7 +94,7 @@ func TestRSAMarshalLoop(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !pub.Equals(pubNew) || !pubNew.Equals(pub) {
+	if !testPk.Equals(pubNew) || !pubNew.Equals(testPk) {
 		t.Fatal("keys are not equal")
 	}
 }

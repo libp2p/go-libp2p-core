@@ -14,8 +14,8 @@ import (
 
 // Run a set of sessions through the session setup and verification.
 func TestConnections(t *testing.T) {
-	clientTpt := newTestTransport(t, ci.RSA, 1024)
-	serverTpt := newTestTransport(t, ci.Ed25519, 1024)
+	clientTpt := newTestTransport(t, ci.RSA, 2048)
+	serverTpt := newTestTransport(t, ci.Ed25519, 32)
 
 	testConnection(t, clientTpt, serverTpt)
 }
