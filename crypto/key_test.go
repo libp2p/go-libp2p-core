@@ -17,7 +17,11 @@ func TestKeys(t *testing.T) {
 }
 
 func testKeyType(typ int, t *testing.T) {
-	sk, pk, err := test.RandTestKeyPair(typ, 512)
+	bits := 512
+	if typ == RSA {
+		bits = 2048
+	}
+	sk, pk, err := test.RandTestKeyPair(typ, bits)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +119,7 @@ func testKeyEquals(t *testing.T, k Key) {
 	// 	t.Fatal("Key not equal to key with same bytes.")
 	// }
 
-	sk, pk, err := test.RandTestKeyPair(RSA, 512)
+	sk, pk, err := test.RandTestKeyPair(RSA, 2048)
 	if err != nil {
 		t.Fatal(err)
 	}

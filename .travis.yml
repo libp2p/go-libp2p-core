@@ -9,7 +9,6 @@ go:
 env:
   global:
     - BUILD_DEPTYPE=gomod
-    - LIBP2P_ALLOW_WEAK_RSA_KEYS=1
   matrix:
     - GOTFLAGS="-race"
     - GOTFLAGS="-race -tags=openssl"
