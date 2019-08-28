@@ -6,7 +6,7 @@ import (
 )
 
 func TestRSABasicSignAndVerify(t *testing.T) {
-	priv, pub, err := GenerateRSAKeyPair(512, rand.Reader)
+	priv, pub, err := GenerateRSAKeyPair(2048, rand.Reader)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +47,7 @@ func TestRSASmallKey(t *testing.T) {
 }
 
 func TestRSASignZero(t *testing.T) {
-	priv, pub, err := GenerateRSAKeyPair(512, rand.Reader)
+	priv, pub, err := GenerateRSAKeyPair(2048, rand.Reader)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +68,7 @@ func TestRSASignZero(t *testing.T) {
 }
 
 func TestRSAMarshalLoop(t *testing.T) {
-	priv, pub, err := GenerateRSAKeyPair(512, rand.Reader)
+	priv, pub, err := GenerateRSAKeyPair(2048, rand.Reader)
 	if err != nil {
 		t.Fatal(err)
 	}
