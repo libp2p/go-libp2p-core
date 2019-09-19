@@ -4,9 +4,12 @@
 package crypto
 
 import (
+	"crypto"
+	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/hmac"
 	"crypto/rand"
+	"crypto/rsa"
 	"crypto/sha1"
 	"crypto/sha512"
 	"crypto/subtle"
@@ -15,11 +18,14 @@ import (
 	"fmt"
 	"hash"
 	"io"
+	"log"
 
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 
+	btcec "github.com/btcsuite/btcd/btcec"
 	"github.com/gogo/protobuf/proto"
 	sha256 "github.com/minio/sha256-simd"
+	"golang.org/x/crypto/ed25519"
 )
 
 const (
@@ -172,6 +178,42 @@ func GenerateEKeyPair(curveName string) ([]byte, GenSharedKey, error) {
 	}
 
 	return pubKey, done, nil
+}
+
+// KeyPairFromKey generates a new private and public key from an input private key
+func KeyPairFromKey(priv crypto.PrivateKey) (PrivKey, PubKey, error) {
+	if priv == nil {
+		return nil, nil, ErrNilPrivateKey
+	}
+
+	switch priv.(type) {
+	case *rsa.PrivateKey:
+		log.Println("1")
+		rPriv, _ := priv.(*rsa.PrivateKey)
+		return &RsaPrivateKey{*rPriv}, &RsaPublicKey{rPriv.PublicKey}, nil
+
+	case *ecdsa.PrivateKey:
+		log.Println("2")
+		ePriv, _ := priv.(*ecdsa.PrivateKey)
+		return &ECDSAPrivateKey{ePriv}, &ECDSAPublicKey{&ePriv.PublicKey}, nil
+
+	case *ed25519.PrivateKey:
+		log.Println("3")
+		ePriv, _ := priv.(*ed25519.PrivateKey)
+		pubIfc := ePriv.Public()
+		pub, _ := pubIfc.(ed25519.PublicKey)
+		return &Ed25519PrivateKey{*ePriv}, &Ed25519PublicKey{pub}, nil
+
+	case *btcec.PrivateKey:
+		log.Println("4")
+		bPriv, _ := priv.(*btcec.PrivateKey)
+		sPriv := Secp256k1PrivateKey(*bPriv)
+		sPub := Secp256k1PublicKey(*bPriv.PubKey())
+		return &sPriv, &sPub, nil
+
+	default:
+		return nil, nil, ErrBadKeyType
+	}
 }
 
 // StretchedKeys ...
