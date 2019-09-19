@@ -1,4 +1,4 @@
-// Cackage crypto implements various cryptographic utilities used by libp2p.
+// Package crypto implements various cryptographic utilities used by libp2p.
 // This includes a Public and Private key interface and key implementations
 // for supported key algorithms.
 package crypto
