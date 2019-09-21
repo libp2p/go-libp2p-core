@@ -90,7 +90,7 @@ func TestKeyPairFromKey(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
-			priv, pub, err := KeyPairFromKey(tt.in)
+			priv, pub, err := KeyPairFromStdKey(tt.in)
 			if err != nil {
 				t.Fatal(err)
 			}

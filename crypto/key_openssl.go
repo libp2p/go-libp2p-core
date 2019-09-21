@@ -13,8 +13,8 @@ import (
 	"golang.org/x/crypto/ed25519"
 )
 
-// KeyPairFromKey generates a new private and public key from an input private key
-func KeyPairFromKey(priv crypto.PrivateKey) (PrivKey, PubKey, error) {
+// KeyPairFromStdKey wraps standard library (and secp256k1) private keys in libp2p/go-libp2p-core/crypto keys
+func KeyPairFromStdKey(priv crypto.PrivateKey) (PrivKey, PubKey, error) {
 	if priv == nil {
 		return nil, nil, ErrNilPrivateKey
 	}
