@@ -155,7 +155,7 @@ func (ePub *ECDSAPublicKey) Type() pb.KeyType {
 }
 
 // Raw returns x509 bytes from a public key
-func (ePub ECDSAPublicKey) Raw() ([]byte, error) {
+func (ePub *ECDSAPublicKey) Raw() ([]byte, error) {
 	return x509.MarshalPKIXPublicKey(ePub.pub)
 }
 
