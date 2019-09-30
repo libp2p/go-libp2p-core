@@ -2,17 +2,116 @@ package crypto_test
 
 import (
 	"bytes"
+	"crypto"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/rsa"
+	"fmt"
 	"testing"
 
+	btcec "github.com/btcsuite/btcd/btcec"
 	. "github.com/libp2p/go-libp2p-core/crypto"
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 	"github.com/libp2p/go-libp2p-core/test"
+	sha256 "github.com/minio/sha256-simd"
+	"golang.org/x/crypto/ed25519"
 )
 
 func TestKeys(t *testing.T) {
 	for _, typ := range KeyTypes {
 		testKeyType(typ, t)
+	}
+}
+
+func TestKeyPairFromKey(t *testing.T) {
+	var (
+		data   = []byte(`hello world`)
+		hashed = sha256.Sum256(data)
+	)
+
+	privk, err := btcec.NewPrivateKey(btcec.S256())
+	if err != nil {
+		t.Fatalf("err generating btcec priv key:\n%v", err)
+	}
+	sigK, err := privk.Sign(hashed[:])
+	if err != nil {
+		t.Fatalf("err generating btcec sig:\n%v", err)
+	}
+
+	eKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatalf("err generating ecdsa priv key:\n%v", err)
+	}
+	sigE, err := eKey.Sign(rand.Reader, hashed[:], crypto.SHA256)
+	if err != nil {
+		t.Fatalf("err generating ecdsa sig:\n%v", err)
+	}
+
+	rKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Fatalf("err generating rsa priv key:\n%v", err)
+	}
+	sigR, err := rKey.Sign(rand.Reader, hashed[:], crypto.SHA256)
+	if err != nil {
+		t.Fatalf("err generating rsa sig:\n%v", err)
+	}
+
+	_, edKey, err := ed25519.GenerateKey(rand.Reader)
+	sigEd := ed25519.Sign(edKey, data[:])
+	if err != nil {
+		t.Fatalf("err generating ed25519 sig:\n%v", err)
+	}
+
+	for i, tt := range []struct {
+		in  crypto.PrivateKey
+		typ pb.KeyType
+		sig []byte
+	}{
+		{
+			eKey,
+			ECDSA,
+			sigE,
+		},
+		{
+			privk,
+			Secp256k1,
+			sigK.Serialize(),
+		},
+		{
+			rKey,
+			RSA,
+			sigR,
+		},
+		{
+			&edKey,
+			Ed25519,
+			sigEd,
+		},
+	} {
+		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
+			priv, pub, err := KeyPairFromStdKey(tt.in)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if priv == nil || pub == nil {
+				t.Errorf("received nil private key or public key: %v, %v", priv, pub)
+			}
+
+			if priv == nil || priv.Type() != tt.typ {
+				t.Errorf("want %v; got %v", tt.typ, priv.Type())
+			}
+
+			v, err := pub.Verify(data[:], tt.sig)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if !v {
+				t.Error("signature was not verified")
+			}
+		})
 	}
 }
 
