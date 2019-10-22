@@ -40,9 +40,31 @@ func TestRSABasicSignAndVerify(t *testing.T) {
 }
 
 func TestRSASmallKey(t *testing.T) {
-	_, _, err := GenerateRSAKeyPair(384, rand.Reader)
+	_, _, err := GenerateRSAKeyPair(MinRsaKeyBits/2, rand.Reader)
 	if err != ErrRsaKeyTooSmall {
 		t.Fatal("should have refused to create small RSA key")
+	}
+	MinRsaKeyBits /= 2
+	badPriv, badPub, err := GenerateRSAKeyPair(MinRsaKeyBits, rand.Reader)
+	if err != nil {
+		t.Fatalf("should have succeeded, got: %s", err)
+	}
+	pubBytes, err := MarshalPublicKey(badPub)
+	if err != nil {
+		t.Fatal(err)
+	}
+	privBytes, err := MarshalPrivateKey(badPriv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	MinRsaKeyBits *= 2
+	_, err = UnmarshalPublicKey(pubBytes)
+	if err != ErrRsaKeyTooSmall {
+		t.Fatal("should have refused to unmarshal a weak key")
+	}
+	_, err = UnmarshalPrivateKey(privBytes)
+	if err != ErrRsaKeyTooSmall {
+		t.Fatal("should have refused to unmarshal a weak key")
 	}
 }
 
