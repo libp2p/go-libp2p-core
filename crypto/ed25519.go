@@ -68,7 +68,7 @@ func (k *Ed25519PrivateKey) pubKeyBytes() []byte {
 func (k *Ed25519PrivateKey) Equals(o Key) bool {
 	edk, ok := o.(*Ed25519PrivateKey)
 	if !ok {
-		return false
+		return basicEquals(k, o)
 	}
 
 	return subtle.ConstantTimeCompare(k.k, edk.k) == 1
@@ -103,7 +103,7 @@ func (k *Ed25519PublicKey) Raw() ([]byte, error) {
 func (k *Ed25519PublicKey) Equals(o Key) bool {
 	edk, ok := o.(*Ed25519PublicKey)
 	if !ok {
-		return false
+		return basicEquals(k, o)
 	}
 
 	return bytes.Equal(k.k, edk.k)
@@ -132,7 +132,7 @@ func UnmarshalEd25519PrivateKey(data []byte) (PrivKey, error) {
 		// Remove the redundant public key. See issue #36.
 		redundantPk := data[ed25519.PrivateKeySize:]
 		pk := data[ed25519.PrivateKeySize-ed25519.PublicKeySize : ed25519.PrivateKeySize]
-		if !bytes.Equal(pk, redundantPk) {
+		if subtle.ConstantTimeCompare(pk, redundantPk) == 0 {
 			return nil, errors.New("expected redundant ed25519 public key to be redundant")
 		}
 
