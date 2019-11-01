@@ -28,4 +28,7 @@ type Reporter interface {
 	GetBandwidthTotals() Stats
 	GetBandwidthByPeer() map[peer.ID]Stats
 	GetBandwidthByProtocol() map[protocol.ID]Stats
+
+	// Reset clears all state.
+	Reset()
 }

@@ -21,6 +21,8 @@ type BandwidthCounter struct {
 	peerOut flow.MeterRegistry
 }
 
+var _ Reporter = (*BandwidthCounter)(nil)
+
 // NewBandwidthCounter creates a new BandwidthCounter.
 func NewBandwidthCounter() *BandwidthCounter {
 	return new(BandwidthCounter)
