@@ -48,8 +48,8 @@ func round(bwc *BandwidthCounter, b *testing.B) {
 	b.StopTimer()
 }
 
-// Allow 7% errors for bw calculations.
-const acceptableError = 0.07
+// Allow 1% errors for bw calculations.
+const acceptableError = 0.01
 
 func TestBandwidthCounter(t *testing.T) {
 	bwc := NewBandwidthCounter()
@@ -62,12 +62,19 @@ func TestBandwidthCounter(t *testing.T) {
 			proto := protocol.ID(fmt.Sprintf("proto-%d", j))
 			go func() {
 				defer wg.Done()
+
+				// make sure the bandwidth counters are active
+				bwc.LogSentMessage(100)
+				bwc.LogRecvMessage(50)
+				bwc.LogSentMessageStream(100, proto, p)
+				bwc.LogRecvMessageStream(50, proto, p)
+
 				<-start
 
 				t := time.NewTicker(100 * time.Millisecond)
 				defer t.Stop()
 
-				for i := 0; i < 40; i++ {
+				for i := 0; i < 39; i++ {
 					bwc.LogSentMessage(100)
 					bwc.LogRecvMessage(50)
 					bwc.LogSentMessageStream(100, proto, p)
@@ -104,6 +111,7 @@ func TestBandwidthCounter(t *testing.T) {
 		}
 	}
 
+	time.Sleep(time.Second)
 	close(start)
 	time.Sleep(2*time.Second + 100*time.Millisecond)
 
@@ -149,17 +157,25 @@ func TestResetBandwidthCounter(t *testing.T) {
 	p := peer.ID("peer-0")
 	proto := protocol.ID("proto-0")
 
+	// We don't calculate bandwidth till we've been active for a second.
 	bwc.LogSentMessage(42)
 	bwc.LogRecvMessage(24)
 	bwc.LogSentMessageStream(100, proto, p)
 	bwc.LogRecvMessageStream(50, proto, p)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(1*time.Second + time.Millisecond)
+
+	bwc.LogSentMessage(42)
+	bwc.LogRecvMessage(24)
+	bwc.LogSentMessageStream(100, proto, p)
+	bwc.LogRecvMessageStream(50, proto, p)
+
+	time.Sleep(1*time.Second + time.Millisecond)
 
 	{
 		stats := bwc.GetBandwidthTotals()
-		assertEq(t, 42, stats.TotalOut)
-		assertEq(t, 24, stats.TotalIn)
+		assertEq(t, 84, stats.TotalOut)
+		assertEq(t, 48, stats.TotalIn)
 	}
 
 	{
