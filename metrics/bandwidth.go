@@ -151,3 +151,15 @@ func (bwc *BandwidthCounter) GetBandwidthByProtocol() map[protocol.ID]Stats {
 
 	return protocols
 }
+
+// Reset clears all stats.
+func (bwc *BandwidthCounter) Reset() {
+	bwc.totalIn.Reset()
+	bwc.totalOut.Reset()
+
+	bwc.protocolIn.Clear()
+	bwc.protocolOut.Clear()
+
+	bwc.peerIn.Clear()
+	bwc.peerOut.Clear()
+}

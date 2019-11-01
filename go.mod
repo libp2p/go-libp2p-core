@@ -18,4 +18,8 @@ require (
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 )
 
+//replace github.com/libp2p/go-flow-metrics v0.0.1 => github.com/kpp/go-flow-metrics v0.0.2-0.20191101005412-ce5ebda5e4a4 // Stebalien's version
+
+replace github.com/libp2p/go-flow-metrics v0.0.1 => github.com/kpp/go-flow-metrics v0.0.2-0.20191031231915-edeb2d90f222 // kpp's version
+
 go 1.12
