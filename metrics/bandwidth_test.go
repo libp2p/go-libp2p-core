@@ -143,6 +143,63 @@ func TestBandwidthCounter(t *testing.T) {
 	}
 }
 
+func TestResetBandwidthCounter(t *testing.T) {
+	bwc := NewBandwidthCounter()
+
+	p := peer.ID("peer-0")
+	proto := protocol.ID("proto-0")
+
+	bwc.LogSentMessage(42)
+	bwc.LogRecvMessage(24)
+	bwc.LogSentMessageStream(100, proto, p)
+	bwc.LogRecvMessageStream(50, proto, p)
+
+	time.Sleep(1 * time.Second)
+
+	{
+		stats := bwc.GetBandwidthTotals()
+		assertEq(t, 42, stats.TotalOut)
+		assertEq(t, 24, stats.TotalIn)
+	}
+
+	{
+		stats := bwc.GetBandwidthByProtocol()
+		assertApproxEq(t, 1, float64(len(stats)))
+		stat := stats[proto]
+		assertApproxEq(t, 100, stat.RateOut)
+		assertApproxEq(t, 50, stat.RateIn)
+	}
+
+	{
+		stats := bwc.GetBandwidthByPeer()
+		assertApproxEq(t, 1, float64(len(stats)))
+		stat := stats[p]
+		assertApproxEq(t, 100, stat.RateOut)
+		assertApproxEq(t, 50, stat.RateIn)
+	}
+
+	bwc.Reset()
+	{
+		stats := bwc.GetBandwidthTotals()
+		assertEq(t, 0, stats.TotalOut)
+		assertEq(t, 0, stats.TotalIn)
+	}
+
+	{
+		byProtocol := bwc.GetBandwidthByProtocol()
+		if len(byProtocol) != 0 {
+			t.Errorf("expected 0 protocols, got %d", len(byProtocol))
+		}
+	}
+
+	{
+		byPeer := bwc.GetBandwidthByPeer()
+		if len(byPeer) != 0 {
+			t.Errorf("expected 0 peers, got %d", len(byPeer))
+		}
+	}
+}
+
 func assertEq(t *testing.T, expected, actual int64) {
 	if expected != actual {
 		t.Errorf("expected  %d, got %d", expected, actual)
