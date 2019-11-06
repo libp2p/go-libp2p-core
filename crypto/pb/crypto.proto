@@ -18,3 +18,10 @@ message PrivateKey {
 	required KeyType Type = 1;
 	required bytes Data = 2;
 }
+
+message SignedEnvelope {
+	required PublicKey PublicKey = 1;
+	required bytes TypeHint = 2;
+	required bytes Contents = 3;
+	required bytes Signature = 4;
+}
