@@ -6,7 +6,6 @@ import (
 	"errors"
 	"github.com/golang/protobuf/proto"
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
-	"github.com/libp2p/go-libp2p-core/peer"
 )
 
 // SignedEnvelope contains an arbitrary []byte payload, signed by a libp2p peer.
@@ -76,11 +75,6 @@ func UnmarshalEnvelope(serializedEnvelope []byte) (*SignedEnvelope, error) {
 	}, nil
 }
 
-// SignerID returns the peer.ID of the peer who produced the SignedEnvelope.
-func (e *SignedEnvelope) SignerID() (peer.ID, error) {
-	return peer.IDFromPublicKey(e.PublicKey)
-}
-
 // Validate returns true if the envelope signature is valid for the given 'domain',
 // or false if it is invalid. May return an error if signature validation fails.
 func (e *SignedEnvelope) Validate(domain string) (bool, error) {
@@ -116,6 +110,13 @@ func (e *SignedEnvelope) Open(domain string) ([]byte, error) {
 		return nil, errors.New("invalid signature or incorrect domain")
 	}
 	return e.contents, nil
+}
+
+func (e *SignedEnvelope) Equals(other *SignedEnvelope) bool {
+	return e.PublicKey.Equals(other.PublicKey) &&
+		bytes.Compare(e.TypeHint, other.TypeHint) == 0 &&
+		bytes.Compare(e.contents, other.contents) == 0 &&
+		bytes.Compare(e.signature, other.signature) == 0
 }
 
 // makeSigBuffer is a helper function that prepares a buffer to sign or verify.
