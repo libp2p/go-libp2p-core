@@ -21,7 +21,8 @@ func RoutingStateFromHost(h Host) *routing.RoutingState {
 	return routing.RoutingStateFromAddrInfo(InfoFromHost(h))
 }
 
-// SignedRoutingStateFromHost
+// SignedRoutingStateFromHost wraps a routing.RoutingState record in a
+// SignedEnvelope, signed with the Host's private key.
 func SignedRoutingStateFromHost(h Host) (*crypto.SignedEnvelope, error) {
 	privKey := h.Peerstore().PrivKey(h.ID())
 	if privKey == nil {
