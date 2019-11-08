@@ -7,10 +7,15 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	ma "github.com/multiformats/go-multiaddr"
 	pb "github.com/libp2p/go-libp2p-core/routing/pb"
+	"time"
 )
 
 // The domain string used for routing state records contained in a SignedEnvelope.
 const StateEnvelopeDomain = "libp2p-routing-record"
+
+// The type hint used to identify routing state records in a SignedEnvelope.
+// TODO: register multicodec
+var StateEnvelopeTypeHint = []byte("/libp2p/routing-record")
 
 // AnnotatedAddr will extend the Multiaddr type with additional metadata, as
 // extensions are added to the routing state record spec. It's defined now to
@@ -34,6 +39,18 @@ type RoutingState struct {
 
 	// Addresses contains the public addresses of the peer this record pertains to.
 	Addresses []*AnnotatedAddr
+}
+
+func RoutingStateFromAddrInfo(info *peer.AddrInfo) *RoutingState {
+	annotated := make([]*AnnotatedAddr, len(info.Addrs))
+	for i, a := range info.Addrs {
+		annotated[i] = &AnnotatedAddr{Multiaddr: a}
+	}
+	return &RoutingState{
+		PeerID: info.ID,
+		Seq: statelessSeqNo(),
+		Addresses: annotated,
+	}
 }
 
 // UnmarshalRoutingState unpacks a peer RoutingState record from a serialized protobuf representation.
@@ -72,6 +89,16 @@ func RoutingStateFromEnvelope(envelope *crypto.SignedEnvelope) (*RoutingState, e
 	return state, nil
 }
 
+// ToSignedEnvelope wraps a Marshal'd RoutingState record in a SignedEnvelope using the
+// given private signing key.
+func (s *RoutingState) ToSignedEnvelope(key crypto.PrivKey) (*crypto.SignedEnvelope, error) {
+	payload, err := s.Marshal()
+	if err != nil {
+		return nil, err
+	}
+	return crypto.MakeEnvelope(key, StateEnvelopeDomain, StateEnvelopeTypeHint, payload)
+}
+
 // Marshal serializes a RoutingState record to protobuf and returns its byte representation.
 func (s *RoutingState) Marshal() ([]byte, error) {
 	id, err := s.PeerID.MarshalBinary()
@@ -93,6 +120,13 @@ func (s *RoutingState) Multiaddrs() []ma.Multiaddr {
 		out[i] = addr.Multiaddr
 	}
 	return out
+}
+
+func statelessSeqNo() uint64 {
+	// use current time in milliseconds as seq number
+	// nanoseconds would overflow in 2262, but millis gives us
+	// a few hundred thousand years
+	return uint64(time.Now().UnixNano() / 1e6)
 }
 
 func addrsFromProtobuf(addrs []*pb.RoutingStateRecord_AddressInfo) []*AnnotatedAddr {
