@@ -96,8 +96,8 @@ type AddrBook interface {
 	// If the manager has a longer TTL, the operation is a no-op for that address
 	AddAddrs(p peer.ID, addrs []ma.Multiaddr, ttl time.Duration)
 
-	// AddCertifiedAddrs adds addresses from a PeerStateRecord contained
-	// in the given SignedEnvelope.
+	// AddCertifiedAddrs adds addresses from a routing.RoutingState record
+	// contained in the given SignedEnvelope.
 	AddCertifiedAddrs(envelope *ic.SignedEnvelope, ttl time.Duration) error
 
 	// SetAddr calls mgr.SetAddrs(p, addr, ttl)
@@ -129,6 +129,10 @@ type AddrBook interface {
 
 	// PeersWithAddrs returns all of the peer IDs stored in the AddrBook
 	PeersWithAddrs() peer.IDSlice
+
+	// SignedRoutingState returns a SignedEnvelope containing a RoutingState
+	// record, if one exists for the given peer.
+	SignedRoutingState(p peer.ID) *ic.SignedEnvelope
 }
 
 // KeyBook tracks the keys of Peers.
