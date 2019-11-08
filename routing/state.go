@@ -5,8 +5,8 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
-	ma "github.com/multiformats/go-multiaddr"
 	pb "github.com/libp2p/go-libp2p-core/routing/pb"
+	ma "github.com/multiformats/go-multiaddr"
 	"time"
 )
 
@@ -47,8 +47,8 @@ func RoutingStateFromAddrInfo(info *peer.AddrInfo) *RoutingState {
 		annotated[i] = &AnnotatedAddr{Multiaddr: a}
 	}
 	return &RoutingState{
-		PeerID: info.ID,
-		Seq: statelessSeqNo(),
+		PeerID:    info.ID,
+		Seq:       statelessSeqNo(),
 		Addresses: annotated,
 	}
 }
@@ -106,8 +106,8 @@ func (s *RoutingState) Marshal() ([]byte, error) {
 		return nil, err
 	}
 	msg := pb.RoutingStateRecord{
-		PeerId: id,
-		Seq: s.Seq,
+		PeerId:    id,
+		Seq:       s.Seq,
 		Addresses: addrsToProtobuf(s.Addresses),
 	}
 	return proto.Marshal(&msg)

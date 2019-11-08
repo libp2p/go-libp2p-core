@@ -20,11 +20,11 @@ type SignedEnvelope struct {
 
 	// A binary identifier that indicates what kind of data is contained in the payload.
 	// TODO(yusef): enforce multicodec prefix
-	TypeHint  []byte
+	TypeHint []byte
 
 	// The envelope payload. This is private to discourage accessing the payload without verifying the signature.
 	// To access, use the Open method.
-	contents  []byte
+	contents []byte
 
 	// The signature of the domain string, type hint, and contents.
 	signature []byte
@@ -91,8 +91,8 @@ func (e *SignedEnvelope) Marshal() ([]byte, error) {
 	}
 	msg := pb.SignedEnvelope{
 		PublicKey: key,
-		TypeHint: e.TypeHint,
-		Contents: e.contents,
+		TypeHint:  e.TypeHint,
+		Contents:  e.contents,
 		Signature: e.signature,
 	}
 	return proto.Marshal(&msg)
