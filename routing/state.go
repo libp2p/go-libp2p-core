@@ -123,10 +123,7 @@ func (s *RoutingState) Multiaddrs() []ma.Multiaddr {
 }
 
 func statelessSeqNo() uint64 {
-	// use current time in milliseconds as seq number
-	// nanoseconds would overflow in 2262, but millis gives us
-	// a few hundred thousand years
-	return uint64(time.Now().UnixNano() / 1e6)
+	return uint64(time.Now().UnixNano())
 }
 
 func addrsFromProtobuf(addrs []*pb.RoutingStateRecord_AddressInfo) []*AnnotatedAddr {
