@@ -11,11 +11,11 @@ import (
 )
 
 // The domain string used for routing state records contained in a SignedEnvelope.
-const StateEnvelopeDomain = "libp2p-routing-record"
+const StateEnvelopeDomain = "libp2p-routing-state"
 
 // The type hint used to identify routing state records in a SignedEnvelope.
 // TODO: register multicodec
-var StateEnvelopeTypeHint = []byte("/libp2p/routing-record")
+var StateEnvelopeTypeHint = []byte("/libp2p/routing-state-record")
 
 // AnnotatedAddr will extend the Multiaddr type with additional metadata, as
 // extensions are added to the routing state record spec. It's defined now to
