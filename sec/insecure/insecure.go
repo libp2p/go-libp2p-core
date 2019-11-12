@@ -183,7 +183,7 @@ func (ic *Conn) runHandshakeSync() error {
 
 // read and write a message at the same time.
 func readWriteMsg(rw io.ReadWriter, out *pb.Exchange) (*pb.Exchange, error) {
-	const maxMsgSize = 1 << 32
+	const maxMsgSize = 1 << 16
 	r := gogoio.NewDelimitedReader(rw, maxMsgSize)
 	w := gogoio.NewDelimitedWriter(rw)
 	wresult := make(chan error)
@@ -194,7 +194,7 @@ func readWriteMsg(rw io.ReadWriter, out *pb.Exchange) (*pb.Exchange, error) {
 	inMsg := pb.Exchange{}
 	err := r.ReadMsg(&inMsg)
 
-	// Always wait for the read to finish.
+	// Always wait for the write to finish.
 	err2 := <-wresult
 
 	if err != nil {
