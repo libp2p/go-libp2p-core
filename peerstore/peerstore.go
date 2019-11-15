@@ -97,8 +97,8 @@ type AddrBook interface {
 	AddAddrs(p peer.ID, addrs []ma.Multiaddr, ttl time.Duration)
 
 	// AddCertifiedAddrs adds addresses from a routing.RoutingState record
-	// contained in the given SignedEnvelope.
-	AddCertifiedAddrs(envelope *ic.SignedEnvelope, ttl time.Duration) error
+	// contained in a serialized SignedEnvelope.
+	AddCertifiedAddrs(envelopeBytes []byte, ttl time.Duration) error
 
 	// SetAddr calls mgr.SetAddrs(p, addr, ttl)
 	SetAddr(p peer.ID, addr ma.Multiaddr, ttl time.Duration)
@@ -130,9 +130,17 @@ type AddrBook interface {
 	// PeersWithAddrs returns all of the peer IDs stored in the AddrBook
 	PeersWithAddrs() peer.IDSlice
 
-	// SignedRoutingState returns a SignedEnvelope containing a RoutingState
-	// record, if one exists for the given peer.
-	SignedRoutingState(p peer.ID) *ic.SignedEnvelope
+	// SignedRoutingState returns a signed RoutingState record for the
+	// given peer id, if one exists in the peerstore. The record is
+	// returned as a byte slice containing a serialized SignedEnvelope.
+	// Returns nil if no routing state exists for the peer.
+	SignedRoutingState(p peer.ID) []byte
+
+	// SignedRoutingStates returns signed RoutingState records for each of
+	// the given peer ids, if one exists in the peerstore.
+	// Returns a map of peer ids to serialized SignedEnvelope messages. If
+	// no routing state exists for a peer, their map entry will be nil.
+	SignedRoutingStates(peers ...peer.ID) map[peer.ID][]byte
 }
 
 // KeyBook tracks the keys of Peers.

@@ -2,7 +2,8 @@ package crypto_test
 
 import (
 	"bytes"
-	"github.com/gogo/protobuf/proto"
+	"github.com/golang/protobuf/proto"
+
 	. "github.com/libp2p/go-libp2p-core/crypto"
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 	"github.com/libp2p/go-libp2p-core/test"
@@ -23,37 +24,25 @@ func TestEnvelopeHappyPath(t *testing.T) {
 		t.Errorf("error constructing envelope: %v", err)
 	}
 
-	if !envelope.PublicKey.Equals(pub) {
+	if !envelope.PublicKey().Equals(pub) {
 		t.Error("envelope has unexpected public key")
 	}
 
-	if bytes.Compare(payloadType, envelope.PayloadType) != 0 {
+	if bytes.Compare(payloadType, envelope.PayloadType()) != 0 {
 		t.Error("PayloadType does not match payloadType used to construct envelope")
-	}
-
-	valid, err := envelope.Validate(domain)
-	if err != nil {
-		t.Errorf("error validating envelope: %v", err)
-	}
-	if !valid {
-		t.Error("envelope should be valid, but Valid returns false")
-	}
-
-	c, err := envelope.Open(domain)
-	if err != nil {
-		t.Errorf("error opening envelope: %v", err)
-	}
-	if bytes.Compare(c, payload) != 0 {
-		t.Error("payload of envelope do not match input")
 	}
 
 	serialized, err := envelope.Marshal()
 	if err != nil {
 		t.Errorf("error serializing envelope: %v", err)
 	}
-	deserialized, err := UnmarshalEnvelope(serialized)
+	deserialized, err := OpenEnvelope(serialized, domain)
 	if err != nil {
 		t.Errorf("error deserializing envelope: %v", err)
+	}
+
+	if bytes.Compare(deserialized.Payload(), payload) != 0 {
+		t.Error("payload of envelope does not match input")
 	}
 
 	if !envelope.Equals(deserialized) {
@@ -73,13 +62,11 @@ func TestEnvelopeValidateFailsForDifferentDomain(t *testing.T) {
 	if err != nil {
 		t.Errorf("error constructing envelope: %v", err)
 	}
-
-	valid, err := envelope.Validate("other-domain")
-	if err != nil {
-		t.Errorf("error validating envelope: %v", err)
-	}
-	if valid {
-		t.Error("envelope should be invalid, but Valid returns true")
+	serialized, err := envelope.Marshal()
+	// try to open our modified envelope
+	_, err = OpenEnvelope(serialized, "wrong-domain")
+	if err == nil {
+		t.Error("should not be able to open envelope with incorrect domain")
 	}
 }
 
@@ -95,13 +82,13 @@ func TestEnvelopeValidateFailsIfTypeHintIsAltered(t *testing.T) {
 	if err != nil {
 		t.Errorf("error constructing envelope: %v", err)
 	}
-	envelope.PayloadType = []byte("foo")
-	valid, err := envelope.Validate("other-domain")
-	if err != nil {
-		t.Errorf("error validating envelope: %v", err)
-	}
-	if valid {
-		t.Error("envelope should be invalid, but Valid returns true")
+	serialized := alterMessageAndMarshal(t, envelope, func(msg *pb.SignedEnvelope) {
+		msg.PayloadType = []byte("foo")
+	})
+	// try to open our modified envelope
+	_, err = OpenEnvelope(serialized, domain)
+	if err == nil {
+		t.Error("should not be able to open envelope with modified payloadType")
 	}
 }
 
@@ -118,33 +105,35 @@ func TestEnvelopeValidateFailsIfContentsAreAltered(t *testing.T) {
 		t.Errorf("error constructing envelope: %v", err)
 	}
 
-	// since the payload field is private, we'll serialize and alter the
-	// serialized protobuf
+	serialized := alterMessageAndMarshal(t, envelope, func(msg *pb.SignedEnvelope) {
+		msg.Payload = []byte("totally legit, trust me")
+	})
+	// try to open our modified envelope
+	_, err = OpenEnvelope(serialized, domain)
+	if err == nil {
+		t.Error("should not be able to open envelope with modified payload")
+	}
+}
+
+// Since we're outside of the crypto package (to avoid import cycles with test package),
+// we can't alter the fields in a SignedEnvelope directly. This helper marshals
+// the envelope to a protobuf and calls the alterMsg function, which should
+// alter the protobuf message.
+// Returns the serialized altered protobuf message.
+func alterMessageAndMarshal(t *testing.T, envelope *SignedEnvelope, alterMsg func(*pb.SignedEnvelope)) []byte {
 	serialized, err := envelope.Marshal()
 	if err != nil {
-		t.Errorf("error serializing envelope: %v", err)
+		t.Errorf("error marshaling envelope: %v", err)
 	}
-
 	msg := pb.SignedEnvelope{}
 	err = proto.Unmarshal(serialized, &msg)
 	if err != nil {
-		t.Errorf("error deserializing envelope: %v", err)
+		t.Errorf("error unmarshaling envelope: %v", err)
 	}
-	msg.Payload = []byte("totally legit, trust me")
-	serialized, err = proto.Marshal(&msg)
-
-	// unmarshal our altered envelope
-	deserialized, err := UnmarshalEnvelope(serialized)
+	alterMsg(&msg)
+	serialized, err = msg.Marshal()
 	if err != nil {
-		t.Errorf("error deserializing envelope: %v", err)
+		t.Errorf("error marshaling envelope: %v", err)
 	}
-
-	// verify that it's now invalid
-	valid, err := deserialized.Validate(domain)
-	if err != nil {
-		t.Errorf("error validating envelope: %v", err)
-	}
-	if valid {
-		t.Error("envelope should be invalid, but Valid returns true")
-	}
+	return serialized
 }

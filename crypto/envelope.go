@@ -16,14 +16,13 @@ import (
 type SignedEnvelope struct {
 
 	// The public key that can be used to verify the signature and derive the peer id of the signer.
-	PublicKey PubKey
+	publicKey PubKey
 
 	// A binary identifier that indicates what kind of data is contained in the payload.
 	// TODO(yusef): enforce multicodec prefix
-	PayloadType []byte
+	payloadType []byte
 
-	// The envelope payload. This is private to discourage accessing the payload without verifying the signature.
-	// To access, use the Open method.
+	// The envelope payload.
 	payload []byte
 
 	// The signature of the domain string, type hint, and payload.
@@ -31,6 +30,7 @@ type SignedEnvelope struct {
 }
 
 var errEmptyDomain = errors.New("envelope domain must not be empty")
+var errInvalidSignature = errors.New("invalid signature or incorrect domain")
 
 // MakeEnvelope constructs a new SignedEnvelope using the given privateKey.
 //
@@ -38,27 +38,42 @@ var errEmptyDomain = errors.New("envelope domain must not be empty")
 // and must be supplied when verifying the signature.
 //
 // The 'payloadType' field indicates what kind of data is contained and may be empty.
-func MakeEnvelope(privateKey PrivKey, domain string, payloadType []byte, contents []byte) (*SignedEnvelope, error) {
+func MakeEnvelope(privateKey PrivKey, domain string, payloadType []byte, payload []byte) (*SignedEnvelope, error) {
 	if len(domain) == 0 {
 		return nil, errEmptyDomain
 	}
-	toSign := makeSigBuffer(domain, payloadType, contents)
+	toSign := makeSigBuffer(domain, payloadType, payload)
 	sig, err := privateKey.Sign(toSign)
 	if err != nil {
 		return nil, err
 	}
 
 	return &SignedEnvelope{
-		PublicKey:   privateKey.GetPublic(),
-		PayloadType: payloadType,
-		payload:     contents,
+		publicKey:   privateKey.GetPublic(),
+		payloadType: payloadType,
+		payload:     payload,
 		signature:   sig,
 	}, nil
 }
 
-// UnmarshalEnvelope converts a serialized protobuf representation of an envelope
-// into a SignedEnvelope struct.
-func UnmarshalEnvelope(serializedEnvelope []byte) (*SignedEnvelope, error) {
+// OpenEnvelope unmarshals a serialized SignedEnvelope, validating its signature
+// using the provided 'domain' string.
+func OpenEnvelope(envelopeBytes []byte, domain string) (*SignedEnvelope, error) {
+	e, err := UnmarshalEnvelopeWithoutValidating(envelopeBytes)
+	if err != nil {
+		return nil, err
+	}
+	err = e.validate(domain)
+	if err != nil {
+		return nil, err
+	}
+	return e, nil
+}
+
+// UnmarshalEnvelopeWithoutValidating unmarshals a serialized SignedEnvelope protobuf message,
+// without validating its contents. Should not be used unless you have a very good reason
+// (e.g. testing)!
+func UnmarshalEnvelopeWithoutValidating(serializedEnvelope []byte) (*SignedEnvelope, error) {
 	e := pb.SignedEnvelope{}
 	if err := proto.Unmarshal(serializedEnvelope, &e); err != nil {
 		return nil, err
@@ -68,55 +83,61 @@ func UnmarshalEnvelope(serializedEnvelope []byte) (*SignedEnvelope, error) {
 		return nil, err
 	}
 	return &SignedEnvelope{
-		PublicKey:   key,
-		PayloadType: e.PayloadType,
+		publicKey:   key,
+		payloadType: e.PayloadType,
 		payload:     e.Payload,
 		signature:   e.Signature,
 	}, nil
 }
 
-// Validate returns true if the envelope signature is valid for the given 'domain',
-// or false if it is invalid. May return an error if signature validation fails.
-func (e *SignedEnvelope) Validate(domain string) (bool, error) {
-	toVerify := makeSigBuffer(domain, e.PayloadType, e.payload)
-	return e.PublicKey.Verify(toVerify, e.signature)
+// PublicKey returns the public key that can be used to verify the signature and derive the peer id of the signer.
+func (e *SignedEnvelope) PublicKey() PubKey {
+	return e.publicKey
 }
 
-// Marshal returns a []byte containing a serialized protobuf representation of
-// the SignedEnvelope.
+// PayloadType returns a binary identifier that indicates what kind of data is contained in the payload.
+func (e *SignedEnvelope) PayloadType() []byte {
+	return e.payloadType
+}
+
+// Payload returns the binary payload of a SignedEnvelope.
+func (e *SignedEnvelope) Payload() []byte {
+	return e.payload
+}
+
 func (e *SignedEnvelope) Marshal() ([]byte, error) {
-	key, err := PublicKeyToProto(e.PublicKey)
+	key, err := PublicKeyToProto(e.publicKey)
 	if err != nil {
 		return nil, err
 	}
 	msg := pb.SignedEnvelope{
 		PublicKey:   key,
-		PayloadType: e.PayloadType,
+		PayloadType: e.payloadType,
 		Payload:     e.payload,
 		Signature:   e.signature,
 	}
 	return proto.Marshal(&msg)
 }
 
-// Open validates the signature (within the given 'domain') and returns
-// the payload of the envelope. Will fail with an error if the signature
-// is invalid.
-func (e *SignedEnvelope) Open(domain string) ([]byte, error) {
-	valid, err := e.Validate(domain)
-	if err != nil {
-		return nil, err
-	}
-	if !valid {
-		return nil, errors.New("invalid signature or incorrect domain")
-	}
-	return e.payload, nil
-}
-
 func (e *SignedEnvelope) Equals(other *SignedEnvelope) bool {
-	return e.PublicKey.Equals(other.PublicKey) &&
-		bytes.Compare(e.PayloadType, other.PayloadType) == 0 &&
+	return e.publicKey.Equals(other.publicKey) &&
+		bytes.Compare(e.payloadType, other.payloadType) == 0 &&
 		bytes.Compare(e.payload, other.payload) == 0 &&
 		bytes.Compare(e.signature, other.signature) == 0
+}
+
+// validate returns true if the envelope signature is valid for the given 'domain',
+// or false if it is invalid. May return an error if signature validation fails.
+func (e *SignedEnvelope) validate(domain string) error {
+	toVerify := makeSigBuffer(domain, e.payloadType, e.payload)
+	valid, err := e.publicKey.Verify(toVerify, e.signature)
+	if err != nil {
+		return err
+	}
+	if !valid {
+		return errInvalidSignature
+	}
+	return nil
 }
 
 // makeSigBuffer is a helper function that prepares a buffer to sign or verify.
