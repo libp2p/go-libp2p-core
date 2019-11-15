@@ -75,16 +75,19 @@ func UnmarshalRoutingState(serialized []byte) (*RoutingState, error) {
 // RoutingStateFromEnvelope unwraps a peer RoutingState record from a SignedEnvelope.
 // This method will fail if the signature is invalid, or if the record
 // belongs to a peer other than the one that signed the envelope.
-func RoutingStateFromEnvelope(envelope *crypto.SignedEnvelope) (*RoutingState, error) {
-	msgBytes, err := envelope.Open(StateEnvelopeDomain)
+func RoutingStateFromEnvelope(envelopeBytes []byte) (*RoutingState, error) {
+	envelope, err := crypto.OpenEnvelope(envelopeBytes, StateEnvelopeDomain)
 	if err != nil {
 		return nil, err
 	}
-	state, err := UnmarshalRoutingState(msgBytes)
+	if bytes.Compare(envelope.PayloadType(), StateEnvelopePayloadType) != 0 {
+		return nil, errors.New("unexpected envelope payload type")
+	}
+	state, err := UnmarshalRoutingState(envelope.Payload())
 	if err != nil {
 		return nil, err
 	}
-	if !state.PeerID.MatchesPublicKey(envelope.PublicKey) {
+	if !state.PeerID.MatchesPublicKey(envelope.PublicKey()) {
 		return nil, errors.New("peer id in routing state record does not match signing key")
 	}
 	return state, nil
