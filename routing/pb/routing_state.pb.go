@@ -5,7 +5,6 @@ package routing_pb
 
 import (
 	fmt "fmt"
-	github_com_gogo_protobuf_proto "github.com/gogo/protobuf/proto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
 	math "math"
@@ -23,9 +22,9 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 type RoutingStateRecord struct {
-	PeerId    []byte                            `protobuf:"bytes,1,req,name=peerId" json:"peerId"`
-	Seq       uint64                            `protobuf:"varint,2,req,name=seq" json:"seq"`
-	Addresses []*RoutingStateRecord_AddressInfo `protobuf:"bytes,3,rep,name=addresses" json:"addresses,omitempty"`
+	PeerId    []byte                            `protobuf:"bytes,1,opt,name=peer_id,json=peerId,proto3" json:"peer_id,omitempty"`
+	Seq       uint64                            `protobuf:"varint,2,opt,name=seq,proto3" json:"seq,omitempty"`
+	Addresses []*RoutingStateRecord_AddressInfo `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
 }
 
 func (m *RoutingStateRecord) Reset()         { *m = RoutingStateRecord{} }
@@ -83,7 +82,7 @@ func (m *RoutingStateRecord) GetAddresses() []*RoutingStateRecord_AddressInfo {
 }
 
 type RoutingStateRecord_AddressInfo struct {
-	Multiaddr []byte `protobuf:"bytes,1,req,name=multiaddr" json:"multiaddr"`
+	Multiaddr []byte `protobuf:"bytes,1,opt,name=multiaddr,proto3" json:"multiaddr,omitempty"`
 }
 
 func (m *RoutingStateRecord_AddressInfo) Reset()         { *m = RoutingStateRecord_AddressInfo{} }
@@ -134,20 +133,20 @@ func init() {
 func init() { proto.RegisterFile("routing_state.proto", fileDescriptor_2bc7f62bc26d3acc) }
 
 var fileDescriptor_2bc7f62bc26d3acc = []byte{
-	// 198 bytes of a gzipped FileDescriptorProto
+	// 200 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0x2e, 0xca, 0x2f, 0x2d,
 	0xc9, 0xcc, 0x4b, 0x8f, 0x2f, 0x2e, 0x49, 0x2c, 0x49, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17,
-	0xe2, 0x82, 0x0a, 0xea, 0x15, 0x24, 0x29, 0x1d, 0x67, 0xe4, 0x12, 0x0a, 0x82, 0x70, 0x83, 0x41,
-	0x4a, 0x82, 0x52, 0x93, 0xf3, 0x8b, 0x52, 0x84, 0x64, 0xb8, 0xd8, 0x0a, 0x52, 0x53, 0x8b, 0x3c,
-	0x53, 0x24, 0x18, 0x15, 0x98, 0x34, 0x78, 0x9c, 0x58, 0x4e, 0xdc, 0x93, 0x67, 0x08, 0x82, 0x8a,
-	0x09, 0x89, 0x71, 0x31, 0x17, 0xa7, 0x16, 0x4a, 0x30, 0x29, 0x30, 0x69, 0xb0, 0x40, 0xa5, 0x40,
-	0x02, 0x42, 0x1e, 0x5c, 0x9c, 0x89, 0x29, 0x29, 0x45, 0xa9, 0xc5, 0xc5, 0xa9, 0xc5, 0x12, 0xcc,
-	0x0a, 0xcc, 0x1a, 0xdc, 0x46, 0x5a, 0x7a, 0x08, 0xcb, 0xf4, 0x30, 0x2d, 0xd2, 0x73, 0x84, 0xa8,
-	0xf7, 0xcc, 0x4b, 0xcb, 0x0f, 0x42, 0x68, 0x96, 0x32, 0xe4, 0xe2, 0x46, 0x92, 0x11, 0x52, 0xe2,
-	0xe2, 0xcc, 0x2d, 0xcd, 0x29, 0xc9, 0x04, 0x29, 0x40, 0x71, 0x11, 0x42, 0xd8, 0x49, 0xe2, 0xc4,
-	0x23, 0x39, 0xc6, 0x0b, 0x8f, 0xe4, 0x18, 0x1f, 0x3c, 0x92, 0x63, 0x9c, 0xf0, 0x58, 0x8e, 0xe1,
-	0xc2, 0x63, 0x39, 0x86, 0x1b, 0x8f, 0xe5, 0x18, 0x00, 0x01, 0x00, 0x00, 0xff, 0xff, 0x13, 0x14,
-	0xbe, 0xc4, 0x05, 0x01, 0x00, 0x00,
+	0xe2, 0x82, 0x0a, 0xea, 0x15, 0x24, 0x29, 0x6d, 0x63, 0xe4, 0x12, 0x0a, 0x82, 0x70, 0x83, 0x41,
+	0x4a, 0x82, 0x52, 0x93, 0xf3, 0x8b, 0x52, 0x84, 0xc4, 0xb9, 0xd8, 0x0b, 0x52, 0x53, 0x8b, 0xe2,
+	0x33, 0x53, 0x24, 0x18, 0x15, 0x18, 0x35, 0x78, 0x82, 0xd8, 0x40, 0x5c, 0xcf, 0x14, 0x21, 0x01,
+	0x2e, 0xe6, 0xe2, 0xd4, 0x42, 0x09, 0x26, 0x05, 0x46, 0x0d, 0x96, 0x20, 0x10, 0x53, 0xc8, 0x83,
+	0x8b, 0x33, 0x31, 0x25, 0xa5, 0x28, 0xb5, 0xb8, 0x38, 0xb5, 0x58, 0x82, 0x59, 0x81, 0x59, 0x83,
+	0xdb, 0x48, 0x4b, 0x0f, 0x61, 0x83, 0x1e, 0xa6, 0xe9, 0x7a, 0x8e, 0x10, 0xf5, 0x9e, 0x79, 0x69,
+	0xf9, 0x41, 0x08, 0xcd, 0x52, 0xda, 0x5c, 0xdc, 0x48, 0x32, 0x42, 0x32, 0x5c, 0x9c, 0xb9, 0xa5,
+	0x39, 0x25, 0x99, 0x20, 0x05, 0x50, 0x57, 0x20, 0x04, 0x9c, 0x24, 0x4e, 0x3c, 0x92, 0x63, 0xbc,
+	0xf0, 0x48, 0x8e, 0xf1, 0xc1, 0x23, 0x39, 0xc6, 0x09, 0x8f, 0xe5, 0x18, 0x2e, 0x3c, 0x96, 0x63,
+	0xb8, 0xf1, 0x58, 0x8e, 0x21, 0x89, 0x0d, 0xec, 0x4b, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff,
+	0xdc, 0xd5, 0x32, 0xa1, 0xfc, 0x00, 0x00, 0x00,
 }
 
 func (m *RoutingStateRecord) Marshal() (dAtA []byte, err error) {
@@ -165,15 +164,17 @@ func (m *RoutingStateRecord) MarshalTo(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.PeerId != nil {
+	if len(m.PeerId) > 0 {
 		dAtA[i] = 0xa
 		i++
 		i = encodeVarintRoutingState(dAtA, i, uint64(len(m.PeerId)))
 		i += copy(dAtA[i:], m.PeerId)
 	}
-	dAtA[i] = 0x10
-	i++
-	i = encodeVarintRoutingState(dAtA, i, uint64(m.Seq))
+	if m.Seq != 0 {
+		dAtA[i] = 0x10
+		i++
+		i = encodeVarintRoutingState(dAtA, i, uint64(m.Seq))
+	}
 	if len(m.Addresses) > 0 {
 		for _, msg := range m.Addresses {
 			dAtA[i] = 0x1a
@@ -204,7 +205,7 @@ func (m *RoutingStateRecord_AddressInfo) MarshalTo(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.Multiaddr != nil {
+	if len(m.Multiaddr) > 0 {
 		dAtA[i] = 0xa
 		i++
 		i = encodeVarintRoutingState(dAtA, i, uint64(len(m.Multiaddr)))
@@ -228,11 +229,13 @@ func (m *RoutingStateRecord) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.PeerId != nil {
-		l = len(m.PeerId)
+	l = len(m.PeerId)
+	if l > 0 {
 		n += 1 + l + sovRoutingState(uint64(l))
 	}
-	n += 1 + sovRoutingState(uint64(m.Seq))
+	if m.Seq != 0 {
+		n += 1 + sovRoutingState(uint64(m.Seq))
+	}
 	if len(m.Addresses) > 0 {
 		for _, e := range m.Addresses {
 			l = e.Size()
@@ -248,8 +251,8 @@ func (m *RoutingStateRecord_AddressInfo) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.Multiaddr != nil {
-		l = len(m.Multiaddr)
+	l = len(m.Multiaddr)
+	if l > 0 {
 		n += 1 + l + sovRoutingState(uint64(l))
 	}
 	return n
@@ -269,7 +272,6 @@ func sozRoutingState(x uint64) (n int) {
 	return sovRoutingState(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
 func (m *RoutingStateRecord) Unmarshal(dAtA []byte) error {
-	var hasFields [1]uint64
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -332,7 +334,6 @@ func (m *RoutingStateRecord) Unmarshal(dAtA []byte) error {
 				m.PeerId = []byte{}
 			}
 			iNdEx = postIndex
-			hasFields[0] |= uint64(0x00000001)
 		case 2:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Seq", wireType)
@@ -352,7 +353,6 @@ func (m *RoutingStateRecord) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-			hasFields[0] |= uint64(0x00000002)
 		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
@@ -405,12 +405,6 @@ func (m *RoutingStateRecord) Unmarshal(dAtA []byte) error {
 			iNdEx += skippy
 		}
 	}
-	if hasFields[0]&uint64(0x00000001) == 0 {
-		return github_com_gogo_protobuf_proto.NewRequiredNotSetError("peerId")
-	}
-	if hasFields[0]&uint64(0x00000002) == 0 {
-		return github_com_gogo_protobuf_proto.NewRequiredNotSetError("seq")
-	}
 
 	if iNdEx > l {
 		return io.ErrUnexpectedEOF
@@ -418,7 +412,6 @@ func (m *RoutingStateRecord) Unmarshal(dAtA []byte) error {
 	return nil
 }
 func (m *RoutingStateRecord_AddressInfo) Unmarshal(dAtA []byte) error {
-	var hasFields [1]uint64
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -481,7 +474,6 @@ func (m *RoutingStateRecord_AddressInfo) Unmarshal(dAtA []byte) error {
 				m.Multiaddr = []byte{}
 			}
 			iNdEx = postIndex
-			hasFields[0] |= uint64(0x00000001)
 		default:
 			iNdEx = preIndex
 			skippy, err := skipRoutingState(dAtA[iNdEx:])
@@ -499,9 +491,6 @@ func (m *RoutingStateRecord_AddressInfo) Unmarshal(dAtA []byte) error {
 			}
 			iNdEx += skippy
 		}
-	}
-	if hasFields[0]&uint64(0x00000001) == 0 {
-		return github_com_gogo_protobuf_proto.NewRequiredNotSetError("multiaddr")
 	}
 
 	if iNdEx > l {

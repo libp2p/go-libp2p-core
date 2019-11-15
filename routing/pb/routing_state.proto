@@ -1,12 +1,12 @@
-syntax = "proto2";
+syntax = "proto3";
 package routing.pb;
 
 message RoutingStateRecord {
     message AddressInfo {
-        required bytes multiaddr = 1;
+        bytes multiaddr = 1;
     }
 
-    required bytes peerId = 1;
-    required uint64 seq = 2;
+    bytes peer_id = 1;
+    uint64 seq = 2;
     repeated AddressInfo addresses = 3;
 }

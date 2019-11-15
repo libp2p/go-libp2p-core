@@ -1,6 +1,7 @@
 package routing
 
 import (
+	"bytes"
 	"errors"
 	"github.com/gogo/protobuf/proto"
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -15,7 +16,7 @@ const StateEnvelopeDomain = "libp2p-routing-state"
 
 // The type hint used to identify routing state records in a SignedEnvelope.
 // TODO: register multicodec
-var StateEnvelopeTypeHint = []byte("/libp2p/routing-state-record")
+var StateEnvelopePayloadType = []byte("/libp2p/routing-state-record")
 
 // AnnotatedAddr will extend the Multiaddr type with additional metadata, as
 // extensions are added to the routing state record spec. It's defined now to
@@ -96,7 +97,7 @@ func (s *RoutingState) ToSignedEnvelope(key crypto.PrivKey) (*crypto.SignedEnvel
 	if err != nil {
 		return nil, err
 	}
-	return crypto.MakeEnvelope(key, StateEnvelopeDomain, StateEnvelopeTypeHint, payload)
+	return crypto.MakeEnvelope(key, StateEnvelopeDomain, StateEnvelopePayloadType, payload)
 }
 
 // Marshal serializes a RoutingState record to protobuf and returns its byte representation.
