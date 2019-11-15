@@ -12,7 +12,7 @@ import (
 // Envelopes are signed in the context of a particular "domain", which is a string
 // specified when creating and verifying the envelope. You must know the domain
 // string used to produce the envelope in order to verify the signature and
-// access the contents.
+// access the payload.
 type SignedEnvelope struct {
 
 	// The public key that can be used to verify the signature and derive the peer id of the signer.
@@ -20,13 +20,13 @@ type SignedEnvelope struct {
 
 	// A binary identifier that indicates what kind of data is contained in the payload.
 	// TODO(yusef): enforce multicodec prefix
-	TypeHint []byte
+	PayloadType []byte
 
 	// The envelope payload. This is private to discourage accessing the payload without verifying the signature.
 	// To access, use the Open method.
-	contents []byte
+	payload []byte
 
-	// The signature of the domain string, type hint, and contents.
+	// The signature of the domain string, type hint, and payload.
 	signature []byte
 }
 
@@ -37,22 +37,22 @@ var errEmptyDomain = errors.New("envelope domain must not be empty")
 // The required 'domain' string contextualizes the envelope for a particular purpose,
 // and must be supplied when verifying the signature.
 //
-// The 'typeHint' field indicates what kind of data is contained and may be empty.
-func MakeEnvelope(privateKey PrivKey, domain string, typeHint []byte, contents []byte) (*SignedEnvelope, error) {
+// The 'payloadType' field indicates what kind of data is contained and may be empty.
+func MakeEnvelope(privateKey PrivKey, domain string, payloadType []byte, contents []byte) (*SignedEnvelope, error) {
 	if len(domain) == 0 {
 		return nil, errEmptyDomain
 	}
-	toSign := makeSigBuffer(domain, typeHint, contents)
+	toSign := makeSigBuffer(domain, payloadType, contents)
 	sig, err := privateKey.Sign(toSign)
 	if err != nil {
 		return nil, err
 	}
 
 	return &SignedEnvelope{
-		PublicKey: privateKey.GetPublic(),
-		TypeHint:  typeHint,
-		contents:  contents,
-		signature: sig,
+		PublicKey:   privateKey.GetPublic(),
+		PayloadType: payloadType,
+		payload:     contents,
+		signature:   sig,
 	}, nil
 }
 
@@ -68,17 +68,17 @@ func UnmarshalEnvelope(serializedEnvelope []byte) (*SignedEnvelope, error) {
 		return nil, err
 	}
 	return &SignedEnvelope{
-		PublicKey: key,
-		TypeHint:  e.TypeHint,
-		contents:  e.Contents,
-		signature: e.Signature,
+		PublicKey:   key,
+		PayloadType: e.PayloadType,
+		payload:     e.Payload,
+		signature:   e.Signature,
 	}, nil
 }
 
 // Validate returns true if the envelope signature is valid for the given 'domain',
 // or false if it is invalid. May return an error if signature validation fails.
 func (e *SignedEnvelope) Validate(domain string) (bool, error) {
-	toVerify := makeSigBuffer(domain, e.TypeHint, e.contents)
+	toVerify := makeSigBuffer(domain, e.PayloadType, e.payload)
 	return e.PublicKey.Verify(toVerify, e.signature)
 }
 
@@ -90,16 +90,16 @@ func (e *SignedEnvelope) Marshal() ([]byte, error) {
 		return nil, err
 	}
 	msg := pb.SignedEnvelope{
-		PublicKey: key,
-		TypeHint:  e.TypeHint,
-		Contents:  e.contents,
-		Signature: e.signature,
+		PublicKey:   key,
+		PayloadType: e.PayloadType,
+		Payload:     e.payload,
+		Signature:   e.signature,
 	}
 	return proto.Marshal(&msg)
 }
 
 // Open validates the signature (within the given 'domain') and returns
-// the contents of the envelope. Will fail with an error if the signature
+// the payload of the envelope. Will fail with an error if the signature
 // is invalid.
 func (e *SignedEnvelope) Open(domain string) ([]byte, error) {
 	valid, err := e.Validate(domain)
@@ -109,13 +109,13 @@ func (e *SignedEnvelope) Open(domain string) ([]byte, error) {
 	if !valid {
 		return nil, errors.New("invalid signature or incorrect domain")
 	}
-	return e.contents, nil
+	return e.payload, nil
 }
 
 func (e *SignedEnvelope) Equals(other *SignedEnvelope) bool {
 	return e.PublicKey.Equals(other.PublicKey) &&
-		bytes.Compare(e.TypeHint, other.TypeHint) == 0 &&
-		bytes.Compare(e.contents, other.contents) == 0 &&
+		bytes.Compare(e.PayloadType, other.PayloadType) == 0 &&
+		bytes.Compare(e.payload, other.payload) == 0 &&
 		bytes.Compare(e.signature, other.signature) == 0
 }
 

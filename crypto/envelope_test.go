@@ -15,10 +15,10 @@ func TestEnvelopeHappyPath(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	contents := []byte("happy hacking")
+	payload := []byte("happy hacking")
 	domain := "libp2p-testing"
-	typeHint := []byte("/libp2p/testdata")
-	envelope, err := MakeEnvelope(priv, domain, typeHint, contents)
+	payloadType := []byte("/libp2p/testdata")
+	envelope, err := MakeEnvelope(priv, domain, payloadType, payload)
 	if err != nil {
 		t.Errorf("error constructing envelope: %v", err)
 	}
@@ -27,8 +27,8 @@ func TestEnvelopeHappyPath(t *testing.T) {
 		t.Error("envelope has unexpected public key")
 	}
 
-	if bytes.Compare(typeHint, envelope.TypeHint) != 0 {
-		t.Error("TypeHint does not match typeHint used to construct envelope")
+	if bytes.Compare(payloadType, envelope.PayloadType) != 0 {
+		t.Error("PayloadType does not match payloadType used to construct envelope")
 	}
 
 	valid, err := envelope.Validate(domain)
@@ -43,8 +43,8 @@ func TestEnvelopeHappyPath(t *testing.T) {
 	if err != nil {
 		t.Errorf("error opening envelope: %v", err)
 	}
-	if bytes.Compare(c, contents) != 0 {
-		t.Error("contents of envelope do not match input")
+	if bytes.Compare(c, payload) != 0 {
+		t.Error("payload of envelope do not match input")
 	}
 
 	serialized, err := envelope.Marshal()
@@ -66,10 +66,10 @@ func TestEnvelopeValidateFailsForDifferentDomain(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	contents := []byte("happy hacking")
+	payload := []byte("happy hacking")
 	domain := "libp2p-testing"
-	typeHint := []byte("/libp2p/testdata")
-	envelope, err := MakeEnvelope(priv, domain, typeHint, contents)
+	payloadType := []byte("/libp2p/testdata")
+	envelope, err := MakeEnvelope(priv, domain, payloadType, payload)
 	if err != nil {
 		t.Errorf("error constructing envelope: %v", err)
 	}
@@ -88,14 +88,14 @@ func TestEnvelopeValidateFailsIfTypeHintIsAltered(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	contents := []byte("happy hacking")
+	payload := []byte("happy hacking")
 	domain := "libp2p-testing"
-	typeHint := []byte("/libp2p/testdata")
-	envelope, err := MakeEnvelope(priv, domain, typeHint, contents)
+	payloadType := []byte("/libp2p/testdata")
+	envelope, err := MakeEnvelope(priv, domain, payloadType, payload)
 	if err != nil {
 		t.Errorf("error constructing envelope: %v", err)
 	}
-	envelope.TypeHint = []byte("foo")
+	envelope.PayloadType = []byte("foo")
 	valid, err := envelope.Validate("other-domain")
 	if err != nil {
 		t.Errorf("error validating envelope: %v", err)
@@ -110,15 +110,15 @@ func TestEnvelopeValidateFailsIfContentsAreAltered(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	contents := []byte("happy hacking")
+	payload := []byte("happy hacking")
 	domain := "libp2p-testing"
-	typeHint := []byte("/libp2p/testdata")
-	envelope, err := MakeEnvelope(priv, domain, typeHint, contents)
+	payloadType := []byte("/libp2p/testdata")
+	envelope, err := MakeEnvelope(priv, domain, payloadType, payload)
 	if err != nil {
 		t.Errorf("error constructing envelope: %v", err)
 	}
 
-	// since the contents field is private, we'll serialize and alter the
+	// since the payload field is private, we'll serialize and alter the
 	// serialized protobuf
 	serialized, err := envelope.Marshal()
 	if err != nil {
@@ -130,7 +130,7 @@ func TestEnvelopeValidateFailsIfContentsAreAltered(t *testing.T) {
 	if err != nil {
 		t.Errorf("error deserializing envelope: %v", err)
 	}
-	msg.Contents = []byte("totally legit, trust me")
+	msg.Payload = []byte("totally legit, trust me")
 	serialized, err = proto.Marshal(&msg)
 
 	// unmarshal our altered envelope
