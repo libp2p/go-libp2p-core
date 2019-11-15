@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package crypto.pb;
+
+import "crypto.proto";
+
+message SignedEnvelope {
+    PublicKey public_key = 1;
+    bytes payload_type = 2;
+    bytes payload = 3;
+    bytes signature = 4;
+}
