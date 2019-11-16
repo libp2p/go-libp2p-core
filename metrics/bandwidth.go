@@ -2,6 +2,8 @@
 package metrics
 
 import (
+	"time"
+
 	"github.com/libp2p/go-flow-metrics"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
@@ -162,4 +164,12 @@ func (bwc *BandwidthCounter) Reset() {
 
 	bwc.peerIn.Clear()
 	bwc.peerOut.Clear()
+}
+
+// TrimIdle trims all timers idle since the given time.
+func (bwc *BandwidthCounter) TrimIdle(since time.Time) {
+	bwc.peerIn.TrimIdle(since)
+	bwc.peerOut.TrimIdle(since)
+	bwc.protocolIn.TrimIdle(since)
+	bwc.protocolOut.TrimIdle(since)
 }
