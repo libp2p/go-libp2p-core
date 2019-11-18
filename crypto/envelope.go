@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"github.com/golang/protobuf/proto"
+	"github.com/libp2p/go-buffer-pool"
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 )
 
@@ -42,7 +43,10 @@ func MakeEnvelope(privateKey PrivKey, domain string, payloadType []byte, payload
 	if len(domain) == 0 {
 		return nil, errEmptyDomain
 	}
-	toSign := makeSigBuffer(domain, payloadType, payload)
+	toSign, err := makeSigBuffer(domain, payloadType, payload)
+	if err != nil {
+		return nil, err
+	}
 	sig, err := privateKey.Sign(toSign)
 	if err != nil {
 		return nil, err
@@ -129,7 +133,10 @@ func (e *SignedEnvelope) Equals(other *SignedEnvelope) bool {
 // validate returns true if the envelope signature is valid for the given 'domain',
 // or false if it is invalid. May return an error if signature validation fails.
 func (e *SignedEnvelope) validate(domain string) error {
-	toVerify := makeSigBuffer(domain, e.payloadType, e.payload)
+	toVerify, err := makeSigBuffer(domain, e.payloadType, e.payload)
+	if err != nil {
+		return err
+	}
 	valid, err := e.publicKey.Verify(toVerify, e.signature)
 	if err != nil {
 		return err
@@ -141,16 +148,36 @@ func (e *SignedEnvelope) validate(domain string) error {
 }
 
 // makeSigBuffer is a helper function that prepares a buffer to sign or verify.
-func makeSigBuffer(domain string, typeHint []byte, content []byte) []byte {
-	b := bytes.Buffer{}
+func makeSigBuffer(domain string, payloadType []byte, payload []byte) ([]byte, error) {
 	domainBytes := []byte(domain)
-	b.Write(encodedSize(domainBytes))
-	b.Write(domainBytes)
-	b.Write(encodedSize(typeHint))
-	b.Write(typeHint)
-	b.Write(encodedSize(content))
-	b.Write(content)
-	return b.Bytes()
+	fields := [][]byte{domainBytes, payloadType, payload}
+
+	const lengthPrefixSize = 8
+	size := 0
+	for _, f := range fields {
+		size += len(f) + lengthPrefixSize
+	}
+
+	b := pool.NewBuffer(nil)
+	b.Grow(size)
+
+	for _, f := range fields {
+		err := writeField(b, f)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return b.Bytes(), nil
+}
+
+func writeField(b *pool.Buffer, f []byte) error {
+	_, err := b.Write(encodedSize(f))
+	if err != nil {
+		return err
+	}
+	_, err = b.Write(f)
+	return err
 }
 
 func encodedSize(content []byte) []byte {
