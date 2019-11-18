@@ -42,16 +42,24 @@ type RoutingState struct {
 	Addresses []*AnnotatedAddr
 }
 
-func RoutingStateFromAddrInfo(info *peer.AddrInfo) *RoutingState {
-	annotated := make([]*AnnotatedAddr, len(info.Addrs))
-	for i, a := range info.Addrs {
+// RoutingStateWithMultiaddrs returns a RoutingState record for the given peer id
+// that contains the given multiaddrs. It generates a timestamp-based sequence number.
+func RoutingStateWithMultiaddrs(p peer.ID, addrs []ma.Multiaddr) *RoutingState {
+	annotated := make([]*AnnotatedAddr, len(addrs))
+	for i, a := range addrs {
 		annotated[i] = &AnnotatedAddr{Multiaddr: a}
 	}
 	return &RoutingState{
-		PeerID:    info.ID,
+		PeerID:    p,
 		Seq:       statelessSeqNo(),
 		Addresses: annotated,
 	}
+}
+
+// RoutingStateFromAddrInfo converts a peer.AddrInfo into a RoutingState record.
+// It generates a timestamp-based sequence number.
+func RoutingStateFromAddrInfo(info *peer.AddrInfo) *RoutingState {
+	return RoutingStateWithMultiaddrs(info.ID, info.Addrs)
 }
 
 // UnmarshalRoutingState unpacks a peer RoutingState record from a serialized protobuf representation.
@@ -72,7 +80,7 @@ func UnmarshalRoutingState(serialized []byte) (*RoutingState, error) {
 	}, nil
 }
 
-// RoutingStateFromEnvelope unwraps a peer RoutingState record from a SignedEnvelope.
+// RoutingStateFromEnvelope unwraps a peer RoutingState record from a serialized SignedEnvelope.
 // This method will fail if the signature is invalid, or if the record
 // belongs to a peer other than the one that signed the envelope.
 func RoutingStateFromEnvelope(envelopeBytes []byte) (*RoutingState, error) {
@@ -124,6 +132,28 @@ func (s *RoutingState) Multiaddrs() []ma.Multiaddr {
 		out[i] = addr.Multiaddr
 	}
 	return out
+}
+
+func (s *RoutingState) Equal(other *RoutingState) bool {
+	if s.Seq != other.Seq {
+		return false
+	}
+	if s.PeerID != other.PeerID {
+		return false
+	}
+	if len(s.Addresses) != len(other.Addresses) {
+		return false
+	}
+	for i, _ := range s.Addresses {
+		if !s.Addresses[i].Equal(other.Addresses[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (a *AnnotatedAddr) Equal(other *AnnotatedAddr) bool {
+	return a.Multiaddr.Equal(other.Multiaddr)
 }
 
 func statelessSeqNo() uint64 {

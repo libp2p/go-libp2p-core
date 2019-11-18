@@ -50,6 +50,19 @@ func TestEnvelopeHappyPath(t *testing.T) {
 	}
 }
 
+func TestMakeEnvelopeFailsWithEmptyDomain(t *testing.T) {
+	priv, _, err := test.RandTestKeyPair(Ed25519, 256)
+	if err != nil {
+		t.Error(err)
+	}
+	payload := []byte("happy hacking")
+	payloadType := []byte("/libp2p/testdata")
+	_, err = MakeEnvelope(priv, "", payloadType, payload)
+	if err == nil {
+		t.Errorf("making an envelope with an empty domain should fail")
+	}
+}
+
 func TestEnvelopeValidateFailsForDifferentDomain(t *testing.T) {
 	priv, _, err := test.RandTestKeyPair(Ed25519, 256)
 	if err != nil {
