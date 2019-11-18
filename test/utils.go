@@ -54,4 +54,3 @@ func AssertAddressesEqual(t *testing.T, exp, act []ma.Multiaddr) {
 		}
 	}
 }
-
