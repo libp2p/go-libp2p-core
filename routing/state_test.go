@@ -56,7 +56,7 @@ func TestRoutingStateFromEnvelope(t *testing.T) {
 		test.ExpectError(t, err, "unwrapping RoutingState from envelope should fail if peer id does not match key used to sign envelope")
 	})
 
-	t.Run("unwrapping from signed envelope fails if envelope has wrong domain string", func (t *testing.T) {
+	t.Run("unwrapping from signed envelope fails if envelope has wrong domain string", func(t *testing.T) {
 		stateBytes, err := state.Marshal()
 		test.AssertNilError(t, err)
 
@@ -66,7 +66,7 @@ func TestRoutingStateFromEnvelope(t *testing.T) {
 		test.ExpectError(t, err, "unwrapping RoutingState from envelope should fail if envelope was created with wrong domain string")
 	})
 
-	t.Run("unwrapping from signed envelope fails if envelope has wrong payload type", func (t *testing.T) {
+	t.Run("unwrapping from signed envelope fails if envelope has wrong payload type", func(t *testing.T) {
 		stateBytes, err := state.Marshal()
 		test.AssertNilError(t, err)
 		payloadType := []byte("wrong-payload-type")
