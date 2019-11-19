@@ -109,6 +109,7 @@ func (e *SignedEnvelope) Payload() []byte {
 	return e.payload
 }
 
+// Marshal returns a byte slice containing a serailized protobuf representation of a SignedEnvelope.
 func (e *SignedEnvelope) Marshal() ([]byte, error) {
 	key, err := PublicKeyToProto(e.publicKey)
 	if err != nil {
@@ -123,7 +124,10 @@ func (e *SignedEnvelope) Marshal() ([]byte, error) {
 	return proto.Marshal(&msg)
 }
 
-func (e *SignedEnvelope) Equals(other *SignedEnvelope) bool {
+// Equal returns true if the other SignedEnvelope has the same
+// public key, payload, payload type, and signature. This
+// implies that they were also created with the same domain string.
+func (e *SignedEnvelope) Equal(other *SignedEnvelope) bool {
 	return e.publicKey.Equals(other.publicKey) &&
 		bytes.Compare(e.payloadType, other.payloadType) == 0 &&
 		bytes.Compare(e.payload, other.payload) == 0 &&
