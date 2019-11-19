@@ -45,7 +45,7 @@ func TestEnvelopeHappyPath(t *testing.T) {
 		t.Error("payload of envelope does not match input")
 	}
 
-	if !envelope.Equals(deserialized) {
+	if !envelope.Equal(deserialized) {
 		t.Error("round-trip serde results in unequal envelope structures")
 	}
 }

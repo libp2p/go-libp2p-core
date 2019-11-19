@@ -98,7 +98,7 @@ type AddrBook interface {
 
 	// AddCertifiedAddrs adds addresses from a routing.RoutingState record
 	// contained in a serialized SignedEnvelope.
-	AddCertifiedAddrs(envelopeBytes []byte, ttl time.Duration) error
+	AddCertifiedAddrs(envelope []byte, ttl time.Duration) error
 
 	// SetAddr calls mgr.SetAddrs(p, addr, ttl)
 	SetAddr(p peer.ID, addr ma.Multiaddr, ttl time.Duration)
