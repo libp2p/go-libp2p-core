@@ -136,12 +136,6 @@ type AddrBook interface {
 	// given peer id, if one exists in the peerstore.
 	// Returns nil if no routing state exists for the peer.
 	SignedRoutingState(p peer.ID) *routing.SignedRoutingState
-
-	// SignedRoutingStates returns SignedRoutingState records for each of
-	// the given peer ids, if one exists in the peerstore.
-	// Returns a map of peer ids to SignedRoutingState records. If
-	// no routing state exists for a peer, their map entry will be nil.
-	SignedRoutingStates(peers ...peer.ID) map[peer.ID]*routing.SignedRoutingState
 }
 
 // KeyBook tracks the keys of Peers.
