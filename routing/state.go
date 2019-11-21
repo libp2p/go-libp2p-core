@@ -20,15 +20,17 @@ var StateEnvelopePayloadType = []byte("/libp2p/routing-state-record")
 
 type SignedRoutingState struct {
 	// PeerID is the ID of the peer this record pertains to.
-	peerID peer.ID
+	PeerID peer.ID
 
 	// Seq is an increment-only sequence counter used to order RoutingState records in time.
-	seq uint64
+	Seq uint64
 
-	// Addresses contains the public addresses of the peer this record pertains to.
-	addresses []ma.Multiaddr
+	// Addrs contains the public addresses of the peer this record pertains to.
+	Addrs []ma.Multiaddr
 
-	envelope *crypto.SignedEnvelope
+	// Envelope contains the signature and serialized RoutingStateRecord protobuf.
+	// Although it uses a bit
+	Envelope *crypto.SignedEnvelope
 }
 
 // MakeSignedRoutingState returns a SignedRoutingState record containing the given multiaddrs,
@@ -58,10 +60,10 @@ func MakeSignedRoutingState(privKey crypto.PrivKey, addrs []ma.Multiaddr) (*Sign
 		return nil, err
 	}
 	return &SignedRoutingState{
-		peerID:    p,
-		seq:       seq,
-		addresses: addrs,
-		envelope:  envelope,
+		PeerID:   p,
+		Seq:      seq,
+		Addrs:    addrs,
+		Envelope: envelope,
 	}, nil
 }
 
@@ -82,11 +84,11 @@ func UnmarshalSignedRoutingState(envelopeBytes []byte) (*SignedRoutingState, err
 // Fails if the signature is invalid, if the envelope has an unexpected payload type,
 // or if deserialization of the envelope payload fails.
 func SignedRoutingStateFromEnvelope(envelope *crypto.SignedEnvelope) (*SignedRoutingState, error) {
-	if bytes.Compare(envelope.PayloadType(), StateEnvelopePayloadType) != 0 {
+	if bytes.Compare(envelope.PayloadType, StateEnvelopePayloadType) != 0 {
 		return nil, errors.New("unexpected envelope payload type")
 	}
 	var msg pb.RoutingStateRecord
-	err := proto.Unmarshal(envelope.Payload(), &msg)
+	err := proto.Unmarshal(envelope.Payload, &msg)
 	if err != nil {
 		return nil, err
 	}
@@ -94,36 +96,21 @@ func SignedRoutingStateFromEnvelope(envelope *crypto.SignedEnvelope) (*SignedRou
 	if err != nil {
 		return nil, err
 	}
-	if !id.MatchesPublicKey(envelope.PublicKey()) {
+	if !id.MatchesPublicKey(envelope.PublicKey) {
 		return nil, errors.New("peer id in routing state record does not match signing key")
 	}
 	return &SignedRoutingState{
-		peerID:    id,
-		seq:       msg.Seq,
-		addresses: addrsFromProtobuf(msg.Addresses),
-		envelope:  envelope,
+		PeerID:   id,
+		Seq:      msg.Seq,
+		Addrs:    addrsFromProtobuf(msg.Addresses),
+		Envelope: envelope,
 	}, nil
 }
 
 // Marshal returns a byte slice containing the SignedRoutingState as a serialized SignedEnvelope
 // protobuf message.
 func (s *SignedRoutingState) Marshal() ([]byte, error) {
-	return s.envelope.Marshal()
-}
-
-// PeerID is the ID of the peer this record pertains to.
-func (s *SignedRoutingState) PeerID() peer.ID {
-	return s.peerID
-}
-
-// Seq is an increment-only sequence counter used to order RoutingState records in time.
-func (s *SignedRoutingState) Seq() uint64 {
-	return s.seq
-}
-
-// Multiaddrs contains the public addresses of the peer this record pertains to.
-func (s *SignedRoutingState) Multiaddrs() []ma.Multiaddr {
-	return s.addresses
+	return s.Envelope.Marshal()
 }
 
 // Equal returns true if the other SignedRoutingState is identical to this one.
@@ -131,21 +118,21 @@ func (s *SignedRoutingState) Equal(other *SignedRoutingState) bool {
 	if other == nil {
 		return false
 	}
-	if s.seq != other.seq {
+	if s.Seq != other.Seq {
 		return false
 	}
-	if s.peerID != other.peerID {
+	if s.PeerID != other.PeerID {
 		return false
 	}
-	if len(s.addresses) != len(other.addresses) {
+	if len(s.Addrs) != len(other.Addrs) {
 		return false
 	}
-	for i, _ := range s.addresses {
-		if !s.addresses[i].Equal(other.addresses[i]) {
+	for i, _ := range s.Addrs {
+		if !s.Addrs[i].Equal(other.Addrs[i]) {
 			return false
 		}
 	}
-	return s.envelope.Equal(other.envelope)
+	return s.Envelope.Equal(other.Envelope)
 }
 
 // statelessSeqNo is a helper to generate a timestamp-based sequence number.
