@@ -2,7 +2,6 @@ package host
 
 import (
 	"errors"
-	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/routing"
 )
@@ -15,19 +14,13 @@ func InfoFromHost(h Host) *peer.AddrInfo {
 	}
 }
 
-// RoutingStateFromHost returns a routing.RoutingState record that contains the Host's
-// ID and all of its listen Addrs.
-func RoutingStateFromHost(h Host) *routing.RoutingState {
-	return routing.RoutingStateFromAddrInfo(InfoFromHost(h))
-}
-
-// SignedRoutingStateFromHost wraps a routing.RoutingState record in a
-// SignedEnvelope, signed with the Host's private key.
-func SignedRoutingStateFromHost(h Host) (*crypto.SignedEnvelope, error) {
+// SignedRoutingStateFromHost returns a SignedRoutingState record containing
+// the Host's listen addresses, signed with the Host's private key.
+func SignedRoutingStateFromHost(h Host) (*routing.SignedRoutingState, error) {
 	privKey := h.Peerstore().PrivKey(h.ID())
 	if privKey == nil {
 		return nil, errors.New("unable to find host's private key in peerstore")
 	}
 
-	return RoutingStateFromHost(h).ToSignedEnvelope(privKey)
+	return routing.MakeSignedRoutingState(privKey, h.Addrs())
 }

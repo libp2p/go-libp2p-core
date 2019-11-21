@@ -78,7 +78,7 @@ func OpenEnvelope(envelopeBytes []byte, domain string) (*SignedEnvelope, error) 
 // without validating its contents. Should not be used unless you have a very good reason
 // (e.g. testing)!
 func UnmarshalEnvelopeWithoutValidating(serializedEnvelope []byte) (*SignedEnvelope, error) {
-	e := pb.SignedEnvelope{}
+	var e pb.SignedEnvelope
 	if err := proto.Unmarshal(serializedEnvelope, &e); err != nil {
 		return nil, err
 	}

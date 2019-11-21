@@ -5,6 +5,7 @@ package peerstore
 import (
 	"context"
 	"errors"
+	"github.com/libp2p/go-libp2p-core/routing"
 	"io"
 	"math"
 	"time"
@@ -96,9 +97,9 @@ type AddrBook interface {
 	// If the manager has a longer TTL, the operation is a no-op for that address
 	AddAddrs(p peer.ID, addrs []ma.Multiaddr, ttl time.Duration)
 
-	// AddCertifiedAddrs adds addresses from a routing.RoutingState record
-	// contained in a serialized SignedEnvelope.
-	AddCertifiedAddrs(envelope []byte, ttl time.Duration) error
+	// AddCertifiedAddrs adds addresses from a routing.SignedRoutingState record.
+	// Certified addresses will be returned from both Addrs and CertifiedAddrs.
+	AddCertifiedAddrs(s *routing.SignedRoutingState, ttl time.Duration) error
 
 	// SetAddr calls mgr.SetAddrs(p, addr, ttl)
 	SetAddr(p peer.ID, addr ma.Multiaddr, ttl time.Duration)
@@ -111,12 +112,13 @@ type AddrBook interface {
 	// the given oldTTL to have the given newTTL.
 	UpdateAddrs(p peer.ID, oldTTL time.Duration, newTTL time.Duration)
 
-	// Addrs returns all known (and valid) addresses for a given peer
+	// Addrs returns all known (and valid) addresses for a given peer, including
+	// both certified and uncertified addresses.
 	Addrs(p peer.ID) []ma.Multiaddr
 
 	// CertifiedAddrs returns all known addresses for a peer that have
-	// been certified by that peer. CertifiedAddrs are contained in
-	// a SignedEnvelope and added to the Peerstore using AddCertifiedAddrs.
+	// been certified by that peer and added to the peerstore using
+	// AddCertifiedAddrs. Note that certified addrs are also returned.
 	CertifiedAddrs(p peer.ID) []ma.Multiaddr
 
 	// AddrStream returns a channel that gets all addresses for a given
@@ -130,17 +132,16 @@ type AddrBook interface {
 	// PeersWithAddrs returns all of the peer IDs stored in the AddrBook
 	PeersWithAddrs() peer.IDSlice
 
-	// SignedRoutingState returns a signed RoutingState record for the
-	// given peer id, if one exists in the peerstore. The record is
-	// returned as a byte slice containing a serialized SignedEnvelope.
+	// SignedRoutingState returns a SignedRoutingState record for the
+	// given peer id, if one exists in the peerstore.
 	// Returns nil if no routing state exists for the peer.
-	SignedRoutingState(p peer.ID) []byte
+	SignedRoutingState(p peer.ID) *routing.SignedRoutingState
 
-	// SignedRoutingStates returns signed RoutingState records for each of
+	// SignedRoutingStates returns SignedRoutingState records for each of
 	// the given peer ids, if one exists in the peerstore.
-	// Returns a map of peer ids to serialized SignedEnvelope messages. If
+	// Returns a map of peer ids to SignedRoutingState records. If
 	// no routing state exists for a peer, their map entry will be nil.
-	SignedRoutingStates(peers ...peer.ID) map[peer.ID][]byte
+	SignedRoutingStates(peers ...peer.ID) map[peer.ID]*routing.SignedRoutingState
 }
 
 // KeyBook tracks the keys of Peers.
