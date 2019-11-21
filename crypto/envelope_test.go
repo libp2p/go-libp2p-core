@@ -20,12 +20,12 @@ func TestEnvelopeHappyPath(t *testing.T) {
 	envelope, err := MakeEnvelope(priv, domain, payloadType, payload)
 	test.AssertNilError(t, err)
 
-	if !envelope.PublicKey().Equals(pub) {
+	if !envelope.PublicKey.Equals(pub) {
 		t.Error("envelope has unexpected public key")
 	}
 
-	if bytes.Compare(payloadType, envelope.PayloadType()) != 0 {
-		t.Error("PayloadType does not match payloadType used to construct envelope")
+	if bytes.Compare(payloadType, envelope.PayloadType) != 0 {
+		t.Error("PayloadType does not match PayloadType used to construct envelope")
 	}
 
 	serialized, err := envelope.Marshal()
@@ -33,7 +33,7 @@ func TestEnvelopeHappyPath(t *testing.T) {
 	deserialized, err := OpenEnvelope(serialized, domain)
 	test.AssertNilError(t, err)
 
-	if bytes.Compare(deserialized.Payload(), payload) != 0 {
+	if bytes.Compare(deserialized.Payload, payload) != 0 {
 		t.Error("payload of envelope does not match input")
 	}
 
@@ -80,7 +80,7 @@ func TestEnvelopeValidateFailsIfTypeHintIsAltered(t *testing.T) {
 	})
 	// try to open our modified envelope
 	_, err = OpenEnvelope(serialized, domain)
-	test.ExpectError(t, err, "should not be able to open envelope with modified payloadType")
+	test.ExpectError(t, err, "should not be able to open envelope with modified PayloadType")
 }
 
 func TestEnvelopeValidateFailsIfContentsAreAltered(t *testing.T) {
