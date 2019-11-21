@@ -50,9 +50,17 @@ type Host interface {
 	// (Threadsafe)
 	SetStreamHandler(pid protocol.ID, handler network.StreamHandler)
 
+	// Same as `SetStreamHandler` but return an error if there was already an
+	// handler.
+	SetStreamHandlerSafe(pid protocol.ID, handler network.StreamHandler) error
+
 	// SetStreamHandlerMatch sets the protocol handler on the Host's Mux
 	// using a matching function for protocol selection.
-	SetStreamHandlerMatch(protocol.ID, func(string) bool, network.StreamHandler)
+	SetStreamHandlerMatch(pid protocol.ID, m func(string) bool, handler network.StreamHandler)
+
+	// Same as `SetStreamHandlerMatch` but return an error if there was already an
+	// handler.
+	SetStreamHandlerMatchSafe(pid protocol.ID, m func(string) bool, handler network.StreamHandler) error
 
 	// RemoveStreamHandler removes a handler on the mux that was set by
 	// SetStreamHandler

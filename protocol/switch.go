@@ -27,6 +27,10 @@ type Router interface {
 	// an exact literal match of the given protocol ID string.
 	AddHandler(protocol string, handler HandlerFunc)
 
+	// AddHandlerSafe is the same as `AddHandler` but return an error instead of
+	// overriding the handler if one is already set.
+	AddHandlerSafe(protocol string, handler HandlerFunc) error
+
 	// AddHandlerWithFunc registers the given handler to be invoked
 	// when the provided match function returns true.
 	//
@@ -36,6 +40,10 @@ type Router interface {
 	// used for matching; if you want to match the protocol ID
 	// string exactly, you must check for it in your match function.
 	AddHandlerWithFunc(protocol string, match func(string) bool, handler HandlerFunc)
+
+	// AddHandlerWithFuncSafe is the same as `AddHandlerWithFunc` but return an
+	// error instead of overriding the handler if one is already set.
+	AddHandlerWithFuncSafe(protocol string, match func(string) bool, handler HandlerFunc) error
 
 	// RemoveHandler removes the registered handler (if any) for the
 	// given protocol ID string.
