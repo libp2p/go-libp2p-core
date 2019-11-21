@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"github.com/golang/protobuf/proto"
+
+	"github.com/gogo/protobuf/proto"
+
 	"github.com/libp2p/go-buffer-pool"
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 )
@@ -15,7 +17,6 @@ import (
 // string used to produce the envelope in order to verify the signature and
 // access the payload.
 type SignedEnvelope struct {
-
 	// The public key that can be used to verify the signature and derive the peer id of the signer.
 	publicKey PubKey
 
