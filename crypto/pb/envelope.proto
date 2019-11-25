@@ -5,8 +5,8 @@ package crypto.pb;
 import "crypto.proto";
 
 message SignedEnvelope {
-    PublicKey public_key = 1;
-    bytes payload_type = 2;
+    PublicKey publicKey = 1;
+    bytes payloadType = 2;
     bytes payload = 3;
     bytes signature = 4;
 }
