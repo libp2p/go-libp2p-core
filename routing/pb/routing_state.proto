@@ -6,7 +6,7 @@ message RoutingStateRecord {
         bytes multiaddr = 1;
     }
 
-    bytes peer_id = 1;
+    bytes peerId = 1;
     uint64 seq = 2;
     repeated AddressInfo addresses = 3;
 }
