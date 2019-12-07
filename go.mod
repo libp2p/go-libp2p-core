@@ -1,7 +1,7 @@
 module github.com/libp2p/go-libp2p-core
 
 require (
-	github.com/btcsuite/btcd v0.0.0-20190824003749-130ea5bddde3
+	github.com/btcsuite/btcd v0.20.1-beta
 	github.com/coreos/go-semver v0.3.0
 	github.com/gogo/protobuf v1.3.1
 	github.com/ipfs/go-cid v0.0.3
