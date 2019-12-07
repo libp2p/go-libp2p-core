@@ -5,12 +5,12 @@ package crypto
 import (
 	"crypto"
 	"crypto/ecdsa"
+	"crypto/ed25519"
 	"crypto/rsa"
 	"crypto/x509"
 
 	btcec "github.com/btcsuite/btcd/btcec"
 	openssl "github.com/libp2p/go-openssl"
-	"golang.org/x/crypto/ed25519"
 )
 
 // KeyPairFromStdKey wraps standard library (and secp256k1) private keys in libp2p/go-libp2p-core/crypto keys

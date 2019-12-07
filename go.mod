@@ -14,7 +14,6 @@ require (
 	github.com/multiformats/go-multihash v0.0.10
 	github.com/smola/gocompat v0.2.0
 	go.opencensus.io v0.22.2
-	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 )
 
-go 1.12
+go 1.13

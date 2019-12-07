@@ -10,6 +10,8 @@
 
 > Home to the interfaces and abstractions that make up go-libp2p.
 
+Minimum go version: 1.13
+
 ## Install
 
 ```sh
