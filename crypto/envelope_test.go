@@ -2,7 +2,7 @@ package crypto_test
 
 import (
 	"bytes"
-	"github.com/golang/protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 
 	. "github.com/libp2p/go-libp2p-core/crypto"
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
