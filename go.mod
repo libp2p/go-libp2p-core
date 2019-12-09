@@ -14,6 +14,7 @@ require (
 	github.com/mr-tron/base58 v1.1.3
 	github.com/multiformats/go-multiaddr v0.2.0
 	github.com/multiformats/go-multihash v0.0.10
+	github.com/multiformats/go-varint v0.0.1
 	github.com/smola/gocompat v0.2.0
 	go.opencensus.io v0.22.2
 )

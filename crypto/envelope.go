@@ -2,13 +2,13 @@ package crypto
 
 import (
 	"bytes"
-	"encoding/binary"
 	"errors"
 
 	"github.com/gogo/protobuf/proto"
 
 	"github.com/libp2p/go-buffer-pool"
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
+	"github.com/multiformats/go-varint"
 )
 
 // SignedEnvelope contains an arbitrary []byte payload, signed by a libp2p peer.
@@ -142,36 +142,30 @@ func makeSigBuffer(domain string, payloadType []byte, payload []byte) ([]byte, e
 	domainBytes := []byte(domain)
 	fields := [][]byte{domainBytes, payloadType, payload}
 
-	const lengthPrefixSize = 8
-	size := 0
-	for _, f := range fields {
-		size += len(f) + lengthPrefixSize
+	// fields are prefixed with their length as an unsigned varint.
+	// we compute the lengths before allocating the sig
+	// buffer so we know how much space to add for the lengths
+	fieldLengths := make([][]byte, len(fields))
+	bufSize := 0
+	for i, f := range fields {
+		l := len(f)
+		fieldLengths[i] = varint.ToUvarint(uint64(l))
+		bufSize += l + len(fieldLengths[i])
 	}
 
 	b := pool.NewBuffer(nil)
-	b.Grow(size)
+	b.Grow(bufSize)
 
-	for _, f := range fields {
-		err := writeField(b, f)
+	for i, f := range fields {
+		_, err := b.Write(fieldLengths[i])
+		if err != nil {
+			return nil, err
+		}
+		_, err = b.Write(f)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	return b.Bytes(), nil
-}
-
-func writeField(b *pool.Buffer, f []byte) error {
-	_, err := b.Write(encodedSize(f))
-	if err != nil {
-		return err
-	}
-	_, err = b.Write(f)
-	return err
-}
-
-func encodedSize(content []byte) []byte {
-	b := make([]byte, 8)
-	binary.BigEndian.PutUint64(b, uint64(len(content)))
-	return b
 }
