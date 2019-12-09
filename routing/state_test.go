@@ -35,15 +35,4 @@ func TestSignedRoutingStateFromEnvelope(t *testing.T) {
 		_, err = UnmarshalSignedRoutingState(envBytes)
 		test.ExpectError(t, err, "unwrapping RoutingState from envelope should fail if envelope was created with wrong domain string")
 	})
-
-	t.Run("unwrapping from signed envelope fails if envelope has wrong payload type", func(t *testing.T) {
-		stateBytes, err := state.Marshal()
-		test.AssertNilError(t, err)
-		payloadType := []byte("wrong-payload-type")
-		env, err := crypto.MakeEnvelope(priv, StateEnvelopeDomain, payloadType, stateBytes)
-		test.AssertNilError(t, err)
-		envBytes, err := env.Marshal()
-		_, err = UnmarshalSignedRoutingState(envBytes)
-		test.ExpectError(t, err, "unwrapping RoutingState from envelope should fail if envelope was created with wrong payload type")
-	})
 }
