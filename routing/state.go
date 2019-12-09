@@ -1,7 +1,6 @@
 package routing
 
 import (
-	"bytes"
 	"errors"
 	"github.com/gogo/protobuf/proto"
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -84,9 +83,6 @@ func UnmarshalSignedRoutingState(envelopeBytes []byte) (*SignedRoutingState, err
 // Fails if the signature is invalid, if the envelope has an unexpected payload type,
 // or if deserialization of the envelope payload fails.
 func SignedRoutingStateFromEnvelope(envelope *crypto.SignedEnvelope) (*SignedRoutingState, error) {
-	if bytes.Compare(envelope.PayloadType, StateEnvelopePayloadType) != 0 {
-		return nil, errors.New("unexpected envelope payload type")
-	}
 	var msg pb.RoutingStateRecord
 	err := proto.Unmarshal(envelope.Payload, &msg)
 	if err != nil {
