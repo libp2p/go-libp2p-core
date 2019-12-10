@@ -1,12 +1,11 @@
 package crypto
 
 import (
+	"crypto/ed25519"
 	"crypto/rand"
 	"testing"
 
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
-
-	"golang.org/x/crypto/ed25519"
 )
 
 func TestBasicSignAndVerify(t *testing.T) {
