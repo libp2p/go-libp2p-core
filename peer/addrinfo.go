@@ -29,11 +29,7 @@ func AddrInfosFromP2pAddrs(maddrs ...ma.Multiaddr) ([]AddrInfo, error) {
 		if id == "" {
 			return nil, ErrInvalidAddr
 		}
-		if transport == nil {
-			if _, ok := m[id]; !ok {
-				m[id] = nil
-			}
-		} else {
+		if transport != nil {
 			m[id] = append(m[id], transport)
 		}
 	}
