@@ -65,6 +65,30 @@ type ConnManager interface {
 	Close() error
 }
 
+// ConnectionGater can be implemented by connection managers that support active
+// inbound or outbound connection gating.
+//
+// By default, connection managers are assumed to act like passive sentinels.
+// They sit in the background, watching connections that are established and
+// tracking their score. They perform batch pruning every once in a while to
+// bring the system into equilibrium.
+//
+// A ConnManager implementing ConnectionGater can be consulted by the
+// network.Network (a) before initiating a connection attempt for outbound
+// connections, or (b) incorporating an inbound connection into the node's
+// state. The bool return value indicates whether the caller should proceed.
+//
+// This feature can be used to implement *strict* connection management
+// behaviours, such as hard limiting of connections once a max count has been
+// reached.
+type ConnectionGater interface {
+	// AllowConnection tests whether the given connection is allowed to happen.
+	//
+	// The caller must supply the direction and the peer ID to be tested, and
+	// optionally a network.Conn if one has already been created.
+	AllowConnection(network.Direction, peer.ID, network.Conn) bool
+}
+
 // TagInfo stores metadata associated with a peer.
 type TagInfo struct {
 	FirstSeen time.Time
