@@ -97,10 +97,6 @@ type AddrBook interface {
 	// If the manager has a longer TTL, the operation is a no-op for that address
 	AddAddrs(p peer.ID, addrs []ma.Multiaddr, ttl time.Duration)
 
-	// AddCertifiedAddrs adds addresses from a routing.SignedRoutingState record.
-	// Certified addresses will be returned from both Addrs and CertifiedAddrs.
-	AddCertifiedAddrs(s *routing.SignedRoutingState, ttl time.Duration) error
-
 	// SetAddr calls mgr.SetAddrs(p, addr, ttl)
 	SetAddr(p peer.ID, addr ma.Multiaddr, ttl time.Duration)
 
@@ -112,14 +108,8 @@ type AddrBook interface {
 	// the given oldTTL to have the given newTTL.
 	UpdateAddrs(p peer.ID, oldTTL time.Duration, newTTL time.Duration)
 
-	// Addrs returns all known (and valid) addresses for a given peer, including
-	// both certified and uncertified addresses.
+	// Addrs returns all known (and valid) addresses for a given peer.
 	Addrs(p peer.ID) []ma.Multiaddr
-
-	// CertifiedAddrs returns all known addresses for a peer that have
-	// been certified by that peer and added to the peerstore using
-	// AddCertifiedAddrs. Note that certified addrs are also returned.
-	CertifiedAddrs(p peer.ID) []ma.Multiaddr
 
 	// AddrStream returns a channel that gets all addresses for a given
 	// peer sent on it. If new addresses are added after the call is made
@@ -131,11 +121,65 @@ type AddrBook interface {
 
 	// PeersWithAddrs returns all of the peer IDs stored in the AddrBook
 	PeersWithAddrs() peer.IDSlice
+}
+
+// CertifiedAddrBook manages "self-certified" addresses for remote peers.
+// Self-certified addresses are contained in routing.SignedRoutingState
+// records that are signed by the peer to whom they belong.
+//
+// This interface is most useful when combined with AddrBook.
+// To test whether a given AddrBook / Peerstore implementation supports
+// certified addresses, callers should type-assert on the CertifiedAddrBook
+// interface:
+//
+//     if cab, ok := aPeerstore.(CertifiedAddrBook); ok {
+//         cab.AddCertifiedAddrs(aRoutingStateRecord, aTTL)
+//     }
+//
+type CertifiedAddrBook interface {
+	// AddCertifiedAddrs adds addresses from a routing.SignedRoutingState record,
+	// which will expire after the given TTL.
+	//
+	// SignedRoutingState records added via this method will be stored without
+	// alteration as long as the address TTLs remain valid. Records can be retrieved
+	// by calling SignedRoutingState(peerID).
+	//
+	// If the SignedRoutingState belongs to a peer that already has certified
+	// addresses in the CertifiedAddrBook, the new addresses will replace the
+	// older ones, iff the new record has a higher sequence number than the
+	// existing record. Attempting to add a SignedRoutingState record with a
+	// sequence number that's <= an existing record for the same peer will not
+	// result in an error, but the record will be ignored.
+	//
+	// If the CertifiedAddrBook is also an AddrBook (which is most likely the case),
+	// adding certified addresses for a peer will *replace* any
+	// existing non-certified addresses for that peer, and only the certified
+	// addresses will be returned from AddrBook.Addrs.
+	//
+	// Likewise, once certified addresses have been added for a given peer,
+	// any non-certified addresses added via AddrBook.AddAddrs or
+	// AddrBook.SetAddrs will be ignored. AddrBook.SetAddrs may still be used
+	// to update the TTL of certified addresses if they have previously been
+	// added via AddCertifiedAddrs.
+	AddCertifiedAddrs(s *routing.SignedRoutingState, ttl time.Duration) error
 
 	// SignedRoutingState returns a SignedRoutingState record for the
-	// given peer id, if one exists in the peerstore.
+	// given peer id, if one exists.
 	// Returns nil if no routing state exists for the peer.
 	SignedRoutingState(p peer.ID) *routing.SignedRoutingState
+}
+
+// GetCertifiedAddrBook is a helper to "upcast" an AddrBook to a
+// CertifiedAddrBook by using type assertion. If the given AddrBook
+// is also a CertifiedAddrBook, it will be returned, and the ok return
+// value will be true. Returns (nil, false) if the AddrBook is not a
+// CertifiedAddrBook.
+//
+// Note that since Peerstore embeds the AddrBook interface, you can also
+// call GetCertifiedAddrBook(myPeerstore).
+func GetCertifiedAddrBook(ab AddrBook) (cab CertifiedAddrBook, ok bool) {
+	cab, ok = ab.(CertifiedAddrBook)
+	return cab, ok
 }
 
 // KeyBook tracks the keys of Peers.
