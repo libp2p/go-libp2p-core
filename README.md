@@ -22,6 +22,9 @@ go get github.com/libp2p/go-libp2p-core
 
 Check out the [GoDocs](https://godoc.org/github.com/libp2p/go-libp2p-core).
 
+## Testing
+To test instantiations of interfaces and abstractions, you can use the [test suite](https://github.com/libp2p/go-libp2p-testing/tree/master/suites).
+
 ## License
 
 Dual-licensed under MIT and ASLv2, by way of the [Permissive License Stack](https://protocol.ai/blog/announcing-the-permissive-license-stack/).
