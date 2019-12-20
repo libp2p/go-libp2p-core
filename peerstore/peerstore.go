@@ -96,6 +96,10 @@ type AddrBook interface {
 	// If the manager has a longer TTL, the operation is a no-op for that address
 	AddAddrs(p peer.ID, addrs []ma.Multiaddr, ttl time.Duration)
 
+	// AddCertifiedAddrs adds addresses from a PeerStateRecord contained
+	// in the given SignedEnvelope.
+	AddCertifiedAddrs(envelope *ic.SignedEnvelope, ttl time.Duration) error
+
 	// SetAddr calls mgr.SetAddrs(p, addr, ttl)
 	SetAddr(p peer.ID, addr ma.Multiaddr, ttl time.Duration)
 
@@ -107,8 +111,13 @@ type AddrBook interface {
 	// the given oldTTL to have the given newTTL.
 	UpdateAddrs(p peer.ID, oldTTL time.Duration, newTTL time.Duration)
 
-	// Addresses returns all known (and valid) addresses for a given peer
+	// Addrs returns all known (and valid) addresses for a given peer
 	Addrs(p peer.ID) []ma.Multiaddr
+
+	// CertifiedAddrs returns all known addresses for a peer that have
+	// been certified by that peer. CertifiedAddrs are contained in
+	// a SignedEnvelope and added to the Peerstore using AddCertifiedAddrs.
+	CertifiedAddrs(p peer.ID) []ma.Multiaddr
 
 	// AddrStream returns a channel that gets all addresses for a given
 	// peer sent on it. If new addresses are added after the call is made
