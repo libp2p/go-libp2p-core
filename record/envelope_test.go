@@ -1,13 +1,15 @@
-package record
+package record_test
 
 import (
 	"bytes"
-	"github.com/gogo/protobuf/proto"
-
-	. "github.com/libp2p/go-libp2p-core/crypto"
-	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
-	"github.com/libp2p/go-libp2p-core/test"
 	"testing"
+
+	crypto "github.com/libp2p/go-libp2p-core/crypto"
+	. "github.com/libp2p/go-libp2p-core/record"
+	pb "github.com/libp2p/go-libp2p-core/record/pb"
+	"github.com/libp2p/go-libp2p-core/test"
+
+	"github.com/gogo/protobuf/proto"
 )
 
 // Make an envelope, verify & open it, marshal & unmarshal it
@@ -16,7 +18,7 @@ func TestEnvelopeHappyPath(t *testing.T) {
 		payload        = []byte("happy hacking")
 		domain         = "libp2p-testing"
 		payloadType    = []byte("/libp2p/testdata")
-		priv, pub, err = test.RandTestKeyPair(Ed25519, 256)
+		priv, pub, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
 	test.AssertNilError(t, err)
@@ -51,7 +53,7 @@ func TestMakeEnvelopeFailsWithEmptyDomain(t *testing.T) {
 	var (
 		payload      = []byte("happy hacking")
 		payloadType  = []byte("/libp2p/testdata")
-		priv, _, err = test.RandTestKeyPair(Ed25519, 256)
+		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
 	if err != nil {
@@ -67,7 +69,7 @@ func TestEnvelopeValidateFailsForDifferentDomain(t *testing.T) {
 		payload      = []byte("happy hacking")
 		domain       = "libp2p-testing"
 		payloadType  = []byte("/libp2p/testdata")
-		priv, _, err = test.RandTestKeyPair(Ed25519, 256)
+		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
 	test.AssertNilError(t, err)
@@ -87,7 +89,7 @@ func TestEnvelopeValidateFailsIfTypeHintIsAltered(t *testing.T) {
 		payload      = []byte("happy hacking")
 		domain       = "libp2p-testing"
 		payloadType  = []byte("/libp2p/testdata")
-		priv, _, err = test.RandTestKeyPair(Ed25519, 256)
+		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
 	test.AssertNilError(t, err)
@@ -109,7 +111,7 @@ func TestEnvelopeValidateFailsIfContentsAreAltered(t *testing.T) {
 		payload      = []byte("happy hacking")
 		domain       = "libp2p-testing"
 		payloadType  = []byte("/libp2p/testdata")
-		priv, _, err = test.RandTestKeyPair(Ed25519, 256)
+		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
 	test.AssertNilError(t, err)

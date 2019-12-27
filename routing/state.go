@@ -2,12 +2,14 @@ package routing
 
 import (
 	"errors"
+	"time"
+
 	"github.com/gogo/protobuf/proto"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p-core/record"
 	pb "github.com/libp2p/go-libp2p-core/routing/pb"
 	ma "github.com/multiformats/go-multiaddr"
-	"time"
 )
 
 // The domain string used for routing state records contained in a SignedEnvelope.
@@ -29,7 +31,7 @@ type SignedRoutingState struct {
 
 	// Envelope contains the signature and serialized RoutingStateRecord protobuf.
 	// Although it uses a bit
-	Envelope *crypto.SignedEnvelope
+	Envelope *record.SignedEnvelope
 }
 
 // MakeSignedRoutingState returns a SignedRoutingState record containing the given multiaddrs,
@@ -54,7 +56,7 @@ func MakeSignedRoutingState(privKey crypto.PrivKey, addrs []ma.Multiaddr) (*Sign
 	if err != nil {
 		return nil, err
 	}
-	envelope, err := crypto.MakeEnvelope(privKey, StateEnvelopeDomain, StateEnvelopePayloadType, payload)
+	envelope, err := record.MakeEnvelope(privKey, StateEnvelopeDomain, StateEnvelopePayloadType, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +73,7 @@ func MakeSignedRoutingState(privKey crypto.PrivKey, addrs []ma.Multiaddr) (*Sign
 // Fails if the signature is invalid, if the envelope has an unexpected payload type,
 // if deserialization of the envelope or its inner payload fails.
 func UnmarshalSignedRoutingState(envelopeBytes []byte) (*SignedRoutingState, error) {
-	envelope, err := crypto.OpenEnvelope(envelopeBytes, StateEnvelopeDomain)
+	envelope, err := record.ConsumeEnvelope(envelopeBytes, StateEnvelopeDomain)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +84,7 @@ func UnmarshalSignedRoutingState(envelopeBytes []byte) (*SignedRoutingState, err
 // a RoutingStateRecord protobuf and returns a SignedRoutingState record.
 // Fails if the signature is invalid, if the envelope has an unexpected payload type,
 // or if deserialization of the envelope payload fails.
-func SignedRoutingStateFromEnvelope(envelope *crypto.SignedEnvelope) (*SignedRoutingState, error) {
+func SignedRoutingStateFromEnvelope(envelope *record.SignedEnvelope) (*SignedRoutingState, error) {
 	var msg pb.RoutingStateRecord
 	err := proto.Unmarshal(envelope.Payload, &msg)
 	if err != nil {

@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package crypto.pb;
+package record.pb;
 
-import "crypto.proto";
+import "crypto/pb/crypto.proto";
 
 message SignedEnvelope {
-    PublicKey publicKey = 1;
+    crypto.pb.PublicKey publicKey = 1;
     bytes payloadType = 2;
     bytes payload = 3;
     bytes signature = 4;
