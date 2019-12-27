@@ -1,14 +1,15 @@
-package crypto
+package record
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
 
-	"github.com/gogo/protobuf/proto"
-
 	pool "github.com/libp2p/go-buffer-pool"
+	"github.com/libp2p/go-libp2p-core/crypto"
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
+
+	"github.com/gogo/protobuf/proto"
 	"github.com/multiformats/go-varint"
 )
 
@@ -20,7 +21,7 @@ import (
 // and access the payload.
 type SignedEnvelope struct {
 	// The public key that can be used to verify the signature and derive the peer id of the signer.
-	PublicKey PubKey
+	PublicKey crypto.PubKey
 
 	// A binary identifier that indicates what kind of data is contained in the payload.
 	// TODO(yusef): enforce multicodec prefix
@@ -42,7 +43,7 @@ var ErrInvalidSignature = errors.New("invalid signature or incorrect domain")
 // and must be supplied when verifying the signature.
 //
 // The 'PayloadType' field indicates what kind of data is contained and may be empty.
-func MakeEnvelope(privateKey PrivKey, domain string, payloadType []byte, payload []byte) (*SignedEnvelope, error) {
+func MakeEnvelope(privateKey crypto.PrivKey, domain string, payloadType []byte, payload []byte) (*SignedEnvelope, error) {
 	if domain == "" {
 		return nil, ErrEmptyDomain
 	}
@@ -86,7 +87,7 @@ func UnmarshalEnvelope(data []byte) (*SignedEnvelope, error) {
 		return nil, err
 	}
 
-	key, err := PublicKeyFromProto(e.PublicKey)
+	key, err := crypto.PublicKeyFromProto(e.PublicKey)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +103,7 @@ func UnmarshalEnvelope(data []byte) (*SignedEnvelope, error) {
 // Marshal returns a byte slice containing a serialized protobuf representation
 // of a SignedEnvelope.
 func (e *SignedEnvelope) Marshal() ([]byte, error) {
-	key, err := PublicKeyToProto(e.PublicKey)
+	key, err := crypto.PublicKeyToProto(e.PublicKey)
 	if err != nil {
 		return nil, err
 	}

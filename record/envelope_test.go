@@ -1,4 +1,4 @@
-package crypto_test
+package record
 
 import (
 	"bytes"
