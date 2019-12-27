@@ -3,19 +3,21 @@ package crypto
 import (
 	"bytes"
 	"errors"
+	"fmt"
 
 	"github.com/gogo/protobuf/proto"
 
-	"github.com/libp2p/go-buffer-pool"
+	pool "github.com/libp2p/go-buffer-pool"
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 	"github.com/multiformats/go-varint"
 )
 
 // SignedEnvelope contains an arbitrary []byte payload, signed by a libp2p peer.
-// Envelopes are signed in the context of a particular "domain", which is a string
-// specified when creating and verifying the envelope. You must know the domain
-// string used to produce the envelope in order to verify the signature and
-// access the payload.
+//
+// Envelopes are signed in the context of a particular "domain", which is a
+// string specified when creating and verifying the envelope. You must know the
+// domain string used to produce the envelope in order to verify the signature
+// and access the payload.
 type SignedEnvelope struct {
 	// The public key that can be used to verify the signature and derive the peer id of the signer.
 	PublicKey PubKey
@@ -27,12 +29,12 @@ type SignedEnvelope struct {
 	// The envelope payload.
 	Payload []byte
 
-	// The signature of the domain string, type hint, and payload.
+	// The signature of the domain string :: type hint :: payload.
 	signature []byte
 }
 
-var errEmptyDomain = errors.New("envelope domain must not be empty")
-var errInvalidSignature = errors.New("invalid signature or incorrect domain")
+var ErrEmptyDomain = errors.New("envelope domain must not be empty")
+var ErrInvalidSignature = errors.New("invalid signature or incorrect domain")
 
 // MakeEnvelope constructs a new SignedEnvelope using the given privateKey.
 //
@@ -41,14 +43,17 @@ var errInvalidSignature = errors.New("invalid signature or incorrect domain")
 //
 // The 'PayloadType' field indicates what kind of data is contained and may be empty.
 func MakeEnvelope(privateKey PrivKey, domain string, payloadType []byte, payload []byte) (*SignedEnvelope, error) {
-	if len(domain) == 0 {
-		return nil, errEmptyDomain
+	if domain == "" {
+		return nil, ErrEmptyDomain
 	}
-	toSign, err := makeSigBuffer(domain, payloadType, payload)
+
+	unsigned, err := makeUnsigned(domain, payloadType, payload)
 	if err != nil {
 		return nil, err
 	}
-	sig, err := privateKey.Sign(toSign)
+	defer pool.Put(unsigned)
+
+	sig, err := privateKey.Sign(unsigned)
 	if err != nil {
 		return nil, err
 	}
@@ -61,32 +66,31 @@ func MakeEnvelope(privateKey PrivKey, domain string, payloadType []byte, payload
 	}, nil
 }
 
-// OpenEnvelope unmarshals a serialized SignedEnvelope, validating its signature
-// using the provided 'domain' string.
-func OpenEnvelope(envelopeBytes []byte, domain string) (*SignedEnvelope, error) {
-	e, err := UnmarshalEnvelopeWithoutValidating(envelopeBytes)
+// ConsumeEnvelope unmarshals a serialized SignedEnvelope, and validates its
+// signature using the provided 'domain' string. If validation fails, an error
+// is returned, along with the unmarshalled payload so it can be inspected.
+func ConsumeEnvelope(data []byte, domain string) (*SignedEnvelope, error) {
+	e, err := UnmarshalEnvelope(data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed when unmarshalling the envelope: %w", err)
 	}
-	err = e.validate(domain)
-	if err != nil {
-		return nil, err
-	}
-	return e, nil
+
+	return e, e.validate(domain)
 }
 
-// UnmarshalEnvelopeWithoutValidating unmarshals a serialized SignedEnvelope protobuf message,
-// without validating its contents. Should not be used unless you have a very good reason
-// (e.g. testing)!
-func UnmarshalEnvelopeWithoutValidating(serializedEnvelope []byte) (*SignedEnvelope, error) {
+// UnmarshalEnvelope unmarshals a serialized SignedEnvelope protobuf message,
+// without validating its contents. Most users should use ConsumeEnvelope.
+func UnmarshalEnvelope(data []byte) (*SignedEnvelope, error) {
 	var e pb.SignedEnvelope
-	if err := proto.Unmarshal(serializedEnvelope, &e); err != nil {
+	if err := proto.Unmarshal(data, &e); err != nil {
 		return nil, err
 	}
+
 	key, err := PublicKeyFromProto(e.PublicKey)
 	if err != nil {
 		return nil, err
 	}
+
 	return &SignedEnvelope{
 		PublicKey:   key,
 		PayloadType: e.PayloadType,
@@ -95,12 +99,14 @@ func UnmarshalEnvelopeWithoutValidating(serializedEnvelope []byte) (*SignedEnvel
 	}, nil
 }
 
-// Marshal returns a byte slice containing a serailized protobuf representation of a SignedEnvelope.
+// Marshal returns a byte slice containing a serialized protobuf representation
+// of a SignedEnvelope.
 func (e *SignedEnvelope) Marshal() ([]byte, error) {
 	key, err := PublicKeyToProto(e.PublicKey)
 	if err != nil {
 		return nil, err
 	}
+
 	msg := pb.SignedEnvelope{
 		PublicKey:   key,
 		PayloadType: e.PayloadType,
@@ -110,9 +116,9 @@ func (e *SignedEnvelope) Marshal() ([]byte, error) {
 	return proto.Marshal(&msg)
 }
 
-// Equal returns true if the other SignedEnvelope has the same
-// public key, payload, payload type, and signature. This
-// implies that they were also created with the same domain string.
+// Equal returns true if the other SignedEnvelope has the same public key,
+// payload, payload type, and signature. This implies that they were also
+// created with the same domain string.
 func (e *SignedEnvelope) Equal(other *SignedEnvelope) bool {
 	return e.PublicKey.Equals(other.PublicKey) &&
 		bytes.Compare(e.PayloadType, other.PayloadType) == 0 &&
@@ -123,49 +129,49 @@ func (e *SignedEnvelope) Equal(other *SignedEnvelope) bool {
 // validate returns true if the envelope signature is valid for the given 'domain',
 // or false if it is invalid. May return an error if signature validation fails.
 func (e *SignedEnvelope) validate(domain string) error {
-	toVerify, err := makeSigBuffer(domain, e.PayloadType, e.Payload)
+	unsigned, err := makeUnsigned(domain, e.PayloadType, e.Payload)
 	if err != nil {
 		return err
 	}
-	valid, err := e.PublicKey.Verify(toVerify, e.signature)
+	defer pool.Put(unsigned)
+
+	valid, err := e.PublicKey.Verify(unsigned, e.signature)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed while verifying signature: %w", err)
 	}
 	if !valid {
-		return errInvalidSignature
+		return ErrInvalidSignature
 	}
 	return nil
 }
 
-// makeSigBuffer is a helper function that prepares a buffer to sign or verify.
-func makeSigBuffer(domain string, payloadType []byte, payload []byte) ([]byte, error) {
-	domainBytes := []byte(domain)
-	fields := [][]byte{domainBytes, payloadType, payload}
+// makeUnsigned is a helper function that prepares a buffer to sign or verify.
+// It returns a byte slice from a pool. The caller MUST return this slice to the
+// pool.
+func makeUnsigned(domain string, payloadType []byte, payload []byte) ([]byte, error) {
+	var (
+		fields = [][]byte{[]byte(domain), payloadType, payload}
 
-	// fields are prefixed with their length as an unsigned varint.
-	// we compute the lengths before allocating the sig
-	// buffer so we know how much space to add for the lengths
-	fieldLengths := make([][]byte, len(fields))
-	bufSize := 0
+		// fields are prefixed with their length as an unsigned varint. we
+		// compute the lengths before allocating the sig buffer so we know how
+		// much space to add for the lengths
+		flen = make([][]byte, len(fields))
+		size = 0
+	)
+
 	for i, f := range fields {
 		l := len(f)
-		fieldLengths[i] = varint.ToUvarint(uint64(l))
-		bufSize += l + len(fieldLengths[i])
+		flen[i] = varint.ToUvarint(uint64(l))
+		size += l + len(flen[i])
 	}
 
-	b := pool.NewBuffer(nil)
-	b.Grow(bufSize)
+	b := pool.Get(size)
 
+	var s int
 	for i, f := range fields {
-		_, err := b.Write(fieldLengths[i])
-		if err != nil {
-			return nil, err
-		}
-		_, err = b.Write(f)
-		if err != nil {
-			return nil, err
-		}
+		s += copy(b[s:], flen[i])
+		s += copy(b[s:], f)
 	}
 
-	return b.Bytes(), nil
+	return b[:s], nil
 }
