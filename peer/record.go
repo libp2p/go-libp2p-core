@@ -2,7 +2,6 @@ package peer
 
 import (
 	"errors"
-	"time"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -61,9 +60,6 @@ type PeerRecord struct {
 	// PeerID is the ID of the peer this record pertains to.
 	PeerID ID
 
-	// Seq is an increment-only sequence counter used to order peer records in time.
-	Seq uint64
-
 	// Addrs contains the public addresses of the peer this record pertains to.
 	Addrs []ma.Multiaddr
 }
@@ -74,7 +70,6 @@ func NewPeerRecord(id ID, addrs []ma.Multiaddr) *PeerRecord {
 	return &PeerRecord{
 		PeerID: id,
 		Addrs:  addrs,
-		Seq:    statelessSeqNo(),
 	}
 }
 
@@ -116,7 +111,6 @@ func PeerRecordFromSignedEnvelope(envelope *record.SignedEnvelope) (*PeerRecord,
 	}
 	return &PeerRecord{
 		PeerID: id,
-		Seq:    msg.Seq,
 		Addrs:  addrsFromProtobuf(msg.Addresses),
 	}, nil
 }
@@ -137,7 +131,6 @@ func (r *PeerRecord) Sign(privKey crypto.PrivKey) (*record.SignedEnvelope, error
 	}
 	msg := pb.PeerRecord{
 		PeerId:    idBytes,
-		Seq:       r.Seq,
 		Addresses: addrsToProtobuf(r.Addrs),
 	}
 	payload, err := proto.Marshal(&msg)
@@ -160,9 +153,6 @@ func (r *PeerRecord) Equal(other *PeerRecord) bool {
 	if other == nil {
 		return r == nil
 	}
-	if r.Seq != other.Seq {
-		return false
-	}
 	if r.PeerID != other.PeerID {
 		return false
 	}
@@ -175,11 +165,6 @@ func (r *PeerRecord) Equal(other *PeerRecord) bool {
 		}
 	}
 	return true
-}
-
-// statelessSeqNo is a helper to generate a timestamp-based sequence number.
-func statelessSeqNo() uint64 {
-	return uint64(time.Now().UnixNano())
 }
 
 func addrsFromProtobuf(addrs []*pb.PeerRecord_AddressInfo) []ma.Multiaddr {

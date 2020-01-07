@@ -8,5 +8,6 @@ message SignedEnvelope {
     crypto.pb.PublicKey publicKey = 1;
     bytes payloadType = 2;
     bytes payload = 3;
-    bytes signature = 4;
+    uint64 seq = 4;
+    bytes signature = 5;
 }

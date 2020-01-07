@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"time"
 
 	pool "github.com/libp2p/go-buffer-pool"
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -26,6 +27,9 @@ type SignedEnvelope struct {
 	// A binary identifier that indicates what kind of data is contained in the payload.
 	// TODO(yusef): enforce multicodec prefix
 	PayloadType []byte
+
+	// A monotonically-increasing sequence counter for ordering SignedEnvelopes in time.
+	Seq uint64
 
 	// The envelope payload.
 	Payload []byte
@@ -63,6 +67,7 @@ func MakeEnvelope(privateKey crypto.PrivKey, domain string, payloadType []byte, 
 		PublicKey:   privateKey.GetPublic(),
 		PayloadType: payloadType,
 		Payload:     payload,
+		Seq:         statelessSeqNo(),
 		signature:   sig,
 	}, nil
 }
@@ -96,6 +101,7 @@ func UnmarshalEnvelope(data []byte) (*SignedEnvelope, error) {
 		PublicKey:   key,
 		PayloadType: e.PayloadType,
 		Payload:     e.Payload,
+		Seq:         e.Seq,
 		signature:   e.Signature,
 	}, nil
 }
@@ -112,6 +118,7 @@ func (e *SignedEnvelope) Marshal() ([]byte, error) {
 		PublicKey:   key,
 		PayloadType: e.PayloadType,
 		Payload:     e.Payload,
+		Seq:         e.Seq,
 		Signature:   e.signature,
 	}
 	return proto.Marshal(&msg)
@@ -121,10 +128,14 @@ func (e *SignedEnvelope) Marshal() ([]byte, error) {
 // payload, payload type, and signature. This implies that they were also
 // created with the same domain string.
 func (e *SignedEnvelope) Equal(other *SignedEnvelope) bool {
-	return e.PublicKey.Equals(other.PublicKey) &&
+	if other == nil {
+		return e == nil
+	}
+	return e.Seq == other.Seq &&
+		e.PublicKey.Equals(other.PublicKey) &&
 		bytes.Compare(e.PayloadType, other.PayloadType) == 0 &&
-		bytes.Compare(e.Payload, other.Payload) == 0 &&
-		bytes.Compare(e.signature, other.signature) == 0
+		bytes.Compare(e.signature, other.signature) == 0 &&
+		bytes.Compare(e.Payload, other.Payload) == 0
 }
 
 // validate returns true if the envelope signature is valid for the given 'domain',
@@ -175,4 +186,9 @@ func makeUnsigned(domain string, payloadType []byte, payload []byte) ([]byte, er
 	}
 
 	return b[:s], nil
+}
+
+// statelessSeqNo is a helper to generate a timestamp-based sequence number.
+func statelessSeqNo() uint64 {
+	return uint64(time.Now().UnixNano())
 }
