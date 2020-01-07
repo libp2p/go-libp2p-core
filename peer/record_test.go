@@ -34,6 +34,15 @@ func TestSignedPeerRecordFromEnvelope(t *testing.T) {
 		}
 	})
 
+	t.Run("signing fails if signing key does not match peer id in record", func(t *testing.T) {
+		id = "some-other-peer-id"
+		rec := NewPeerRecord(id, addrs)
+		_, err := rec.Sign(priv)
+		if err != ErrPeerIdMismatch {
+			t.Error("expected signing with mismatched private key to fail")
+		}
+	})
+
 	t.Run("unwrapping from signed envelope fails if envelope has wrong domain string", func(t *testing.T) {
 		payload := []byte("ignored")
 		test.AssertNilError(t, err)
