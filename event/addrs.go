@@ -1,7 +1,7 @@
 package event
 
 import (
-	"github.com/libp2p/go-libp2p-core/routing"
+	"github.com/libp2p/go-libp2p-core/record"
 	ma "github.com/multiformats/go-multiaddr"
 )
 
@@ -17,9 +17,9 @@ type EvtLocalAddressesUpdated struct {
 	Removed []ma.Multiaddr
 }
 
-// EvtLocalPeerRoutingStateUpdated should be emitted when a new SignedRoutingState
-// record for the local peer has been produced. This will happen whenever the set
-// of listen addresses changes.
-type EvtLocalPeerRoutingStateUpdated struct {
-	State *routing.SignedRoutingState
+// EvtLocalPeerRoutingStateUpdated should be emitted when a new signed PeerRecord
+// for the local peer has been produced. This will happen whenever the set of listen
+// addresses changes.
+type EvtLocalPeerRecordUpdated struct {
+	SignedRecord *record.SignedEnvelope
 }

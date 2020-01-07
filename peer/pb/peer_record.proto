@@ -1,7 +1,7 @@
 syntax = "proto3";
-package routing.pb;
+package peer.pb;
 
-message RoutingStateRecord {
+message PeerRecord {
     message AddressInfo {
         bytes multiaddr = 1;
     }

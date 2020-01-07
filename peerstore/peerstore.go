@@ -5,7 +5,7 @@ package peerstore
 import (
 	"context"
 	"errors"
-	"github.com/libp2p/go-libp2p-core/routing"
+	"github.com/libp2p/go-libp2p-core/record"
 	"io"
 	"math"
 	"time"
@@ -124,8 +124,9 @@ type AddrBook interface {
 }
 
 // CertifiedAddrBook manages "self-certified" addresses for remote peers.
-// Self-certified addresses are contained in routing.SignedRoutingState
-// records that are signed by the peer to whom they belong.
+// Self-certified addresses are contained in peer.PeerRecords
+// that are wraped in a record.SignedEnvelope and signed by the peer
+// to whom they belong.
 //
 // This interface is most useful when combined with AddrBook.
 // To test whether a given AddrBook / Peerstore implementation supports
@@ -133,21 +134,21 @@ type AddrBook interface {
 // interface:
 //
 //     if cab, ok := aPeerstore.(CertifiedAddrBook); ok {
-//         cab.AddCertifiedAddrs(aRoutingStateRecord, aTTL)
+//         cab.AddCertifiedAddrs(signedPeerRecord, aTTL)
 //     }
 //
 type CertifiedAddrBook interface {
-	// AddCertifiedAddrs adds addresses from a routing.SignedRoutingState record,
-	// which will expire after the given TTL.
+	// AddCertifiedAddrs adds addresses from a signed peer.PeerRecord (contained in
+	// a routing.SignedEnvelope), which will expire after the given TTL.
 	//
-	// SignedRoutingState records added via this method will be stored without
-	// alteration as long as the address TTLs remain valid. Records can be retrieved
-	// by calling SignedRoutingState(peerID).
+	// Signed records added via this method will be stored without
+	// alteration as long as the address TTLs remain valid. The SignedEnvelopes
+	// containing the PeerRecords can be retrieved by calling SignedPeerRecord(peerID).
 	//
-	// If the SignedRoutingState belongs to a peer that already has certified
+	// If the signed PeerRecord belongs to a peer that already has certified
 	// addresses in the CertifiedAddrBook, the new addresses will replace the
 	// older ones, iff the new record has a higher sequence number than the
-	// existing record. Attempting to add a SignedRoutingState record with a
+	// existing record. Attempting to add a peer record with a
 	// sequence number that's <= an existing record for the same peer will not
 	// result in an error, but the record will be ignored.
 	//
@@ -161,12 +162,12 @@ type CertifiedAddrBook interface {
 	// AddrBook.SetAddrs will be ignored. AddrBook.SetAddrs may still be used
 	// to update the TTL of certified addresses if they have previously been
 	// added via AddCertifiedAddrs.
-	AddCertifiedAddrs(s *routing.SignedRoutingState, ttl time.Duration) error
+	AddCertifiedAddrs(s *record.SignedEnvelope, ttl time.Duration) error
 
-	// SignedRoutingState returns a SignedRoutingState record for the
+	// SignedPeerRecord returns a SignedEnvelope containing a PeerRecord for the
 	// given peer id, if one exists.
-	// Returns nil if no routing state exists for the peer.
-	SignedRoutingState(p peer.ID) *routing.SignedRoutingState
+	// Returns nil if no signed PeerRecord exists for the peer.
+	SignedPeerRecord(p peer.ID) *record.SignedEnvelope
 }
 
 // GetCertifiedAddrBook is a helper to "upcast" an AddrBook to a
