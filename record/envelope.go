@@ -52,7 +52,8 @@ func MakeEnvelope(privateKey crypto.PrivKey, domain string, payloadType []byte, 
 		return nil, ErrEmptyDomain
 	}
 
-	unsigned, err := makeUnsigned(domain, payloadType, payload)
+	seq := statelessSeqNo()
+	unsigned, err := makeUnsigned(domain, payloadType, payload, seq)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +68,7 @@ func MakeEnvelope(privateKey crypto.PrivKey, domain string, payloadType []byte, 
 		PublicKey:   privateKey.GetPublic(),
 		PayloadType: payloadType,
 		Payload:     payload,
-		Seq:         statelessSeqNo(),
+		Seq:         seq,
 		signature:   sig,
 	}, nil
 }
@@ -141,7 +142,7 @@ func (e *SignedEnvelope) Equal(other *SignedEnvelope) bool {
 // validate returns true if the envelope signature is valid for the given 'domain',
 // or false if it is invalid. May return an error if signature validation fails.
 func (e *SignedEnvelope) validate(domain string) error {
-	unsigned, err := makeUnsigned(domain, e.PayloadType, e.Payload)
+	unsigned, err := makeUnsigned(domain, e.PayloadType, e.Payload, e.Seq)
 	if err != nil {
 		return err
 	}
@@ -160,9 +161,10 @@ func (e *SignedEnvelope) validate(domain string) error {
 // makeUnsigned is a helper function that prepares a buffer to sign or verify.
 // It returns a byte slice from a pool. The caller MUST return this slice to the
 // pool.
-func makeUnsigned(domain string, payloadType []byte, payload []byte) ([]byte, error) {
+func makeUnsigned(domain string, payloadType []byte, payload []byte, seq uint64) ([]byte, error) {
 	var (
-		fields = [][]byte{[]byte(domain), payloadType, payload}
+		seqBytes = varint.ToUvarint(seq)
+		fields   = [][]byte{[]byte(domain), payloadType, seqBytes, payload}
 
 		// fields are prefixed with their length as an unsigned varint. we
 		// compute the lengths before allocating the sig buffer so we know how
