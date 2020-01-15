@@ -5,15 +5,13 @@ package peerstore
 import (
 	"context"
 	"errors"
-	"github.com/libp2p/go-libp2p-core/record"
 	"io"
 	"math"
 	"time"
 
-	"github.com/libp2p/go-libp2p-core/peer"
-
 	ic "github.com/libp2p/go-libp2p-core/crypto"
-
+	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p-core/record"
 	ma "github.com/multiformats/go-multiaddr"
 )
 
