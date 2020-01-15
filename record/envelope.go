@@ -32,7 +32,7 @@ type SignedEnvelope struct {
 	Seq uint64
 
 	// The envelope payload.
-	Payload []byte
+	RawPayload []byte
 
 	// The signature of the domain string :: type hint :: payload.
 	signature []byte
@@ -67,22 +67,65 @@ func MakeEnvelope(privateKey crypto.PrivKey, domain string, payloadType []byte, 
 	return &SignedEnvelope{
 		PublicKey:   privateKey.GetPublic(),
 		PayloadType: payloadType,
-		Payload:     payload,
+		RawPayload:  payload,
 		Seq:         seq,
 		signature:   sig,
 	}, nil
 }
 
+func MakeEnvelopeFromRecord(privateKey crypto.PrivKey, domain string, rec Record) (*SignedEnvelope, error) {
+	payloadType, ok := payloadTypeForRecord(rec)
+	if !ok {
+		return nil, fmt.Errorf("unable to determine value for PayloadType field")
+	}
+	payloadBytes, err := rec.MarshalRecord()
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling record: %v", err)
+	}
+	return MakeEnvelope(privateKey, domain, payloadType, payloadBytes)
+}
+
 // ConsumeEnvelope unmarshals a serialized SignedEnvelope, and validates its
 // signature using the provided 'domain' string. If validation fails, an error
-// is returned, along with the unmarshalled payload so it can be inspected.
-func ConsumeEnvelope(data []byte, domain string) (*SignedEnvelope, error) {
+// is returned, along with the unmarshalled envelope so it can be inspected.
+// TODO(yusef): improve this doc comment before merge
+func ConsumeEnvelope(data []byte, domain string) (envelope *SignedEnvelope, contents Record, err error) {
+	e, err := UnmarshalEnvelope(data)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed when unmarshalling the envelope: %w", err)
+	}
+
+	err = e.validate(domain)
+	if err != nil {
+		return e, nil, fmt.Errorf("failed to validate envelope: %w", err)
+	}
+
+	contents, err = unmarshalRecordPayload(e.PayloadType, e.RawPayload)
+	if err != nil {
+		return e, nil, fmt.Errorf("failed to unmarshal envelope payload: %w", err)
+	}
+
+	return e, contents, nil
+}
+
+// TODO(yusef): doc comment before merge
+func ConsumeTypedEnvelope(data []byte, domain string, payloadDest Record) (envelope *SignedEnvelope, err error) {
 	e, err := UnmarshalEnvelope(data)
 	if err != nil {
 		return nil, fmt.Errorf("failed when unmarshalling the envelope: %w", err)
 	}
 
-	return e, e.validate(domain)
+	err = e.validate(domain)
+	if err != nil {
+		return e, fmt.Errorf("failed to validate envelope: %w", err)
+	}
+
+	err = payloadDest.UnmarshalRecord(e.RawPayload)
+	if err != nil {
+		return e, fmt.Errorf("failed to unmarshal envelope payload: %w", err)
+	}
+
+	return e, nil
 }
 
 // UnmarshalEnvelope unmarshals a serialized SignedEnvelope protobuf message,
@@ -101,7 +144,7 @@ func UnmarshalEnvelope(data []byte) (*SignedEnvelope, error) {
 	return &SignedEnvelope{
 		PublicKey:   key,
 		PayloadType: e.PayloadType,
-		Payload:     e.Payload,
+		RawPayload:  e.Payload,
 		Seq:         e.Seq,
 		signature:   e.Signature,
 	}, nil
@@ -118,7 +161,7 @@ func (e *SignedEnvelope) Marshal() ([]byte, error) {
 	msg := pb.SignedEnvelope{
 		PublicKey:   key,
 		PayloadType: e.PayloadType,
-		Payload:     e.Payload,
+		Payload:     e.RawPayload,
 		Seq:         e.Seq,
 		Signature:   e.signature,
 	}
@@ -136,13 +179,13 @@ func (e *SignedEnvelope) Equal(other *SignedEnvelope) bool {
 		e.PublicKey.Equals(other.PublicKey) &&
 		bytes.Compare(e.PayloadType, other.PayloadType) == 0 &&
 		bytes.Compare(e.signature, other.signature) == 0 &&
-		bytes.Compare(e.Payload, other.Payload) == 0
+		bytes.Compare(e.RawPayload, other.RawPayload) == 0
 }
 
-// validate returns true if the envelope signature is valid for the given 'domain',
-// or false if it is invalid. May return an error if signature validation fails.
+// validate returns nil if the envelope signature is valid for the given 'domain',
+// or an error if signature validation fails.
 func (e *SignedEnvelope) validate(domain string) error {
-	unsigned, err := makeUnsigned(domain, e.PayloadType, e.Payload, e.Seq)
+	unsigned, err := makeUnsigned(domain, e.PayloadType, e.RawPayload, e.Seq)
 	if err != nil {
 		return err
 	}
