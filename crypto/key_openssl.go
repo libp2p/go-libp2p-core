@@ -26,7 +26,7 @@ func KeyPairFromStdKey(priv crypto.PrivateKey) (PrivKey, PubKey, error) {
 			return nil, nil, err
 		}
 
-		return &opensslPrivateKey{pk}, &opensslPublicKey{pk}, nil
+		return &opensslPrivateKey{pk}, &opensslPublicKey{key: pk}, nil
 
 	case *ecdsa.PrivateKey:
 		return &ECDSAPrivateKey{p}, &ECDSAPublicKey{&p.PublicKey}, nil

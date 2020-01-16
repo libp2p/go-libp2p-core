@@ -19,7 +19,7 @@ func KeyPairFromStdKey(priv crypto.PrivateKey) (PrivKey, PubKey, error) {
 
 	switch p := priv.(type) {
 	case *rsa.PrivateKey:
-		return &RsaPrivateKey{*p}, &RsaPublicKey{p.PublicKey}, nil
+		return &RsaPrivateKey{*p}, &RsaPublicKey{k: p.PublicKey}, nil
 
 	case *ecdsa.PrivateKey:
 		return &ECDSAPrivateKey{p}, &ECDSAPublicKey{&p.PublicKey}, nil
