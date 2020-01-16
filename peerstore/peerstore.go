@@ -123,7 +123,7 @@ type AddrBook interface {
 
 // CertifiedAddrBook manages "self-certified" addresses for remote peers.
 // Self-certified addresses are contained in peer.PeerRecords
-// that are wraped in a record.SignedEnvelope and signed by the peer
+// that are wraped in a record.Envelope and signed by the peer
 // to whom they belong.
 //
 // This interface is most useful when combined with AddrBook.
@@ -137,7 +137,7 @@ type AddrBook interface {
 //
 type CertifiedAddrBook interface {
 	// AddCertifiedAddrs adds addresses from a signed peer.PeerRecord (contained in
-	// a routing.SignedEnvelope), which will expire after the given TTL.
+	// a routing.Envelope), which will expire after the given TTL.
 	//
 	// Signed records added via this method will be stored without
 	// alteration as long as the address TTLs remain valid. The SignedEnvelopes
@@ -160,12 +160,12 @@ type CertifiedAddrBook interface {
 	// AddrBook.SetAddrs will be ignored. AddrBook.SetAddrs may still be used
 	// to update the TTL of certified addresses if they have previously been
 	// added via AddCertifiedAddrs.
-	AddCertifiedAddrs(s *record.SignedEnvelope, ttl time.Duration) error
+	AddCertifiedAddrs(s *record.Envelope, ttl time.Duration) error
 
-	// SignedPeerRecord returns a SignedEnvelope containing a PeerRecord for the
+	// SignedPeerRecord returns a Envelope containing a PeerRecord for the
 	// given peer id, if one exists.
 	// Returns nil if no signed PeerRecord exists for the peer.
-	SignedPeerRecord(p peer.ID) *record.SignedEnvelope
+	SignedPeerRecord(p peer.ID) *record.Envelope
 }
 
 // GetCertifiedAddrBook is a helper to "upcast" an AddrBook to a

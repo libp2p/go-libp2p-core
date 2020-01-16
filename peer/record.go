@@ -15,10 +15,10 @@ func init() {
 	record.RegisterPayloadType(PeerRecordEnvelopePayloadType, &PeerRecord{})
 }
 
-// The domain string used for peer records contained in a SignedEnvelope.
+// The domain string used for peer records contained in a Envelope.
 const PeerRecordEnvelopeDomain = "libp2p-peer-record"
 
-// The type hint used to identify peer records in a SignedEnvelope.
+// The type hint used to identify peer records in a Envelope.
 // TODO: register multicodec
 var PeerRecordEnvelopePayloadType = []byte("/libp2p/peer-record")
 
@@ -36,15 +36,15 @@ var ErrPeerIdMismatch = errors.New("signing key does not match record.PeerID")
 // PeerRecords are intended to be signed by the peer they describe, and there are no
 // public methods for marshalling unsigned PeerRecords.
 //
-// To share a PeerRecord, first call Sign to wrap the record in a SignedEnvelope
+// To share a PeerRecord, first call Sign to wrap the record in a Envelope
 // and sign it with the local peer's private key:
 //
 //     rec := &PeerRecord{PeerID: myPeerId, Addrs: myAddrs}
 //     envelope, err := rec.Sign(myPrivateKey)
 //
-// The resulting record.SignedEnvelope can be marshalled to a []byte and shared
+// The resulting record.Envelope can be marshalled to a []byte and shared
 // publicly. As a convenience, the MarshalSigned method will produce the
-// SignedEnvelope and marshal it to a []byte in one go:
+// Envelope and marshal it to a []byte in one go:
 //
 //     rec := &PeerRecord{PeerID: myPeerId, Addrs: myAddrs}
 //     recordBytes, err := rec.MarshalSigned(myPrivateKey)
@@ -111,9 +111,9 @@ func (r *PeerRecord) MarshalRecord() ([]byte, error) {
 	return proto.Marshal(&msg)
 }
 
-// Sign wraps the PeerRecord in a routing.SignedEnvelope, signed with the given
+// Sign wraps the PeerRecord in a routing.Envelope, signed with the given
 // private key. The private key must match the PeerID field of the PeerRecord.
-func (r *PeerRecord) Sign(privKey crypto.PrivKey) (*record.SignedEnvelope, error) {
+func (r *PeerRecord) Sign(privKey crypto.PrivKey) (*record.Envelope, error) {
 	p, err := IDFromPrivateKey(privKey)
 	if err != nil {
 		return nil, err
@@ -121,11 +121,11 @@ func (r *PeerRecord) Sign(privKey crypto.PrivKey) (*record.SignedEnvelope, error
 	if p != r.PeerID {
 		return nil, ErrPeerIdMismatch
 	}
-	return record.MakeEnvelopeFromRecord(privKey, PeerRecordEnvelopeDomain, r)
+	return record.MakeEnvelopeWithRecord(privKey, PeerRecordEnvelopeDomain, r)
 }
 
-// MarshalSigned is a convenience method that wraps the PeerRecord in a routing.SignedEnvelope,
-// and marshals the SignedEnvelope to a []byte.
+// MarshalSigned is a convenience method that wraps the PeerRecord in a routing.Envelope,
+// and marshals the Envelope to a []byte.
 func (r *PeerRecord) MarshalSigned(privKey crypto.PrivKey) ([]byte, error) {
 	env, err := r.Sign(privKey)
 	if err != nil {

@@ -21,5 +21,5 @@ type EvtLocalAddressesUpdated struct {
 // for the local peer has been produced. This will happen whenever the set of listen
 // addresses changes.
 type EvtLocalPeerRecordUpdated struct {
-	SignedRecord *record.SignedEnvelope
+	SignedRecord *record.Envelope
 }

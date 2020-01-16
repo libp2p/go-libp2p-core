@@ -4,7 +4,8 @@ package record.pb;
 
 import "crypto/pb/crypto.proto";
 
-message SignedEnvelope {
+// TODO(yusef): doc comments before merge
+message Envelope {
     crypto.pb.PublicKey publicKey = 1;
     bytes payloadType = 2;
     bytes payload = 3;

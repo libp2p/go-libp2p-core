@@ -14,13 +14,13 @@ import (
 	"github.com/multiformats/go-varint"
 )
 
-// SignedEnvelope contains an arbitrary []byte payload, signed by a libp2p peer.
+// Envelope contains an arbitrary []byte payload, signed by a libp2p peer.
 //
 // Envelopes are signed in the context of a particular "domain", which is a
 // string specified when creating and verifying the envelope. You must know the
 // domain string used to produce the envelope in order to verify the signature
 // and access the payload.
-type SignedEnvelope struct {
+type Envelope struct {
 	// The public key that can be used to verify the signature and derive the peer id of the signer.
 	PublicKey crypto.PubKey
 
@@ -39,17 +39,22 @@ type SignedEnvelope struct {
 }
 
 var ErrEmptyDomain = errors.New("envelope domain must not be empty")
+var ErrEmptyPayloadType = errors.New("payloadType must not be empty")
 var ErrInvalidSignature = errors.New("invalid signature or incorrect domain")
 
-// MakeEnvelope constructs a new SignedEnvelope using the given privateKey.
+// MakeEnvelope constructs a new Envelope using the given privateKey.
 //
 // The required 'domain' string contextualizes the envelope for a particular purpose,
 // and must be supplied when verifying the signature.
 //
-// The 'PayloadType' field indicates what kind of data is contained and may be empty.
-func MakeEnvelope(privateKey crypto.PrivKey, domain string, payloadType []byte, payload []byte) (*SignedEnvelope, error) {
+// The 'PayloadType' field indicates what kind of data is contained and must be non-empty.
+func MakeEnvelope(privateKey crypto.PrivKey, domain string, payloadType []byte, payload []byte) (*Envelope, error) {
 	if domain == "" {
 		return nil, ErrEmptyDomain
+	}
+
+	if len(payloadType) == 0 {
+		return nil, ErrEmptyPayloadType
 	}
 
 	seq := statelessSeqNo()
@@ -64,7 +69,7 @@ func MakeEnvelope(privateKey crypto.PrivKey, domain string, payloadType []byte, 
 		return nil, err
 	}
 
-	return &SignedEnvelope{
+	return &Envelope{
 		PublicKey:   privateKey.GetPublic(),
 		PayloadType: payloadType,
 		RawPayload:  payload,
@@ -73,7 +78,12 @@ func MakeEnvelope(privateKey crypto.PrivKey, domain string, payloadType []byte, 
 	}, nil
 }
 
-func MakeEnvelopeFromRecord(privateKey crypto.PrivKey, domain string, rec Record) (*SignedEnvelope, error) {
+// MakeEnvelopeWithRecord wraps the given Record in an Envelope, and signs it using the given key
+// and domain string.
+//
+// The Record's concrete type must be associated with a multicodec payload type identifier
+// (see record.RegisterPayloadType).
+func MakeEnvelopeWithRecord(privateKey crypto.PrivKey, domain string, rec Record) (*Envelope, error) {
 	payloadType, ok := payloadTypeForRecord(rec)
 	if !ok {
 		return nil, fmt.Errorf("unable to determine value for PayloadType field")
@@ -85,11 +95,11 @@ func MakeEnvelopeFromRecord(privateKey crypto.PrivKey, domain string, rec Record
 	return MakeEnvelope(privateKey, domain, payloadType, payloadBytes)
 }
 
-// ConsumeEnvelope unmarshals a serialized SignedEnvelope, and validates its
+// ConsumeEnvelope unmarshals a serialized Envelope, and validates its
 // signature using the provided 'domain' string. If validation fails, an error
 // is returned, along with the unmarshalled envelope so it can be inspected.
 // TODO(yusef): improve this doc comment before merge
-func ConsumeEnvelope(data []byte, domain string) (envelope *SignedEnvelope, contents Record, err error) {
+func ConsumeEnvelope(data []byte, domain string) (envelope *Envelope, rec Record, err error) {
 	e, err := UnmarshalEnvelope(data)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed when unmarshalling the envelope: %w", err)
@@ -100,16 +110,15 @@ func ConsumeEnvelope(data []byte, domain string) (envelope *SignedEnvelope, cont
 		return e, nil, fmt.Errorf("failed to validate envelope: %w", err)
 	}
 
-	contents, err = unmarshalRecordPayload(e.PayloadType, e.RawPayload)
+	rec, err = unmarshalRecordPayload(e.PayloadType, e.RawPayload)
 	if err != nil {
 		return e, nil, fmt.Errorf("failed to unmarshal envelope payload: %w", err)
 	}
-
-	return e, contents, nil
+	return e, rec, nil
 }
 
 // TODO(yusef): doc comment before merge
-func ConsumeTypedEnvelope(data []byte, domain string, payloadDest Record) (envelope *SignedEnvelope, err error) {
+func ConsumeTypedEnvelope(data []byte, domain string, destRecord Record) (envelope *Envelope, err error) {
 	e, err := UnmarshalEnvelope(data)
 	if err != nil {
 		return nil, fmt.Errorf("failed when unmarshalling the envelope: %w", err)
@@ -120,18 +129,17 @@ func ConsumeTypedEnvelope(data []byte, domain string, payloadDest Record) (envel
 		return e, fmt.Errorf("failed to validate envelope: %w", err)
 	}
 
-	err = payloadDest.UnmarshalRecord(e.RawPayload)
+	err = destRecord.UnmarshalRecord(e.RawPayload)
 	if err != nil {
 		return e, fmt.Errorf("failed to unmarshal envelope payload: %w", err)
 	}
-
 	return e, nil
 }
 
-// UnmarshalEnvelope unmarshals a serialized SignedEnvelope protobuf message,
+// UnmarshalEnvelope unmarshals a serialized Envelope protobuf message,
 // without validating its contents. Most users should use ConsumeEnvelope.
-func UnmarshalEnvelope(data []byte) (*SignedEnvelope, error) {
-	var e pb.SignedEnvelope
+func UnmarshalEnvelope(data []byte) (*Envelope, error) {
+	var e pb.Envelope
 	if err := proto.Unmarshal(data, &e); err != nil {
 		return nil, err
 	}
@@ -141,7 +149,7 @@ func UnmarshalEnvelope(data []byte) (*SignedEnvelope, error) {
 		return nil, err
 	}
 
-	return &SignedEnvelope{
+	return &Envelope{
 		PublicKey:   key,
 		PayloadType: e.PayloadType,
 		RawPayload:  e.Payload,
@@ -151,14 +159,14 @@ func UnmarshalEnvelope(data []byte) (*SignedEnvelope, error) {
 }
 
 // Marshal returns a byte slice containing a serialized protobuf representation
-// of a SignedEnvelope.
-func (e *SignedEnvelope) Marshal() ([]byte, error) {
+// of a Envelope.
+func (e *Envelope) Marshal() ([]byte, error) {
 	key, err := crypto.PublicKeyToProto(e.PublicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	msg := pb.SignedEnvelope{
+	msg := pb.Envelope{
 		PublicKey:   key,
 		PayloadType: e.PayloadType,
 		Payload:     e.RawPayload,
@@ -168,10 +176,10 @@ func (e *SignedEnvelope) Marshal() ([]byte, error) {
 	return proto.Marshal(&msg)
 }
 
-// Equal returns true if the other SignedEnvelope has the same public key,
+// Equal returns true if the other Envelope has the same public key,
 // payload, payload type, and signature. This implies that they were also
 // created with the same domain string.
-func (e *SignedEnvelope) Equal(other *SignedEnvelope) bool {
+func (e *Envelope) Equal(other *Envelope) bool {
 	if other == nil {
 		return e == nil
 	}
@@ -184,7 +192,7 @@ func (e *SignedEnvelope) Equal(other *SignedEnvelope) bool {
 
 // validate returns nil if the envelope signature is valid for the given 'domain',
 // or an error if signature validation fails.
-func (e *SignedEnvelope) validate(domain string) error {
+func (e *Envelope) validate(domain string) error {
 	unsigned, err := makeUnsigned(domain, e.PayloadType, e.RawPayload, e.Seq)
 	if err != nil {
 		return err

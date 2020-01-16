@@ -127,7 +127,7 @@ func TestEnvelopeValidateFailsForDifferentDomain(t *testing.T) {
 
 	RegisterPayloadType(payloadType, &simpleRecord{})
 
-	envelope, err := MakeEnvelopeFromRecord(priv, domain, rec)
+	envelope, err := MakeEnvelopeWithRecord(priv, domain, rec)
 	test.AssertNilError(t, err)
 
 	serialized, err := envelope.Marshal()
@@ -149,10 +149,10 @@ func TestEnvelopeValidateFailsIfTypeHintIsAltered(t *testing.T) {
 
 	RegisterPayloadType(payloadType, &simpleRecord{})
 
-	envelope, err := MakeEnvelopeFromRecord(priv, domain, rec)
+	envelope, err := MakeEnvelopeWithRecord(priv, domain, rec)
 	test.AssertNilError(t, err)
 
-	serialized := alterMessageAndMarshal(t, envelope, func(msg *pb.SignedEnvelope) {
+	serialized := alterMessageAndMarshal(t, envelope, func(msg *pb.Envelope) {
 		msg.PayloadType = []byte("foo")
 	})
 
@@ -173,10 +173,10 @@ func TestEnvelopeValidateFailsIfContentsAreAltered(t *testing.T) {
 
 	RegisterPayloadType(payloadType, &simpleRecord{})
 
-	envelope, err := MakeEnvelopeFromRecord(priv, domain, rec)
+	envelope, err := MakeEnvelopeWithRecord(priv, domain, rec)
 	test.AssertNilError(t, err)
 
-	serialized := alterMessageAndMarshal(t, envelope, func(msg *pb.SignedEnvelope) {
+	serialized := alterMessageAndMarshal(t, envelope, func(msg *pb.Envelope) {
 		msg.Payload = []byte("totally legit, trust me")
 	})
 
@@ -197,10 +197,10 @@ func TestEnvelopeValidateFailsIfSeqIsAltered(t *testing.T) {
 
 	RegisterPayloadType(payloadType, &simpleRecord{})
 
-	envelope, err := MakeEnvelopeFromRecord(priv, domain, rec)
+	envelope, err := MakeEnvelopeWithRecord(priv, domain, rec)
 	test.AssertNilError(t, err)
 
-	serialized := alterMessageAndMarshal(t, envelope, func(msg *pb.SignedEnvelope) {
+	serialized := alterMessageAndMarshal(t, envelope, func(msg *pb.Envelope) {
 		msg.Seq = envelope.Seq + 1
 	})
 
@@ -210,17 +210,17 @@ func TestEnvelopeValidateFailsIfSeqIsAltered(t *testing.T) {
 }
 
 // Since we're outside of the crypto package (to avoid import cycles with test package),
-// we can't alter the fields in a SignedEnvelope directly. This helper marshals
+// we can't alter the fields in a Envelope directly. This helper marshals
 // the envelope to a protobuf and calls the alterMsg function, which should
 // alter the protobuf message.
 // Returns the serialized altered protobuf message.
-func alterMessageAndMarshal(t *testing.T, envelope *SignedEnvelope, alterMsg func(*pb.SignedEnvelope)) []byte {
+func alterMessageAndMarshal(t *testing.T, envelope *Envelope, alterMsg func(*pb.Envelope)) []byte {
 	t.Helper()
 
 	serialized, err := envelope.Marshal()
 	test.AssertNilError(t, err)
 
-	msg := pb.SignedEnvelope{}
+	msg := pb.Envelope{}
 	err = proto.Unmarshal(serialized, &msg)
 	test.AssertNilError(t, err)
 
