@@ -33,8 +33,9 @@ var ErrPeerIdMismatch = errors.New("signing key does not match record.PeerID")
 // Currently, a PeerRecord contains the public listen addresses for a peer, but this
 // is expected to expand to include other information in the future.
 //
-// PeerRecords are intended to be signed by the peer they describe, and there are no
-// public methods for marshalling unsigned PeerRecords.
+// PeerRecords are intended to be shared with other peers inside a signed
+// routing.Envelope, and PeerRecord implements the routing.Record interface
+// to facilitate this.
 //
 // To share a PeerRecord, first call Sign to wrap the record in a Envelope
 // and sign it with the local peer's private key:
@@ -50,18 +51,16 @@ var ErrPeerIdMismatch = errors.New("signing key does not match record.PeerID")
 //     recordBytes, err := rec.MarshalSigned(myPrivateKey)
 //
 // To validate and unmarshal a signed PeerRecord from a remote peer,
-// "consume" the containing envelope and unmarshal the payload using
-// the Unmarshal method on an empty PeerRecord:
+// "consume" the containing envelope, which will return both the
+// routing.Envelope and the inner Record. The Record must be cast to
+// a PeerRecord pointer before use:
 //
-//     envelope, err := record.ConsumeEnvelope(envelopeBytes, PeerRecordEnvelopeDomain)
+//     envelope, untypedRecord, err := ConsumeEnvelope(envelopeBytes, PeerRecordEnvelopeDomain)
 //     if err != nil {
-//        doSomething(err)
+//       handleError(err)
+//       return
 //     }
-//     var rec *PeerRecord
-//     err = rec.Unmarshal(envelope.Payload)
-//
-// You may also want to check that envelope.PayloadType matches PeerRecordEnvelopePayloadType
-// before unmarshaling the payload.
+//     peerRec := untypedRecord.(*PeerRecord)
 //
 type PeerRecord struct {
 	// PeerID is the ID of the peer this record pertains to.
@@ -77,7 +76,10 @@ func PeerRecordFromAddrInfo(info AddrInfo) *PeerRecord {
 	return &PeerRecord{PeerID: info.ID, Addrs: info.Addrs}
 }
 
-// TODO(yusef): doc comment
+// UnmarshalRecord parses a PeerRecord from a byte slice.
+// This method is called automatically when consuming a record.Envelope
+// whose PayloadType indicates that it contains a PeerRecord.
+// It is generally not necessary or recommended to call this method directly.
 func (r *PeerRecord) UnmarshalRecord(bytes []byte) error {
 	if r == nil {
 		return fmt.Errorf("cannot unmarshal PeerRecord to nil receiver")
@@ -98,7 +100,9 @@ func (r *PeerRecord) UnmarshalRecord(bytes []byte) error {
 	return nil
 }
 
-// TODO(yusef): doc comment
+// MarshalRecord serializes a PeerRecord to a byte slice.
+// This method is called automatically when constructing a routing.Envelope
+// using MakeEnvelopeWithRecord or PeerRecord.Sign.
 func (r *PeerRecord) MarshalRecord() ([]byte, error) {
 	idBytes, err := r.PeerID.MarshalBinary()
 	if err != nil {

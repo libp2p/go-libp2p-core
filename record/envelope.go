@@ -81,7 +81,7 @@ func MakeEnvelope(privateKey crypto.PrivKey, domain string, payloadType []byte, 
 // MakeEnvelopeWithRecord wraps the given Record in an Envelope, and signs it using the given key
 // and domain string.
 //
-// The Record's concrete type must be associated with a multicodec payload type identifier
+// The Record's concrete type must be associated with a payload type identifier
 // (see record.RegisterPayloadType).
 func MakeEnvelopeWithRecord(privateKey crypto.PrivKey, domain string, rec Record) (*Envelope, error) {
 	payloadType, ok := payloadTypeForRecord(rec)
