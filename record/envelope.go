@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	pool "github.com/libp2p/go-buffer-pool"
@@ -36,6 +37,11 @@ type Envelope struct {
 
 	// The signature of the domain string :: type hint :: payload.
 	signature []byte
+
+	// the unmarshalled payload as a Record, cached on first access via the Record accessor method
+	cached         Record
+	unmarshalError error
+	unmarshalOnce  sync.Once
 }
 
 var ErrEmptyDomain = errors.New("envelope domain must not be empty")
@@ -110,7 +116,7 @@ func ConsumeEnvelope(data []byte, domain string) (envelope *Envelope, rec Record
 		return e, nil, fmt.Errorf("failed to validate envelope: %w", err)
 	}
 
-	rec, err = unmarshalRecordPayload(e.PayloadType, e.RawPayload)
+	rec, err = e.Record()
 	if err != nil {
 		return e, nil, fmt.Errorf("failed to unmarshal envelope payload: %w", err)
 	}
@@ -188,6 +194,32 @@ func (e *Envelope) Equal(other *Envelope) bool {
 		bytes.Compare(e.PayloadType, other.PayloadType) == 0 &&
 		bytes.Compare(e.signature, other.signature) == 0 &&
 		bytes.Compare(e.RawPayload, other.RawPayload) == 0
+}
+
+// Record returns the Envelope's payload unmarshalled as a Record.
+// The concrete type of the returned Record depends on which Record
+// type was registered for the Envelope's PayloadType - see record.RegisterPayloadType.
+//
+// Once unmarshalled, the Record is cached for future access.
+func (e *Envelope) Record() (Record, error) {
+	e.unmarshalOnce.Do(func() {
+		if e.cached != nil {
+			return
+		}
+		e.cached, e.unmarshalError = unmarshalRecordPayload(e.PayloadType, e.RawPayload)
+	})
+	return e.cached, e.unmarshalError
+}
+
+// TypedRecord unmarshals the Envelope's payload to the given Record instance.
+// It is the caller's responsibility to ensure that the Record type is capable
+// of unmarshalling the Envelope payload. Callers can inspect the Envelope's
+// PayloadType field to determine the correct type of Record to use.
+//
+// This method will always unmarshal the Envelope payload even if a cached record
+// exists.
+func (e *Envelope) TypedRecord(dest Record) error {
+	return dest.UnmarshalRecord(e.RawPayload)
 }
 
 // validate returns nil if the envelope signature is valid for the given 'domain',
