@@ -71,7 +71,6 @@ type PeerRecord struct {
 }
 
 // PeerRecordFromAddrInfo creates a PeerRecord from an AddrInfo struct.
-// It generates a timestamp-based sequence number.
 func PeerRecordFromAddrInfo(info AddrInfo) *PeerRecord {
 	return &PeerRecord{PeerID: info.ID, Addrs: info.Addrs}
 }
