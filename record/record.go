@@ -10,7 +10,7 @@ var (
 	// PayloadType does not match any registered Record types.
 	ErrPayloadTypeNotRegistered = errors.New("payload type is not registered")
 
-	payloadTypeRegistry = make(map[string]Record)
+	payloadTypeRegistry = make(map[string]reflect.Type)
 )
 
 // Record represents a data type that can be used as the payload of an Envelope.
@@ -52,7 +52,7 @@ type Record interface {
 //    type HelloRecord struct { } // etc..
 //
 func RegisterPayloadType(payloadType []byte, prototype Record) {
-	payloadTypeRegistry[string(payloadType)] = prototype
+	payloadTypeRegistry[string(payloadType)] = getValueType(prototype)
 }
 
 func unmarshalRecordPayload(payloadType []byte, payloadBytes []byte) (Record, error) {
@@ -68,12 +68,11 @@ func unmarshalRecordPayload(payloadType []byte, payloadBytes []byte) (Record, er
 }
 
 func blankRecordForPayloadType(payloadType []byte) (Record, error) {
-	prototype, ok := payloadTypeRegistry[string(payloadType)]
+	valueType, ok := payloadTypeRegistry[string(payloadType)]
 	if !ok {
 		return nil, ErrPayloadTypeNotRegistered
 	}
 
-	valueType := getValueType(prototype)
 	val := reflect.New(valueType)
 	asRecord := val.Interface().(Record)
 	return asRecord, nil
@@ -82,8 +81,7 @@ func blankRecordForPayloadType(payloadType []byte) (Record, error) {
 func payloadTypeForRecord(rec Record) ([]byte, bool) {
 	valueType := getValueType(rec)
 
-	for k, v := range payloadTypeRegistry {
-		t := getValueType(v)
+	for k, t := range payloadTypeRegistry {
 		if t.AssignableTo(valueType) {
 			return []byte(k), true
 		}
