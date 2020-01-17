@@ -35,8 +35,7 @@ func (r *DefaultRecord) MarshalRecord() ([]byte, error) {
 }
 
 func (r *DefaultRecord) UnmarshalRecord(data []byte) error {
-	r.Contents = make([]byte, len(data))
-	copy(r.Contents, data)
+	r.Contents = data
 	return nil
 }
 
@@ -66,26 +65,23 @@ func RegisterPayloadType(payloadType []byte, prototype Record) {
 }
 
 func unmarshalRecordPayload(payloadType []byte, payloadBytes []byte) (Record, error) {
-	rec, err := blankRecordForPayloadType(payloadType)
-	if err != nil {
-		return nil, err
-	}
-	err = rec.UnmarshalRecord(payloadBytes)
+	rec := blankRecordForPayloadType(payloadType)
+	err := rec.UnmarshalRecord(payloadBytes)
 	if err != nil {
 		return nil, err
 	}
 	return rec, nil
 }
 
-func blankRecordForPayloadType(payloadType []byte) (Record, error) {
+func blankRecordForPayloadType(payloadType []byte) Record {
 	valueType, ok := payloadTypeRegistry[string(payloadType)]
 	if !ok {
-		return &DefaultRecord{}, nil
+		return &DefaultRecord{}
 	}
 
 	val := reflect.New(valueType)
 	asRecord := val.Interface().(Record)
-	return asRecord, nil
+	return asRecord
 }
 
 func payloadTypeForRecord(rec Record) ([]byte, bool) {
