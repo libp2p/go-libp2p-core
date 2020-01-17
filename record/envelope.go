@@ -65,10 +65,10 @@ func MakeEnvelope(privateKey crypto.PrivKey, domain string, payloadType []byte, 
 
 	seq := statelessSeqNo()
 	unsigned, err := makeUnsigned(domain, payloadType, payload, seq)
-	defer pool.Put(unsigned)
 	if err != nil {
 		return nil, err
 	}
+	defer pool.Put(unsigned)
 
 	sig, err := privateKey.Sign(unsigned)
 	if err != nil {
@@ -226,10 +226,10 @@ func (e *Envelope) TypedRecord(dest Record) error {
 // or an error if signature validation fails.
 func (e *Envelope) validate(domain string) error {
 	unsigned, err := makeUnsigned(domain, e.PayloadType, e.RawPayload, e.Seq)
-	defer pool.Put(unsigned)
 	if err != nil {
 		return err
 	}
+	defer pool.Put(unsigned)
 
 	valid, err := e.PublicKey.Verify(unsigned, e.signature)
 	if err != nil {
