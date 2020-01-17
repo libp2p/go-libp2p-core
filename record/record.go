@@ -1,17 +1,8 @@
 package record
 
-import (
-	"errors"
-	"reflect"
-)
+import "reflect"
 
-var (
-	// ErrPayloadTypeNotRegistered is returned from ConsumeEnvelope when the Envelope's
-	// PayloadType does not match any registered Record types.
-	ErrPayloadTypeNotRegistered = errors.New("payload type is not registered")
-
-	payloadTypeRegistry = make(map[string]reflect.Type)
-)
+var payloadTypeRegistry = make(map[string]reflect.Type)
 
 // Record represents a data type that can be used as the payload of an Envelope.
 // The Record interface defines the methods used to marshal and unmarshal a Record
@@ -32,14 +23,33 @@ type Record interface {
 	UnmarshalRecord([]byte) error
 }
 
+// DefaultRecord contains the payload of an Envelope whose PayloadType field
+// does not match any registered Record type. The Contents field contains
+// the unprocessed Envelope payload.
+type DefaultRecord struct {
+	Contents []byte
+}
+
+func (r *DefaultRecord) MarshalRecord() ([]byte, error) {
+	return r.Contents, nil
+}
+
+func (r *DefaultRecord) UnmarshalRecord(data []byte) error {
+	r.Contents = make([]byte, len(data))
+	copy(r.Contents, data)
+	return nil
+}
+
 // RegisterPayloadType associates a binary payload type identifier with a concrete
 // Record type. This is used to automatically unmarshal Record payloads from Envelopes
 // when using ConsumeEnvelope, and to automatically marshal Records and determine the
 // correct PayloadType when calling MakeEnvelopeWithRecord.
 //
-// Callers must provide an instance of the record type to be registered, which must be
-// a pointer type. Registration should be done in the init function of the package
-// where the Record type is defined:
+// To register a Record type, provide the payload type identifier and an
+// empty instance of the Record type.
+//
+// Registration should be done in the init function of the package where the
+// Record type is defined:
 //
 //    package hello_record
 //
@@ -70,7 +80,7 @@ func unmarshalRecordPayload(payloadType []byte, payloadBytes []byte) (Record, er
 func blankRecordForPayloadType(payloadType []byte) (Record, error) {
 	valueType, ok := payloadTypeRegistry[string(payloadType)]
 	if !ok {
-		return nil, ErrPayloadTypeNotRegistered
+		return &DefaultRecord{}, nil
 	}
 
 	val := reflect.New(valueType)

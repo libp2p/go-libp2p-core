@@ -21,10 +21,17 @@ func (p *testPayload) UnmarshalRecord(bytes []byte) error {
 }
 
 func TestUnmarshalPayload(t *testing.T) {
-	t.Run("fails if payload type is unregistered", func(t *testing.T) {
-		_, err := unmarshalRecordPayload([]byte("unknown type"), []byte{})
-		if err != ErrPayloadTypeNotRegistered {
-			t.Error("Expected error when unmarshalling payload with unregistered payload type")
+	t.Run("returns DefaultRecord if payload type is unregistered", func(t *testing.T) {
+		rec, err := unmarshalRecordPayload([]byte("unknown type"), []byte("hello world"))
+		if err != nil {
+			t.Error(err)
+		}
+		defaultRec, ok := rec.(*DefaultRecord)
+		if !ok {
+			t.Error("expected unregistered PayloadType to be unmarshalled as DefaultRecord")
+		}
+		if !bytes.Equal(defaultRec.Contents, []byte("hello world")) {
+			t.Error("unexpected alteration of record")
 		}
 	})
 
