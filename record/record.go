@@ -51,11 +51,12 @@ func (r *DefaultRecord) UnmarshalRecord(data []byte) error {
 // Record type is defined:
 //
 //    package hello_record
+//    import record "github.com/libp2p/go-libp2p-core/record"
 //
 //    var HelloRecordPayloadType = []byte("/libp2p/hello-record")
 //
 //    func init() {
-//        RegisterPayloadType(HelloRecordPayloadType, &HelloRecord{})
+//        record.RegisterPayloadType(HelloRecordPayloadType, &HelloRecord{})
 //    }
 //
 //    type HelloRecord struct { } // etc..
@@ -82,17 +83,6 @@ func blankRecordForPayloadType(payloadType []byte) Record {
 	val := reflect.New(valueType)
 	asRecord := val.Interface().(Record)
 	return asRecord
-}
-
-func payloadTypeForRecord(rec Record) ([]byte, bool) {
-	valueType := getValueType(rec)
-
-	for k, t := range payloadTypeRegistry {
-		if t.AssignableTo(valueType) {
-			return []byte(k), true
-		}
-	}
-	return []byte{}, false
 }
 
 func getValueType(i interface{}) reflect.Type {

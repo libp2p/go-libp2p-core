@@ -84,16 +84,8 @@ func MakeEnvelope(privateKey crypto.PrivKey, domain string, payloadType []byte, 
 	}, nil
 }
 
-// MakeEnvelopeWithRecord wraps the given Record in an Envelope, and signs it using the given key
-// and domain string.
-//
-// The Record's concrete type must be associated with a payload type identifier
-// (see record.RegisterPayloadType).
-func MakeEnvelopeWithRecord(privateKey crypto.PrivKey, domain string, rec Record) (*Envelope, error) {
-	payloadType, ok := payloadTypeForRecord(rec)
-	if !ok {
-		return nil, fmt.Errorf("unable to determine value for PayloadType field")
-	}
+// MakeEnvelopeWithRecord marshals the given Record to bytes, then wraps it in an envelope using MakeEnvelope.
+func MakeEnvelopeWithRecord(privateKey crypto.PrivKey, domain string, payloadType []byte, rec Record) (*Envelope, error) {
 	payloadBytes, err := rec.MarshalRecord()
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling record: %v", err)

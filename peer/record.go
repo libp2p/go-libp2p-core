@@ -124,7 +124,7 @@ func (r *PeerRecord) Sign(privKey crypto.PrivKey) (*record.Envelope, error) {
 	if p != r.PeerID {
 		return nil, ErrPeerIdMismatch
 	}
-	return record.MakeEnvelopeWithRecord(privKey, PeerRecordEnvelopeDomain, r)
+	return record.MakeEnvelopeWithRecord(privKey, PeerRecordEnvelopeDomain, PeerRecordEnvelopePayloadType, r)
 }
 
 // MarshalSigned is a convenience method that wraps the PeerRecord in a routing.Envelope,

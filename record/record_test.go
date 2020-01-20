@@ -51,15 +51,3 @@ func TestUnmarshalPayload(t *testing.T) {
 		}
 	})
 }
-
-func TestMulticodecForRecord(t *testing.T) {
-	RegisterPayloadType(testPayloadType, &testPayload{})
-	rec := &testPayload{}
-	mc, ok := payloadTypeForRecord(rec)
-	if !ok {
-		t.Error("expected to get multicodec for registered payload type")
-	}
-	if !bytes.Equal(mc, testPayloadType) {
-		t.Error("got unexpected multicodec for registered Payload type")
-	}
-}
