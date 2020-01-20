@@ -16,7 +16,7 @@ func TestSignedPeerRecordFromEnvelope(t *testing.T) {
 	id, err := IDFromPrivateKey(priv)
 	test.AssertNilError(t, err)
 
-	rec := &PeerRecord{PeerID: id, Addrs: addrs}
+	rec := &PeerRecord{PeerID: id, Addrs: addrs, Seq: TimestampSeq()}
 	envelope, err := rec.Sign(priv)
 	test.AssertNilError(t, err)
 

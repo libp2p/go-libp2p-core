@@ -9,6 +9,5 @@ message Envelope {
     crypto.pb.PublicKey publicKey = 1;
     bytes payloadType = 2;
     bytes payload = 3;
-    uint64 seq = 4;
     bytes signature = 5;
 }

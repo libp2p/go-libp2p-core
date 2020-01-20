@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"sync"
-	"time"
 
 	pool "github.com/libp2p/go-buffer-pool"
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -28,9 +27,6 @@ type Envelope struct {
 	// A binary identifier that indicates what kind of data is contained in the payload.
 	// TODO(yusef): enforce multicodec prefix
 	PayloadType []byte
-
-	// A monotonically-increasing sequence counter for ordering SignedEnvelopes in time.
-	Seq uint64
 
 	// The envelope payload.
 	RawPayload []byte
@@ -63,8 +59,7 @@ func MakeEnvelope(privateKey crypto.PrivKey, domain string, payloadType []byte, 
 		return nil, ErrEmptyPayloadType
 	}
 
-	seq := statelessSeqNo()
-	unsigned, err := makeUnsigned(domain, payloadType, payload, seq)
+	unsigned, err := makeUnsigned(domain, payloadType, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +74,6 @@ func MakeEnvelope(privateKey crypto.PrivKey, domain string, payloadType []byte, 
 		PublicKey:   privateKey.GetPublic(),
 		PayloadType: payloadType,
 		RawPayload:  payload,
-		Seq:         seq,
 		signature:   sig,
 	}, nil
 }
@@ -197,7 +191,6 @@ func UnmarshalEnvelope(data []byte) (*Envelope, error) {
 		PublicKey:   key,
 		PayloadType: e.PayloadType,
 		RawPayload:  e.Payload,
-		Seq:         e.Seq,
 		signature:   e.Signature,
 	}, nil
 }
@@ -214,7 +207,6 @@ func (e *Envelope) Marshal() ([]byte, error) {
 		PublicKey:   key,
 		PayloadType: e.PayloadType,
 		Payload:     e.RawPayload,
-		Seq:         e.Seq,
 		Signature:   e.signature,
 	}
 	return proto.Marshal(&msg)
@@ -227,8 +219,7 @@ func (e *Envelope) Equal(other *Envelope) bool {
 	if other == nil {
 		return e == nil
 	}
-	return e.Seq == other.Seq &&
-		e.PublicKey.Equals(other.PublicKey) &&
+	return e.PublicKey.Equals(other.PublicKey) &&
 		bytes.Compare(e.PayloadType, other.PayloadType) == 0 &&
 		bytes.Compare(e.signature, other.signature) == 0 &&
 		bytes.Compare(e.RawPayload, other.RawPayload) == 0
@@ -263,7 +254,7 @@ func (e *Envelope) TypedRecord(dest Record) error {
 // validate returns nil if the envelope signature is valid for the given 'domain',
 // or an error if signature validation fails.
 func (e *Envelope) validate(domain string) error {
-	unsigned, err := makeUnsigned(domain, e.PayloadType, e.RawPayload, e.Seq)
+	unsigned, err := makeUnsigned(domain, e.PayloadType, e.RawPayload)
 	if err != nil {
 		return err
 	}
@@ -282,10 +273,9 @@ func (e *Envelope) validate(domain string) error {
 // makeUnsigned is a helper function that prepares a buffer to sign or verify.
 // It returns a byte slice from a pool. The caller MUST return this slice to the
 // pool.
-func makeUnsigned(domain string, payloadType []byte, payload []byte, seq uint64) ([]byte, error) {
+func makeUnsigned(domain string, payloadType []byte, payload []byte) ([]byte, error) {
 	var (
-		seqBytes = varint.ToUvarint(seq)
-		fields   = [][]byte{[]byte(domain), payloadType, seqBytes, payload}
+		fields = [][]byte{[]byte(domain), payloadType, payload}
 
 		// fields are prefixed with their length as an unsigned varint. we
 		// compute the lengths before allocating the sig buffer so we know how
@@ -309,9 +299,4 @@ func makeUnsigned(domain string, payloadType []byte, payload []byte, seq uint64)
 	}
 
 	return b[:s], nil
-}
-
-// statelessSeqNo is a helper to generate a timestamp-based sequence number.
-func statelessSeqNo() uint64 {
-	return uint64(time.Now().UnixNano())
 }

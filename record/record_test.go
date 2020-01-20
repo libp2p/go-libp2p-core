@@ -1,9 +1,6 @@
 package record
 
-import (
-	"bytes"
-	"testing"
-)
+import "testing"
 
 var testPayloadType = []byte("/libp2p/test/record/payload-type")
 

@@ -125,9 +125,7 @@ func TestEnvelopeValidateFailsForDifferentDomain(t *testing.T) {
 
 	test.AssertNilError(t, err)
 
-	RegisterPayloadType(payloadType, &simpleRecord{})
-
-	envelope, err := MakeEnvelopeWithRecord(priv, domain, rec)
+	envelope, err := MakeEnvelopeWithRecord(priv, domain, payloadType, rec)
 	test.AssertNilError(t, err)
 
 	serialized, err := envelope.Marshal()
@@ -147,9 +145,7 @@ func TestEnvelopeValidateFailsIfTypeHintIsAltered(t *testing.T) {
 
 	test.AssertNilError(t, err)
 
-	RegisterPayloadType(payloadType, &simpleRecord{})
-
-	envelope, err := MakeEnvelopeWithRecord(priv, domain, rec)
+	envelope, err := MakeEnvelopeWithRecord(priv, domain, payloadType, rec)
 	test.AssertNilError(t, err)
 
 	serialized := alterMessageAndMarshal(t, envelope, func(msg *pb.Envelope) {
@@ -171,9 +167,7 @@ func TestEnvelopeValidateFailsIfContentsAreAltered(t *testing.T) {
 
 	test.AssertNilError(t, err)
 
-	RegisterPayloadType(payloadType, &simpleRecord{})
-
-	envelope, err := MakeEnvelopeWithRecord(priv, domain, rec)
+	envelope, err := MakeEnvelopeWithRecord(priv, domain, payloadType, rec)
 	test.AssertNilError(t, err)
 
 	serialized := alterMessageAndMarshal(t, envelope, func(msg *pb.Envelope) {
@@ -183,30 +177,6 @@ func TestEnvelopeValidateFailsIfContentsAreAltered(t *testing.T) {
 	// try to open our modified envelope
 	_, _, err = ConsumeEnvelope(serialized, domain)
 	test.ExpectError(t, err, "should not be able to open envelope with modified payload")
-}
-
-func TestEnvelopeValidateFailsIfSeqIsAltered(t *testing.T) {
-	var (
-		rec          = &simpleRecord{"hello world!"}
-		domain       = "libp2p-testing"
-		payloadType  = []byte("/libp2p/testdata")
-		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
-	)
-
-	test.AssertNilError(t, err)
-
-	RegisterPayloadType(payloadType, &simpleRecord{})
-
-	envelope, err := MakeEnvelopeWithRecord(priv, domain, rec)
-	test.AssertNilError(t, err)
-
-	serialized := alterMessageAndMarshal(t, envelope, func(msg *pb.Envelope) {
-		msg.Seq = envelope.Seq + 1
-	})
-
-	// try to open our modified envelope
-	_, _, err = ConsumeEnvelope(serialized, domain)
-	test.ExpectError(t, err, "should not be able to open envelope with modified seq field")
 }
 
 // Since we're outside of the crypto package (to avoid import cycles with test package),

@@ -3,6 +3,7 @@ package peer
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -32,6 +33,23 @@ var ErrPeerIdMismatch = errors.New("signing key does not match record.PeerID")
 //
 // Currently, a PeerRecord contains the public listen addresses for a peer, but this
 // is expected to expand to include other information in the future.
+//
+// PeerRecords are ordered in time by their Seq field. Newer PeerRecords must have
+// greater Seq values than older records. The NewPeerRecord function will create
+// a PeerRecord with a timestamp-based Seq value. The other PeerRecord fields should
+// be set by the caller:
+//
+//    rec := peer.NewPeerRecord()
+//    rec.PeerID = aPeerID
+//    rec.Addrs = someAddrs
+//
+// Alternatively, you can construct a PeerRecord struct directly and use the TimestampSeq
+// helper to set the Seq field:
+//
+//    rec := peer.PeerRecord{PeerID: aPeerID, Addrs: someAddrs, Seq: peer.TimestampSeq()}
+//
+// Failing to set the Seq field will not result in an error, however, a PeerRecord with a
+// Seq value of zero may be ignored or rejected by other peers.
 //
 // PeerRecords are intended to be shared with other peers inside a signed
 // routing.Envelope, and PeerRecord implements the routing.Record interface
@@ -68,11 +86,32 @@ type PeerRecord struct {
 
 	// Addrs contains the public addresses of the peer this record pertains to.
 	Addrs []ma.Multiaddr
+
+	// Seq is a monotonically-increasing sequence counter that's used to order
+	// PeerRecords in time. The interval between Seq values is unspecified,
+	// but newer PeerRecords MUST have a greater Seq value than older records
+	// for the same peer.
+	Seq uint64
+}
+
+// NewPeerRecord returns a PeerRecord with a timestamp-based sequence number.
+// The returned record is otherwise empty and should be populated by the caller.
+func NewPeerRecord() *PeerRecord {
+	return &PeerRecord{Seq: TimestampSeq()}
 }
 
 // PeerRecordFromAddrInfo creates a PeerRecord from an AddrInfo struct.
+// The returned record will have a timestamp-based sequence number.
 func PeerRecordFromAddrInfo(info AddrInfo) *PeerRecord {
-	return &PeerRecord{PeerID: info.ID, Addrs: info.Addrs}
+	rec := NewPeerRecord()
+	rec.PeerID = info.ID
+	rec.Addrs = info.Addrs
+	return rec
+}
+
+// TimestampSeq is a helper to generate a timestamp-based sequence number for a PeerRecord.
+func TimestampSeq() uint64 {
+	return uint64(time.Now().UnixNano())
 }
 
 // UnmarshalRecord parses a PeerRecord from a byte slice.
@@ -96,6 +135,7 @@ func (r *PeerRecord) UnmarshalRecord(bytes []byte) error {
 	}
 	r.PeerID = id
 	r.Addrs = addrsFromProtobuf(msg.Addresses)
+	r.Seq = msg.Seq
 	return nil
 }
 
@@ -110,6 +150,7 @@ func (r *PeerRecord) MarshalRecord() ([]byte, error) {
 	msg := pb.PeerRecord{
 		PeerId:    idBytes,
 		Addresses: addrsToProtobuf(r.Addrs),
+		Seq:       r.Seq,
 	}
 	return proto.Marshal(&msg)
 }
@@ -143,6 +184,9 @@ func (r *PeerRecord) Equal(other *PeerRecord) bool {
 		return r == nil
 	}
 	if r.PeerID != other.PeerID {
+		return false
+	}
+	if r.Seq != other.Seq {
 		return false
 	}
 	if len(r.Addrs) != len(other.Addrs) {
