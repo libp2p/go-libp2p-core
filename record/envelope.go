@@ -93,10 +93,35 @@ func MakeEnvelopeWithRecord(privateKey crypto.PrivKey, domain string, payloadTyp
 	return MakeEnvelope(privateKey, domain, payloadType, payloadBytes)
 }
 
-// ConsumeEnvelope unmarshals a serialized Envelope, and validates its
+// ConsumeEnvelope unmarshals a serialized Envelope and validates its
 // signature using the provided 'domain' string. If validation fails, an error
 // is returned, along with the unmarshalled envelope so it can be inspected.
-// TODO(yusef): improve this doc comment before merge
+//
+// On success, ConsumeEnvelope returns the Envelope itself, as well as the inner payload,
+// unmarshalled into a concrete Record type. The actual type of the returned Record depends
+// on what has been registered for the Envelope's PayloadType (see RegisterPayloadType for details).
+//
+// You can type assert on the returned Record to convert it to an instance of the concrete
+// Record type:
+//
+//    envelope, rec, err := ConsumeEnvelope(envelopeBytes, peer.PeerRecordEnvelopeDomain)
+//    if err != nil {
+//      handleError(envelope, err)  // envelope may be non-nil, even if errors occur!
+//      return
+//    }
+//    peerRec, ok := rec.(*peer.PeerRecord)
+//    if ok {
+//      doSomethingWithPeerRecord(peerRec)
+//    }
+//
+// Important: you MUST check the error value before using the returned Envelope. In some error
+// cases, including when the envelope signature is invalid, both the Envelope and an error will
+// be returned. This allows you to inspect the unmarshalled but invalid Envelope. As a result,
+// you must not assume that any non-nil Envelope returned from this function is valid.
+//
+// If the Envelope signature is valid, but no Record type is registered for the Envelope's
+// PayloadType, ErrPayloadTypeNotRegistered will be returned, along with the Envelope and
+// a nil Record.
 func ConsumeEnvelope(data []byte, domain string) (envelope *Envelope, rec Record, err error) {
 	e, err := UnmarshalEnvelope(data)
 	if err != nil {
@@ -115,7 +140,27 @@ func ConsumeEnvelope(data []byte, domain string) (envelope *Envelope, rec Record
 	return e, rec, nil
 }
 
-// TODO(yusef): doc comment before merge
+// ConsumeTypedEnvelope unmarshals a serialized Envelope and validates its
+// signature using the provided 'domain' string. If validation fails, an error
+// is returned, along with the unmarshalled envelope so it can be inspected.
+//
+// Unlike ConsumeEnvelope, ConsumeTypedEnvelope does not try to automatically determine
+// the type of Record to unmarshal the Envelope's payload into. Instead, the caller provides
+// a destination Record instance, which will unmarshal the Envelope payload. It is the caller's
+// responsibility to determine whether the given Record type is able to unmarshal the payload
+// correctly.
+//
+//    rec := &MyRecordType{}
+//    envelope, err := ConsumeTypedEnvelope(envelopeBytes, MyRecordEnvelopeDomain, rec)
+//    if err != nil {
+//      handleError(envelope, err)
+//    }
+//    doSomethingWithRecord(rec)
+//
+// Important: you MUST check the error value before using the returned Envelope. In some error
+// cases, including when the envelope signature is invalid, both the Envelope and an error will
+// be returned. This allows you to inspect the unmarshalled but invalid Envelope. As a result,
+// you must not assume that any non-nil Envelope returned from this function is valid.
 func ConsumeTypedEnvelope(data []byte, domain string, destRecord Record) (envelope *Envelope, err error) {
 	e, err := UnmarshalEnvelope(data)
 	if err != nil {
@@ -131,6 +176,7 @@ func ConsumeTypedEnvelope(data []byte, domain string, destRecord Record) (envelo
 	if err != nil {
 		return e, fmt.Errorf("failed to unmarshal envelope payload: %w", err)
 	}
+	e.cached = destRecord
 	return e, nil
 }
 
