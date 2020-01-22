@@ -2,6 +2,7 @@ package record_test
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 
 	crypto "github.com/libp2p/go-libp2p-core/crypto"
@@ -113,6 +114,90 @@ func TestMakeEnvelopeFailsWithEmptyDomain(t *testing.T) {
 
 	_, err = MakeEnvelope(priv, "", payloadType, payload)
 	test.ExpectError(t, err, "making an envelope with an empty domain should fail")
+}
+
+func TestMakeEnvelopeFailsWithEmptyPayloadType(t *testing.T) {
+	var (
+		payload      = []byte("happy hacking")
+		payloadType  = []byte{}
+		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
+	)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = MakeEnvelope(priv, "test-domain", payloadType, payload)
+	test.ExpectError(t, err, "making an envelope with an empty payloadType should fail")
+}
+
+type failingRecord struct{}
+
+func (r failingRecord) MarshalRecord() ([]byte, error) {
+	return nil, errors.New("marshal failed")
+}
+func (r failingRecord) UnmarshalRecord(data []byte) error {
+	return errors.New("unmarshal failed")
+}
+
+func TestMakeEnvelopeWithRecordFailsIfRecordMarshalFails(t *testing.T) {
+	var (
+		payloadType  = []byte("/libp2p/test/failing-record")
+		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
+	)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	rec := failingRecord{}
+	_, err = MakeEnvelopeWithRecord(priv, "test-domain", payloadType, rec)
+	test.ExpectError(t, err, "MakeEnvelopeWithRecord should fail if Record fails to marshal")
+}
+
+func TestConsumeEnvelopeFailsIfEnvelopeUnmarshalFails(t *testing.T) {
+	_, _, err := ConsumeEnvelope([]byte("not an Envelope protobuf"), "doesn't-matter")
+	test.ExpectError(t, err, "ConsumeEnvelope should fail if Envelope fails to unmarshal")
+}
+
+func TestConsumeEnvelopeFailsIfRecordUnmarshalFails(t *testing.T) {
+	var (
+		payloadType  = []byte("/libp2p/test/failing-record")
+		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
+	)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	RegisterPayloadType(payloadType, failingRecord{})
+	env, err := MakeEnvelope(priv, "test-domain", payloadType, []byte("doesn't matter"))
+	test.AssertNilError(t, err)
+	envBytes, err := env.Marshal()
+	test.AssertNilError(t, err)
+
+	_, _, err = ConsumeEnvelope(envBytes, "test-domain")
+	test.ExpectError(t, err, "ConsumeEnvelope should fail if Record fails to unmarshal")
+}
+
+func TestConsumeTypedEnvelopeFailsIfRecordUnmarshalFails(t *testing.T) {
+	var (
+		payloadType  = []byte("/libp2p/test/failing-record")
+		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
+	)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	RegisterPayloadType(payloadType, failingRecord{})
+	env, err := MakeEnvelope(priv, "test-domain", payloadType, []byte("doesn't matter"))
+	test.AssertNilError(t, err)
+	envBytes, err := env.Marshal()
+	test.AssertNilError(t, err)
+
+	rec := failingRecord{}
+	_, err = ConsumeTypedEnvelope(envBytes, "test-domain", rec)
+	test.ExpectError(t, err, "ConsumeTypedEnvelope should fail if Record fails to unmarshal")
 }
 
 func TestEnvelopeValidateFailsForDifferentDomain(t *testing.T) {
