@@ -1,8 +1,19 @@
 package introspection
 
-// Introspector interface should be implemented by a type that wants to allows other sub-systems/modules to register
-// metrics providers. It can then get a whole picture of it's subsystems by calling the providers of each subsystem & stitching all the data together.
-type Introspector interface {
-	// RegisterProviders allows a subsystem to register itself as a provider of metrics
+// ProtoVersion is the current version of the Proto
+const ProtoVersion uint32 = 1
+
+// IntrospectorRegistry allows other sub-systems/modules to register metrics/data providers.
+type IntrospectorRegistry interface {
+	// RegisterProviders allows a subsystem to register itself as a provider of metrics.
 	RegisterProviders(p *ProvidersTree) error
+}
+
+// Introspector allows other sub-systems/modules to register metrics/data providers AND also
+// enables clients to fetch the current state of the system.
+type Introspector interface {
+	IntrospectorRegistry
+
+	// FetchCurrentState fetches the current state of the sub-systems by calling the providers registered by them on the registry.
+	FetchCurrentState() (*State, error)
 }
