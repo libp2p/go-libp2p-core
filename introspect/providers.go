@@ -1,11 +1,16 @@
 package introspect
 
-// synthetic used types to contextualise inputs/outputs and enforce correctness.
-type (
-	// ConnID represents a connection ID string
-	ConnID string
-	// StreamID represents a connection ID string
-	StreamID string
+// ConnID represents a connection ID string
+type ConnID string
+
+// QueryOutputType determines the way a output needs to be represented in a query result
+type QueryOutputType int
+
+const (
+	// QueryOutputTypeFull dictates that we need to resolve the whole object in the query output
+	QueryOutputTypeFull QueryOutputType = iota
+	// QueryOutputTypeIds dictates that we need to resolve only the identifiers of the object in the query output
+	QueryOutputTypeIds
 )
 
 // ProvidersMap is a struct which provider modules use to register their interest in providing
@@ -13,34 +18,10 @@ type (
 type ProvidersMap struct {
 	Runtime    func() (*Runtime, error)
 	Connection func(ConnectionQueryInput) ([]*Connection, error)
-	Stream     func(StreamQueryInput) ([]*Stream, error)
 }
 
-type (
-	// StreamListQueryType is an Enum to represent the types of queries that can be made when looking up streams
-	StreamListQueryType int
-)
-
-const (
-	// StreamListQueryTypeAll is an enum to represent a query to fetch all streams
-	StreamListQueryTypeAll StreamListQueryType = iota
-	// StreamListQueryTypeConn is an enum to represent a query to fetch all streams a given connection
-	StreamListQueryTypeConn
-	// StreamListQueryTypeIds represents a query to fetch streams with the given Ids
-	StreamListQueryTypeIds
-)
-
-// StreamQueryInput determines the input for the stream query
-type StreamQueryInput struct {
-	Type      StreamListQueryType
-	ConnID    ConnID
-	StreamIds []StreamID
-}
-
-type (
-	//  ConnListQueryType is an Enum to represent the types of queries that can be made when looking up streams
-	ConnListQueryType int
-)
+// ConnListQueryType is an Enum to represent the types of queries that can be made when looking up streams
+type ConnListQueryType int
 
 const (
 	// ConnListQueryTypeAll represents a query to fetch all connections
@@ -51,6 +32,7 @@ const (
 
 // ConnectionQueryInput determines the input for the connections query
 type ConnectionQueryInput struct {
-	Type    ConnListQueryType
-	ConnIDs []ConnID
+	Type             ConnListQueryType
+	StreamOutputType QueryOutputType
+	ConnIDs          []ConnID
 }
