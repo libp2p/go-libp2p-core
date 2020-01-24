@@ -6,7 +6,7 @@ const ProtoVersion uint32 = 1
 // IntrospectorRegistry allows other sub-systems/modules to register metrics/data providers.
 type IntrospectorRegistry interface {
 	// RegisterProviders allows a subsystem to register itself as a provider of metrics.
-	RegisterProviders(p *ProvidersTree) error
+	RegisterProviders(p *ProvidersMap) error
 }
 
 // Introspector allows other sub-systems/modules to register metrics/data providers AND also
