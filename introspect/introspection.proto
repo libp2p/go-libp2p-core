@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
 
-package introspection;
+package introspect;
 
 // Version of schema
 message Version {

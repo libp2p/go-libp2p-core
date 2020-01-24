@@ -1,4 +1,4 @@
-package introspection
+package introspect
 
 // ProtoVersion is the current version of the Proto
 const ProtoVersion uint32 = 1

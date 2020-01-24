@@ -1,4 +1,4 @@
-package introspection
+package introspect
 
 // synthetic used types to contextualise inputs/outputs and enforce correctness.
 type (
