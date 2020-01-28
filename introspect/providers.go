@@ -18,6 +18,7 @@ const (
 type ProvidersMap struct {
 	Runtime    func() (*Runtime, error)
 	Connection func(ConnectionQueryInput) ([]*Connection, error)
+	Traffic    func() (*Traffic, error)
 }
 
 // ConnListQueryType is an Enum to represent the types of queries that can be made when looking up streams
