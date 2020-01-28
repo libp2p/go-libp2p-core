@@ -11,4 +11,7 @@ type Introspector interface {
 
 	// FetchCurrentState fetches the current state of the sub-systems by calling the providers registered by them on the registry.
 	FetchCurrentState() (*State, error)
+
+	// ListenAddress returns the address on which the introspection service will be available
+	ListenAddress() string
 }
