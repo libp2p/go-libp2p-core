@@ -75,7 +75,13 @@ type Host interface {
 	EventBus() event.Bus
 }
 
-// IntrospectableHost allows a host to act an Introspector
+// IntrospectableHost is implemented by Host implementations that are
+// introspectable, that is, that expose an introspection server.
 type IntrospectableHost interface {
+
+	// Introspector returns the Introspector instance, with which the caller
+	// can:
+	//  - register data providers.
+	//  - fetch introspection data.
 	Introspector() introspect.Introspector
 }
