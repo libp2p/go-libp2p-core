@@ -10,6 +10,8 @@ import (
 	ma "github.com/multiformats/go-multiaddr"
 )
 
+var _ record.Record = (*PeerRecord)(nil)
+
 func init() {
 	record.RegisterType(&PeerRecord{})
 }
