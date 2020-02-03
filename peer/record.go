@@ -1,31 +1,26 @@
 package peer
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/gogo/protobuf/proto"
-	"github.com/libp2p/go-libp2p-core/crypto"
 	pb "github.com/libp2p/go-libp2p-core/peer/pb"
 	"github.com/libp2p/go-libp2p-core/record"
 	ma "github.com/multiformats/go-multiaddr"
 )
 
 func init() {
-	record.RegisterPayloadType(PeerRecordEnvelopePayloadType, &PeerRecord{})
+	record.RegisterType(&PeerRecord{})
 }
 
 // The domain string used for peer records contained in a Envelope.
 const PeerRecordEnvelopeDomain = "libp2p-peer-record"
 
 // The type hint used to identify peer records in a Envelope.
-// TODO: register multicodec
-var PeerRecordEnvelopePayloadType = []byte("/libp2p/peer-record")
-
-// ErrPeerIdMismatch is returned when attempting to sign a PeerRecord using a key that
-// does not match the PeerID contained in the record.
-var ErrPeerIdMismatch = errors.New("signing key does not match record.PeerID")
+// Defined in https://github.com/multiformats/multicodec/blob/master/table.csv
+// with name "libp2p-peer-record"
+var PeerRecordEnvelopePayloadType = []byte{0x03, 0x01}
 
 // PeerRecord contains information that is broadly useful to share with other peers,
 // either through a direct exchange (as in the libp2p identify protocol), or through
@@ -114,6 +109,17 @@ func TimestampSeq() uint64 {
 	return uint64(time.Now().UnixNano())
 }
 
+// Domain is used when signing and validating PeerRecords contained in Envelopes.
+// It is constant for all PeerRecord instances.
+func (r *PeerRecord) Domain() string {
+	return PeerRecordEnvelopeDomain
+}
+
+// Codec is a binary identifier for the PeerRecord type. It is constant for all PeerRecord instances.
+func (r *PeerRecord) Codec() []byte {
+	return PeerRecordEnvelopePayloadType
+}
+
 // UnmarshalRecord parses a PeerRecord from a byte slice.
 // This method is called automatically when consuming a record.Envelope
 // whose PayloadType indicates that it contains a PeerRecord.
@@ -141,7 +147,7 @@ func (r *PeerRecord) UnmarshalRecord(bytes []byte) error {
 
 // MarshalRecord serializes a PeerRecord to a byte slice.
 // This method is called automatically when constructing a routing.Envelope
-// using MakeEnvelopeWithRecord or PeerRecord.Sign.
+// using Seal or PeerRecord.Sign.
 func (r *PeerRecord) MarshalRecord() ([]byte, error) {
 	idBytes, err := r.PeerID.MarshalBinary()
 	if err != nil {
@@ -153,29 +159,6 @@ func (r *PeerRecord) MarshalRecord() ([]byte, error) {
 		Seq:       r.Seq,
 	}
 	return proto.Marshal(&msg)
-}
-
-// Sign wraps the PeerRecord in a routing.Envelope, signed with the given
-// private key. The private key must match the PeerID field of the PeerRecord.
-func (r *PeerRecord) Sign(privKey crypto.PrivKey) (*record.Envelope, error) {
-	p, err := IDFromPrivateKey(privKey)
-	if err != nil {
-		return nil, err
-	}
-	if p != r.PeerID {
-		return nil, ErrPeerIdMismatch
-	}
-	return record.MakeEnvelopeWithRecord(privKey, PeerRecordEnvelopeDomain, PeerRecordEnvelopePayloadType, r)
-}
-
-// MarshalSigned is a convenience method that wraps the PeerRecord in a routing.Envelope,
-// and marshals the Envelope to a []byte.
-func (r *PeerRecord) MarshalSigned(privKey crypto.PrivKey) ([]byte, error) {
-	env, err := r.Sign(privKey)
-	if err != nil {
-		return nil, err
-	}
-	return env.Marshal()
 }
 
 // Equal returns true if the other PeerRecord is identical to this one.

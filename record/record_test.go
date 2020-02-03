@@ -8,6 +8,14 @@ type testPayload struct {
 	unmarshalPayloadCalled bool
 }
 
+func (p *testPayload) Domain() string {
+	return "testing"
+}
+
+func (p *testPayload) Codec() []byte {
+	return testPayloadType
+}
+
 func (p *testPayload) MarshalRecord() ([]byte, error) {
 	return []byte("hello"), nil
 }
@@ -26,7 +34,7 @@ func TestUnmarshalPayload(t *testing.T) {
 	})
 
 	t.Run("calls UnmarshalRecord on concrete Record type", func(t *testing.T) {
-		RegisterPayloadType(testPayloadType, &testPayload{})
+		RegisterType(&testPayload{})
 
 		payload, err := unmarshalRecordPayload(testPayloadType, []byte{})
 		if err != nil {

@@ -1,12 +1,26 @@
 package peer_test
 
 import (
+	"bytes"
+	"testing"
+
 	"github.com/libp2p/go-libp2p-core/crypto"
 	. "github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/record"
 	"github.com/libp2p/go-libp2p-core/test"
-	"testing"
 )
+
+func TestPeerRecordConstants(t *testing.T) {
+	msgf := "Changing the %s may cause peer records to be incompatible with older versions. " +
+		"If you've already thought that through, please update this test so that it passes with the new values."
+	rec := PeerRecord{}
+	if rec.Domain() != "libp2p-peer-record" {
+		t.Errorf(msgf, "signing domain")
+	}
+	if !bytes.Equal(rec.Codec(), []byte{0x03, 0x01}) {
+		t.Errorf(msgf, "codec value")
+	}
+}
 
 func TestSignedPeerRecordFromEnvelope(t *testing.T) {
 	priv, _, err := test.RandTestKeyPair(crypto.Ed25519, 256)
@@ -17,12 +31,8 @@ func TestSignedPeerRecordFromEnvelope(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	rec := &PeerRecord{PeerID: id, Addrs: addrs, Seq: TimestampSeq()}
-	envelope, err := rec.Sign(priv)
+	envelope, err := record.Seal(rec, priv)
 	test.AssertNilError(t, err)
-
-	//t.Run("sanity check, don't push to remote", func(t *testing.T) {
-	//	id.UnmarshalBinary()
-	//})
 
 	t.Run("is unaltered after round-trip serde", func(t *testing.T) {
 		envBytes, err := envelope.Marshal()
@@ -39,15 +49,6 @@ func TestSignedPeerRecordFromEnvelope(t *testing.T) {
 		}
 		if !envelope.Equal(env2) {
 			t.Error("expected signed envelope to be unchanged after round-trip serde")
-		}
-	})
-
-	t.Run("signing fails if signing key does not match peer id in record", func(t *testing.T) {
-		id = "some-other-peer-id"
-		rec := &PeerRecord{PeerID: id, Addrs: addrs}
-		_, err := rec.Sign(priv)
-		if err != ErrPeerIdMismatch {
-			t.Error("expected signing with mismatched private key to fail")
 		}
 	})
 }

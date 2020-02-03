@@ -14,7 +14,23 @@ import (
 )
 
 type simpleRecord struct {
-	message string
+	testDomain *string
+	testCodec  []byte
+	message    string
+}
+
+func (r *simpleRecord) Domain() string {
+	if r.testDomain != nil {
+		return *r.testDomain
+	}
+	return "libp2p-testing"
+}
+
+func (r *simpleRecord) Codec() []byte {
+	if r.testCodec != nil {
+		return r.testCodec
+	}
+	return []byte("/libp2p/testdata")
 }
 
 func (r *simpleRecord) MarshalRecord() ([]byte, error) {
@@ -29,9 +45,7 @@ func (r *simpleRecord) UnmarshalRecord(buf []byte) error {
 // Make an envelope, verify & open it, marshal & unmarshal it
 func TestEnvelopeHappyPath(t *testing.T) {
 	var (
-		rec            = simpleRecord{"hello world!"}
-		domain         = "libp2p-testing"
-		payloadType    = []byte("/libp2p/testdata")
+		rec            = &simpleRecord{message: "hello world!"}
 		priv, pub, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
@@ -40,22 +54,22 @@ func TestEnvelopeHappyPath(t *testing.T) {
 	payload, err := rec.MarshalRecord()
 	test.AssertNilError(t, err)
 
-	envelope, err := MakeEnvelope(priv, domain, payloadType, payload)
+	envelope, err := Seal(rec, priv)
 	test.AssertNilError(t, err)
 
 	if !envelope.PublicKey.Equals(pub) {
 		t.Error("envelope has unexpected public key")
 	}
 
-	if bytes.Compare(payloadType, envelope.PayloadType) != 0 {
-		t.Error("PayloadType does not match PayloadType used to construct envelope")
+	if bytes.Compare(rec.Codec(), envelope.PayloadType) != 0 {
+		t.Error("PayloadType does not match record Codec")
 	}
 
 	serialized, err := envelope.Marshal()
 	test.AssertNilError(t, err)
 
-	RegisterPayloadType(payloadType, &simpleRecord{})
-	deserialized, rec2, err := ConsumeEnvelope(serialized, domain)
+	RegisterType(&simpleRecord{})
+	deserialized, rec2, err := ConsumeEnvelope(serialized, rec.Domain())
 	test.AssertNilError(t, err)
 
 	if bytes.Compare(deserialized.RawPayload, payload) != 0 {
@@ -77,23 +91,18 @@ func TestEnvelopeHappyPath(t *testing.T) {
 
 func TestConsumeTypedEnvelope(t *testing.T) {
 	var (
-		rec          = simpleRecord{"hello world!"}
-		domain       = "libp2p-testing"
-		payloadType  = []byte("/libp2p/testdata")
+		rec          = simpleRecord{message: "hello world!"}
 		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
-	payload, err := rec.MarshalRecord()
-	test.AssertNilError(t, err)
-
-	envelope, err := MakeEnvelope(priv, domain, payloadType, payload)
+	envelope, err := Seal(&rec, priv)
 	test.AssertNilError(t, err)
 
 	envelopeBytes, err := envelope.Marshal()
 	test.AssertNilError(t, err)
 
 	rec2 := &simpleRecord{}
-	_, err = ConsumeTypedEnvelope(envelopeBytes, domain, rec2)
+	_, err = ConsumeTypedEnvelope(envelopeBytes, rec2)
 	test.AssertNilError(t, err)
 
 	if rec2.message != "hello world!" {
@@ -103,8 +112,8 @@ func TestConsumeTypedEnvelope(t *testing.T) {
 
 func TestMakeEnvelopeFailsWithEmptyDomain(t *testing.T) {
 	var (
-		payload      = []byte("happy hacking")
-		payloadType  = []byte("/libp2p/testdata")
+		rec          = simpleRecord{message: "hello world!"}
+		domain       = ""
 		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
@@ -112,14 +121,16 @@ func TestMakeEnvelopeFailsWithEmptyDomain(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = MakeEnvelope(priv, "", payloadType, payload)
+	// override domain with empty string
+	rec.testDomain = &domain
+
+	_, err = Seal(&rec, priv)
 	test.ExpectError(t, err, "making an envelope with an empty domain should fail")
 }
 
 func TestMakeEnvelopeFailsWithEmptyPayloadType(t *testing.T) {
 	var (
-		payload      = []byte("happy hacking")
-		payloadType  = []byte{}
+		rec          = simpleRecord{message: "hello world!"}
 		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
@@ -127,22 +138,41 @@ func TestMakeEnvelopeFailsWithEmptyPayloadType(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = MakeEnvelope(priv, "test-domain", payloadType, payload)
+	// override payload with empty slice
+	rec.testCodec = []byte{}
+
+	_, err = Seal(&rec, priv)
 	test.ExpectError(t, err, "making an envelope with an empty payloadType should fail")
 }
 
-type failingRecord struct{}
+type failingRecord struct {
+	allowMarshal   bool
+	allowUnmarshal bool
+}
+
+func (r failingRecord) Domain() string {
+	return "testing"
+}
+
+func (r failingRecord) Codec() []byte {
+	return []byte("doesn't matter")
+}
 
 func (r failingRecord) MarshalRecord() ([]byte, error) {
+	if r.allowMarshal {
+		return []byte{}, nil
+	}
 	return nil, errors.New("marshal failed")
 }
 func (r failingRecord) UnmarshalRecord(data []byte) error {
+	if r.allowUnmarshal {
+		return nil
+	}
 	return errors.New("unmarshal failed")
 }
 
-func TestMakeEnvelopeWithRecordFailsIfRecordMarshalFails(t *testing.T) {
+func TestSealFailsIfRecordMarshalFails(t *testing.T) {
 	var (
-		payloadType  = []byte("/libp2p/test/failing-record")
 		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
@@ -150,8 +180,8 @@ func TestMakeEnvelopeWithRecordFailsIfRecordMarshalFails(t *testing.T) {
 		t.Fatal(err)
 	}
 	rec := failingRecord{}
-	_, err = MakeEnvelopeWithRecord(priv, "test-domain", payloadType, rec)
-	test.ExpectError(t, err, "MakeEnvelopeWithRecord should fail if Record fails to marshal")
+	_, err = Seal(rec, priv)
+	test.ExpectError(t, err, "Seal should fail if Record fails to marshal")
 }
 
 func TestConsumeEnvelopeFailsIfEnvelopeUnmarshalFails(t *testing.T) {
@@ -161,7 +191,6 @@ func TestConsumeEnvelopeFailsIfEnvelopeUnmarshalFails(t *testing.T) {
 
 func TestConsumeEnvelopeFailsIfRecordUnmarshalFails(t *testing.T) {
 	var (
-		payloadType  = []byte("/libp2p/test/failing-record")
 		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
@@ -169,19 +198,19 @@ func TestConsumeEnvelopeFailsIfRecordUnmarshalFails(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	RegisterPayloadType(payloadType, failingRecord{})
-	env, err := MakeEnvelope(priv, "test-domain", payloadType, []byte("doesn't matter"))
+	RegisterType(failingRecord{})
+	rec := failingRecord{allowMarshal: true}
+	env, err := Seal(rec, priv)
 	test.AssertNilError(t, err)
 	envBytes, err := env.Marshal()
 	test.AssertNilError(t, err)
 
-	_, _, err = ConsumeEnvelope(envBytes, "test-domain")
+	_, _, err = ConsumeEnvelope(envBytes, rec.Domain())
 	test.ExpectError(t, err, "ConsumeEnvelope should fail if Record fails to unmarshal")
 }
 
 func TestConsumeTypedEnvelopeFailsIfRecordUnmarshalFails(t *testing.T) {
 	var (
-		payloadType  = []byte("/libp2p/test/failing-record")
 		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
@@ -189,28 +218,27 @@ func TestConsumeTypedEnvelopeFailsIfRecordUnmarshalFails(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	RegisterPayloadType(payloadType, failingRecord{})
-	env, err := MakeEnvelope(priv, "test-domain", payloadType, []byte("doesn't matter"))
+	RegisterType(failingRecord{})
+	rec := failingRecord{allowMarshal: true}
+	env, err := Seal(rec, priv)
 	test.AssertNilError(t, err)
 	envBytes, err := env.Marshal()
 	test.AssertNilError(t, err)
 
-	rec := failingRecord{}
-	_, err = ConsumeTypedEnvelope(envBytes, "test-domain", rec)
+	rec2 := failingRecord{}
+	_, err = ConsumeTypedEnvelope(envBytes, rec2)
 	test.ExpectError(t, err, "ConsumeTypedEnvelope should fail if Record fails to unmarshal")
 }
 
 func TestEnvelopeValidateFailsForDifferentDomain(t *testing.T) {
 	var (
-		rec          = &simpleRecord{"hello world"}
-		domain       = "libp2p-testing"
-		payloadType  = []byte("/libp2p/testdata")
+		rec          = &simpleRecord{message: "hello world"}
 		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
 	test.AssertNilError(t, err)
 
-	envelope, err := MakeEnvelopeWithRecord(priv, domain, payloadType, rec)
+	envelope, err := Seal(rec, priv)
 	test.AssertNilError(t, err)
 
 	serialized, err := envelope.Marshal()
@@ -220,17 +248,16 @@ func TestEnvelopeValidateFailsForDifferentDomain(t *testing.T) {
 	test.ExpectError(t, err, "should not be able to open envelope with incorrect domain")
 }
 
-func TestEnvelopeValidateFailsIfTypeHintIsAltered(t *testing.T) {
+func TestEnvelopeValidateFailsIfPayloadTypeIsAltered(t *testing.T) {
 	var (
-		rec          = &simpleRecord{"hello world!"}
+		rec          = &simpleRecord{message: "hello world!"}
 		domain       = "libp2p-testing"
-		payloadType  = []byte("/libp2p/testdata")
 		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
 	test.AssertNilError(t, err)
 
-	envelope, err := MakeEnvelopeWithRecord(priv, domain, payloadType, rec)
+	envelope, err := Seal(rec, priv)
 	test.AssertNilError(t, err)
 
 	serialized := alterMessageAndMarshal(t, envelope, func(msg *pb.Envelope) {
@@ -244,15 +271,14 @@ func TestEnvelopeValidateFailsIfTypeHintIsAltered(t *testing.T) {
 
 func TestEnvelopeValidateFailsIfContentsAreAltered(t *testing.T) {
 	var (
-		rec          = &simpleRecord{"hello world!"}
+		rec          = &simpleRecord{message: "hello world!"}
 		domain       = "libp2p-testing"
-		payloadType  = []byte("/libp2p/testdata")
 		priv, _, err = test.RandTestKeyPair(crypto.Ed25519, 256)
 	)
 
 	test.AssertNilError(t, err)
 
-	envelope, err := MakeEnvelopeWithRecord(priv, domain, payloadType, rec)
+	envelope, err := Seal(rec, priv)
 	test.AssertNilError(t, err)
 
 	serialized := alterMessageAndMarshal(t, envelope, func(msg *pb.Envelope) {
