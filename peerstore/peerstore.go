@@ -140,12 +140,17 @@ type AddrBook interface {
 // type-assert on the CertifiedAddrBook interface:
 //
 //     if cab, ok := aPeerstore.(CertifiedAddrBook); ok {
-//         cab.ProcessPeerRecord(signedPeerRecord, aTTL)
+//         cab.ConsumePeerRecord(signedPeerRecord, aTTL)
 //     }
 //
 type CertifiedAddrBook interface {
-	// ProcessPeerRecord adds addresses from a signed peer.PeerRecord (contained in
-	// a routing.Envelope), which will expire after the given TTL.
+	// ConsumePeerRecord adds addresses from a signed peer.PeerRecord (contained in
+	// a record.Envelope), which will expire after the given TTL.
+	//
+	// The 'accepted' return value indicates that the record was successfully processed
+	// and integrated into the CertifiedAddrBook state. If 'accepted' is false but no
+	// error is returned, it means that the record was ignored, most likely because
+	// a newer record exists for the same peer.
 	//
 	// Signed records added via this method will be stored without
 	// alteration as long as the address TTLs remain valid. The Envelopes
@@ -156,7 +161,8 @@ type CertifiedAddrBook interface {
 	// older ones, iff the new record has a higher sequence number than the
 	// existing record. Attempting to add a peer record with a
 	// sequence number that's <= an existing record for the same peer will not
-	// result in an error, but the record will be ignored.
+	// result in an error, but the record will be ignored, and the 'accepted'
+	// bool return value will be false.
 	//
 	// If the CertifiedAddrBook is also an AddrBook (which is most likely the case),
 	// adding certified addresses for a peer will *replace* any
@@ -167,8 +173,8 @@ type CertifiedAddrBook interface {
 	// any non-certified addresses added via AddrBook.AddAddrs or
 	// AddrBook.SetAddrs will be ignored. AddrBook.SetAddrs may still be used
 	// to update the TTL of certified addresses that have previously been
-	// added via ProcessPeerRecord.
-	ProcessPeerRecord(s *record.Envelope, ttl time.Duration) error
+	// added via ConsumePeerRecord.
+	ConsumePeerRecord(s *record.Envelope, ttl time.Duration) (accepted bool, err error)
 
 	// GetPeerRecord returns a Envelope containing a PeerRecord for the
 	// given peer id, if one exists.
