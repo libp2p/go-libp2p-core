@@ -36,7 +36,7 @@ type DataProviders struct {
 
 	// Stream is the provider that is called when information about Streams is
 	// required.
-	Stream func(StreamQueryParams) (introspect_pb.StreamList, error)
+	Stream func(StreamQueryParams) (*introspect_pb.StreamList, error)
 
 	// Traffic is the provider that is called when information about network
 	// statistics is required.
