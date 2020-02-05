@@ -1,8 +1,8 @@
 syntax = "proto3";
+package introspect.pb;
 
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
-
-package introspect;
 
 // Version of schema
 message Version {
@@ -110,11 +110,11 @@ message Connection {
     // Timeline contains the timestamps of the well-known milestones of a connection.
     message Timeline {
         // the instant when a connection was opened on the wire.
-        google.protobuf.Timestamp open_ts = 1;
+        google.protobuf.Timestamp open_ts = 1 [(gogoproto.stdtime) = true];
         // the instant when the upgrade process (handshake, security, multiplexing) finished.
-        google.protobuf.Timestamp upgraded_ts = 2;
+        google.protobuf.Timestamp upgraded_ts = 2 [(gogoproto.stdtime) = true];
         // the instant when this connection was terminated.
-        google.protobuf.Timestamp close_ts = 3;
+        google.protobuf.Timestamp close_ts = 3 [(gogoproto.stdtime) = true];
     }
 
     // Attributes encapsulates the attributes of this connection.
@@ -175,9 +175,9 @@ message Stream {
     // Timeline contains the timestamps of the well-known milestones of a stream.
     message Timeline {
         // the instant when the stream was opened.
-        google.protobuf.Timestamp open_ts = 1;
+        google.protobuf.Timestamp open_ts = 1 [(gogoproto.stdtime) = true];
         // the instant when the stream was terminated.
-        google.protobuf.Timestamp close_ts = 2;
+        google.protobuf.Timestamp close_ts = 2 [(gogoproto.stdtime) = true];
     }
 
     // the id of this stream, not to be shown in user tooling,
@@ -254,7 +254,7 @@ message DHT {
     // status indicating the result of the query
     Result result                     = 8;
     // time query was dispatched
-    google.protobuf.Timestamp sent_ts = 9;
+    google.protobuf.Timestamp sent_ts = 9 [(gogoproto.stdtime) = true];
   }
 
   // DHT protocol name
@@ -262,7 +262,7 @@ message DHT {
   // protocol enabled.
   bool enabled                        = 2;
   // timestap of start up.
-  google.protobuf.Timestamp start_ts  = 3;
+  google.protobuf.Timestamp start_ts  = 3 [(gogoproto.stdtime) = true];
   // params of the dht.
   Params params                       = 4;
   // queries data

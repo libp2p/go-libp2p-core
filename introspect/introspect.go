@@ -1,17 +1,25 @@
 package introspect
 
-// ProtoVersion is the current version of the Proto
+import introspect_pb "github.com/libp2p/go-libp2p-core/introspect/pb"
+
+// ProtoVersion is the current version of the introspection protocol.
 const ProtoVersion uint32 = 1
 
-// Introspector allows other sub-systems/modules to register metrics/data providers AND also
-// enables clients to fetch the current state of the system.
+// EXPERIMENTAL. Introspector allows other sub-systems/modules to register
+// metrics/data providers AND also enables clients to fetch the current state of
+// the system.
 type Introspector interface {
-	// RegisterProviders allows sub-systems/modules to register themselves as data/metrics providers
-	RegisterProviders(p *ProvidersMap) error
 
-	// FetchCurrentState fetches the current state of the sub-systems by calling the providers registered by them on the registry.
-	FetchCurrentState() (*State, error)
+	// EXPERIMENTAL. RegisterDataProviders allows sub-systems/modules to
+	// register callbacks that supply introspection data.
+	RegisterDataProviders(p *DataProviders) error
 
-	// ListenAddress returns the address on which the introspection service will be available
-	ListenAddress() string
+	// EXPERIMENTAL. FetchFullState returns the full state of the system, by
+	// calling all known data providers and returning a merged cross-cut of the
+	// running system.
+	FetchFullState() (*introspect_pb.State, error)
+
+	// EXPERIMENTAL. ListenAddrs returns the addresses on which the
+	// introspection server endpoint is listening for clients.
+	ListenAddrs() []string
 }
