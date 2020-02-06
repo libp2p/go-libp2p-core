@@ -8,6 +8,7 @@ import (
 
 	"github.com/libp2p/go-libp2p-core/connmgr"
 	"github.com/libp2p/go-libp2p-core/event"
+	"github.com/libp2p/go-libp2p-core/introspect"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/peerstore"
@@ -72,4 +73,15 @@ type Host interface {
 
 	// EventBus returns the hosts eventbus
 	EventBus() event.Bus
+}
+
+// IntrospectableHost is implemented by Host implementations that are
+// introspectable, that is, that expose an introspection server.
+type IntrospectableHost interface {
+
+	// Introspector returns the Introspector instance, with which the caller
+	// can:
+	//  - register data providers.
+	//  - fetch introspection data.
+	Introspector() introspect.Introspector
 }
