@@ -1,0 +1,296 @@
+syntax = "proto3";
+package introspect.pb;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+
+// Version of schema
+message Version {
+    uint32 number = 1;
+}
+// ResultCounter is a monotonically increasing counter that reports an ok/err breakdown of the total.
+message ResultCounter {
+    uint32 total = 1;
+    uint32 ok = 2;
+    uint32 err = 3;
+}
+
+// Moving totals over sliding time windows. Models sensible time windows,
+// we don't have to populate them all at once.
+//
+// Graphical example:
+//
+// time     past -> present                              an event 16 min ago
+// ======================================================X================>>
+//                                                       |               | 1m
+//                                                       |           |---| 5m
+//                                                       | |-------------| 15m
+//                                          |------------X---------------| 30m
+//            |------------------------------------------X---------------| 60m
+message SlidingCounter {
+    uint32 over_1m      = 1;
+    uint32 over_5m      = 2;
+    uint32 over_15m     = 3;
+    uint32 over_30m     = 4;
+    uint32 over_1hr     = 5;
+    uint32 over_2hr     = 6;
+    uint32 over_4hr     = 7;
+    uint32 over_8hr     = 8;
+    uint32 over_12hr    = 9;
+    uint32 over_24hr    = 10;
+}
+
+// DataGauge reports stats for data traffic in a given direction.
+message DataGauge {
+    // Cumulative bytes.
+    uint64 cum_bytes    = 1;
+    // Cumulative packets.
+    uint64 cum_packets  = 2;
+    // Instantaneous bandwidth measurement (bytes/second).
+    uint64 inst_bw      = 3;
+}
+
+
+// Runtime encapsulates runtime info about a node.
+message Runtime {
+    // e.g. go-libp2p, js-libp2p, rust-libp2p, etc.
+    string implementation   = 1;
+    // e.g. 1.2.3.
+    string version          = 2;
+    // e.g. Windows, Unix, macOS, Chrome, Mozilla, etc.
+    string platform         = 3;
+    // our peer id - the peer id of the host system
+    string peer_id          = 4;
+}
+
+// EndpointPair is a pair of multiaddrs.
+message EndpointPair {
+    // the source multiaddr.
+    string src_multiaddr = 1;
+    // the destination multiaddr.
+    string dst_multiaddr = 2;
+}
+
+// The status of a connection or stream.
+enum Status {
+    ACTIVE  = 0;
+    CLOSED  = 1;
+    OPENING = 2;
+    CLOSING = 3;
+    ERROR   = 4;
+}
+
+// Our role in a connection or stream.
+enum Role {
+    INITIATOR = 0;
+    RESPONDER = 1;
+}
+
+// Traffic encloses data transfer statistics.
+message Traffic {
+    // snapshot of the data in metrics.
+    DataGauge traffic_in    = 1;
+    // snapshot of the data out metrics.
+    DataGauge traffic_out   = 2;
+}
+
+// a list of streams, by reference or inlined.
+message StreamList {
+    // NOTE: only one of the next 2 fields can appear, but proto3
+    // doesn't support combining oneof and repeated.
+    //
+    // streams within this connection by reference.
+    repeated bytes stream_ids   = 1;
+    // streams within this connection by inlining.
+    repeated Stream streams     = 2;
+}
+
+// Connection reports metrics and state of a libp2p connection.
+message Connection {
+    // Timeline contains the timestamps of the well-known milestones of a connection.
+    message Timeline {
+        // the instant when a connection was opened on the wire.
+        google.protobuf.Timestamp open_ts = 1 [(gogoproto.stdtime) = true];
+        // the instant when the upgrade process (handshake, security, multiplexing) finished.
+        google.protobuf.Timestamp upgraded_ts = 2 [(gogoproto.stdtime) = true];
+        // the instant when this connection was terminated.
+        google.protobuf.Timestamp close_ts = 3 [(gogoproto.stdtime) = true];
+    }
+
+    // Attributes encapsulates the attributes of this connection.
+    message Attributes {
+        // the multiplexer being used.
+        string multiplexer  = 1;
+        // the encryption method being used.
+        string encryption   = 2;
+    }
+
+    // the id of this connection, not to be shown in user tooling,
+    // used for (cross)referencing connections (e.g. relay).
+    string id               = 1;
+    // the peer id of the other party.
+    string peer_id          = 2;
+    // the status of this connection.
+    Status status           = 3;
+    // a reference to the transport managing this connection.
+    bytes transport_id      = 4;
+    // the endpoints participating in this connection.
+    EndpointPair endpoints  = 5;
+    // the timeline of the connection, see Connection.Timeline.
+    Timeline timeline       = 6;
+    // our role in this connection.
+    Role role               = 7;
+    // traffic statistics.
+    Traffic traffic         = 8;
+    // properties of this connection.
+    Attributes attribs      = 9;
+    // the instantaneous latency of this connection in nanoseconds.
+    uint64 latency_ns       = 10;
+    // streams within this connection.
+    StreamList streams = 11;
+
+    reserved 12 to 15;
+
+    // if this is a relayed connection, this points to the relaying connection.
+    // a default value here (empty bytes) indicates this is not a relayed connection.
+    oneof relayed_over {
+        string conn_id       = 16;
+        Connection conn     = 17;
+    }
+    // user provided tags.
+    repeated string user_provided_tags  = 99;
+}
+
+// Stream reports metrics and state of a libp2p stream.
+message Stream {
+    message ConnectionRef {
+        oneof connection {
+            // the parent connection inlined.
+            Connection conn = 1;
+            // the parent connection by reference.
+            string conn_id   = 2;
+        }
+    }
+
+    // Timeline contains the timestamps of the well-known milestones of a stream.
+    message Timeline {
+        // the instant when the stream was opened.
+        google.protobuf.Timestamp open_ts = 1 [(gogoproto.stdtime) = true];
+        // the instant when the stream was terminated.
+        google.protobuf.Timestamp close_ts = 2 [(gogoproto.stdtime) = true];
+    }
+
+    // the id of this stream, not to be shown in user tooling,
+    // used for (cross)referencing streams.
+    string id                           = 1;
+    // the protocol pinned to this stream.
+    string protocol                     = 2;
+    // our role in this stream.
+    Role role                           = 3;
+    // traffic statistics.
+    Traffic traffic                     = 4;
+    // the connection this stream is hosted under.
+    ConnectionRef conn                  = 5;
+    // the timeline of the stream, see Stream.Timeline.
+    Timeline timeline                   = 6;
+    // the status of this stream.
+    Status status                       = 7;
+
+    // the instantaneous latency of this stream in nanoseconds.
+    // TODO: this is hard to calculate.
+    uint64 latency_ns                   = 16;
+    // user provided tags.
+    repeated string user_provided_tags  = 99;
+}
+
+// DHT metrics and state.
+message DHT {
+  message Params {
+    // maximum number of requests to perform.
+    uint64 k                    = 1;
+    // concurrency of asynchronous requests.
+    uint64 alpha                = 2;
+    // number of disjoint paths to use.
+    uint64 disjoint_paths       = 3;
+  }
+
+  message Query {
+    // Trigger of the query.
+    enum Trigger {
+        API                     = 0;
+        DISCOVERY               = 1;
+    }
+
+    // Type of the query.
+    enum Type {
+        CONTENT                 = 0;
+        PROVIDER                = 1;
+        VALUE                   = 2;
+    }
+
+    // Status indicating the result of the query
+    enum Result {
+        SUCCESS                 = 0;
+        ERROR                   = 1;
+        TIMEOUT                 = 2;
+        // Pending queries may be absent, depending on data collection
+        PENDING                 = 3;
+    }
+
+    // id of the query; used for internal referencing (<== TODO: confirm this)
+    string id                         = 1;
+    // id of the peer being sought by this query
+    string target_peer_id             = 2;
+    // total time of the query in miliseconds
+    uint64 total_time_ms              = 3;
+    // number of iterative lookups before reaching result
+    uint64 total_steps                = 4;
+    // peers queried.
+    repeated string peer_ids          = 5;
+    // trigger of the query
+    Trigger trigger                   = 6;
+    // type of the query.
+    Type type                         = 7;
+    // status indicating the result of the query
+    Result result                     = 8;
+    // time query was dispatched
+    google.protobuf.Timestamp sent_ts = 9 [(gogoproto.stdtime) = true];
+  }
+
+  // DHT protocol name
+  string protocol                     = 1;
+  // protocol enabled.
+  bool enabled                        = 2;
+  // timestap of start up.
+  google.protobuf.Timestamp start_ts  = 3 [(gogoproto.stdtime) = true];
+  // params of the dht.
+  Params params                       = 4;
+  // queries data
+  repeated Query query                = 5;
+}
+
+// Subsystems encapsulates all instrumented subsystems for a libp2p host.
+message Subsystems {
+  // connections data, source agnostic but currently only supports the Swarm subsystem
+  repeated Connection connections = 1;
+  // the DHT subsystem.
+  DHT dht                         = 2;
+}
+
+// Connections and streams output for a time interval is one of these.
+message State {
+  // Version of this protobuf
+  Version version                      = 1;
+  // system information
+  Runtime runtime                      = 2;
+  // list of connections
+  Subsystems subsystems                = 3;
+  // overall traffic for this peer
+  Traffic traffic                      = 4;
+  // moment this data snapshot and instantaneous values were taken
+  google.protobuf.Timestamp instant_ts = 5;
+  // start of included data collection (cumulative values counted from here)
+  google.protobuf.Timestamp start_ts   = 6;
+  // length of time up to instant_ts covered by this data snapshot
+  uint32 snapshot_duration_ms          = 7;
+}
