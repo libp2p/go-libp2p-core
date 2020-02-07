@@ -1,6 +1,6 @@
-package introspect
+package introspection
 
-import introspect_pb "github.com/libp2p/go-libp2p-core/introspect/pb"
+import introspection_pb "github.com/libp2p/go-libp2p-core/introspection/pb"
 
 type (
 	// QueryOutput determines the output form of a query result.
@@ -28,19 +28,19 @@ const (
 // of processing entity queries.
 type DataProviders struct {
 	// Runtime is the provider function that returns system runtime information.
-	Runtime func() (*introspect_pb.Runtime, error)
+	Runtime func() (*introspection_pb.Runtime, error)
 
 	// Connection is the provider that is called when information about
 	// Connections is required.
-	Connection func(ConnectionQueryParams) ([]*introspect_pb.Connection, error)
+	Connection func(ConnectionQueryParams) ([]*introspection_pb.Connection, error)
 
 	// Stream is the provider that is called when information about Streams is
 	// required.
-	Stream func(StreamQueryParams) (*introspect_pb.StreamList, error)
+	Stream func(StreamQueryParams) (*introspection_pb.StreamList, error)
 
 	// Traffic is the provider that is called when information about network
 	// statistics is required.
-	Traffic func() (*introspect_pb.Traffic, error)
+	Traffic func() (*introspection_pb.Traffic, error)
 }
 
 type ConnectionQueryParams struct {

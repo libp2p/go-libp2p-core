@@ -1,5 +1,5 @@
 syntax = "proto3";
-package introspect.pb;
+package introspection.pb;
 
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
@@ -8,6 +8,7 @@ import "google/protobuf/timestamp.proto";
 message Version {
     uint32 number = 1;
 }
+
 // ResultCounter is a monotonically increasing counter that reports an ok/err breakdown of the total.
 message ResultCounter {
     uint32 total = 1;
