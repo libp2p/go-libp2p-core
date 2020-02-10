@@ -1,4 +1,5 @@
 syntax = "proto3";
+
 package peer.pb;
 
 // PeerRecord messages contain information that is useful to share with other peers.
@@ -17,8 +18,8 @@ message PeerRecord {
         bytes multiaddr = 1;
     }
 
-    // peerId contains a libp2p peer id in its binary representation.
-    bytes peerId = 1;
+    // peer_id contains a libp2p peer id in its binary representation.
+    bytes peer_id = 1;
 
     // seq contains a monotonically-increasing sequence counter to order PeerRecords in time.
     uint64 seq = 2;
