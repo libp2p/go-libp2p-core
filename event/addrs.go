@@ -78,5 +78,5 @@ type EvtLocalAddressesUpdated struct {
 type EvtLocalPeerRecordUpdated struct {
 	// Record contains the updated peer.PeerRecord, wrapped in a record.Envelope and
 	// signed by the Host's private key.
-	Record *record.Envelope
+	Record record.Envelope
 }
