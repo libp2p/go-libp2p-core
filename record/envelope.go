@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"sync"
 
-	pool "github.com/libp2p/go-buffer-pool"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	pb "github.com/libp2p/go-libp2p-core/record/pb"
+
+	pool "github.com/libp2p/go-buffer-pool"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/multiformats/go-varint"

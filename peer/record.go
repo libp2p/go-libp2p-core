@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gogo/protobuf/proto"
 	pb "github.com/libp2p/go-libp2p-core/peer/pb"
 	"github.com/libp2p/go-libp2p-core/record"
+
 	ma "github.com/multiformats/go-multiaddr"
+
+	"github.com/gogo/protobuf/proto"
 )
 
 var _ record.Record = (*PeerRecord)(nil)
