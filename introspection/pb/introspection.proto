@@ -101,7 +101,7 @@ message StreamList {
     // doesn't support combining oneof and repeated.
     //
     // streams within this connection by reference.
-    repeated string stream_ids   = 1;
+    repeated string stream_ids  = 1;
     // streams within this connection by inlining.
     repeated Stream streams     = 2;
 }
@@ -134,7 +134,7 @@ message Connection {
     // the status of this connection.
     Status status           = 3;
     // a reference to the transport managing this connection.
-    bytes transport_id      = 4;
+    string transport_id     = 4;
     // the endpoints participating in this connection.
     EndpointPair endpoints  = 5;
     // the timeline of the connection, see Connection.Timeline.
@@ -155,7 +155,7 @@ message Connection {
     // if this is a relayed connection, this points to the relaying connection.
     // a default value here (empty bytes) indicates this is not a relayed connection.
     oneof relayed_over {
-        string conn_id       = 16;
+        string conn_id      = 16;
         Connection conn     = 17;
     }
     // user provided tags.
