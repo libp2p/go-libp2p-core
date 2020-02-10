@@ -101,7 +101,7 @@ message StreamList {
     // doesn't support combining oneof and repeated.
     //
     // streams within this connection by reference.
-    repeated bytes stream_ids   = 1;
+    repeated string stream_ids   = 1;
     // streams within this connection by inlining.
     repeated Stream streams     = 2;
 }
