@@ -98,6 +98,11 @@ func (k *Ed25519PublicKey) Raw() ([]byte, error) {
 	return k.k, nil
 }
 
+// RawFull unsupported
+func (k *Ed25519PublicKey) RawFull() ([]byte, error) {
+	return nil, ErrBadKeyType
+}
+
 // Equals compares two ed25519 public keys.
 func (k *Ed25519PublicKey) Equals(o Key) bool {
 	edk, ok := o.(*Ed25519PublicKey)

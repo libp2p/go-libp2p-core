@@ -61,6 +61,11 @@ func (pk *RsaPublicKey) Raw() ([]byte, error) {
 	return x509.MarshalPKIXPublicKey(&pk.k)
 }
 
+// RawFull unsupported
+func (pk *RsaPublicKey) RawFull() ([]byte, error) {
+	return nil, ErrBadKeyType
+}
+
 // Equals checks whether this key is equal to another
 func (pk *RsaPublicKey) Equals(k Key) bool {
 	return KeyEqual(pk, k)
