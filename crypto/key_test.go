@@ -142,10 +142,6 @@ func (pk testkey) Raw() ([]byte, error) {
 	return pk, nil
 }
 
-func (pk testkey) RawFull() ([]byte, error) {
-	return pk, nil
-}
-
 func (pk testkey) Equals(k Key) bool {
 	return KeyEqual(pk, k)
 }

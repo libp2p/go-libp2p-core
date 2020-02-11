@@ -98,14 +98,9 @@ func (k *Secp256k1PublicKey) Type() pb.KeyType {
 	return pb.KeyType_Secp256k1
 }
 
-// Raw returns the bytes of the compressed key
+// Raw returns the bytes of the key
 func (k *Secp256k1PublicKey) Raw() ([]byte, error) {
 	return (*btcec.PublicKey)(k).SerializeCompressed(), nil
-}
-
-// Raw returns the bytes of the uncompressed key
-func (k *Secp256k1PublicKey) RawFull() ([]byte, error) {
-	return (*btcec.PublicKey)(k).SerializeUncompressed(), nil
 }
 
 // Equals compares two public keys

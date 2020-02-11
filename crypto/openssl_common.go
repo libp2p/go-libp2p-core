@@ -59,11 +59,6 @@ func (pk *opensslPublicKey) Raw() ([]byte, error) {
 	return pk.key.MarshalPKIXPublicKeyDER()
 }
 
-// RawFull unsupported
-func (pk *opensslPublicKey) RawFull() ([]byte, error) {
-	return nil, ErrBadKeyType
-}
-
 // Equals checks whether this key is equal to another
 func (pk *opensslPublicKey) Equals(k Key) bool {
 	return KeyEqual(pk, k)
