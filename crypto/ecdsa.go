@@ -159,11 +159,6 @@ func (ePub ECDSAPublicKey) Raw() ([]byte, error) {
 	return x509.MarshalPKIXPublicKey(ePub.pub)
 }
 
-// RawFull unsupported
-func (ePub ECDSAPublicKey) RawFull() ([]byte, error) {
-	return nil, ErrBadKeyType
-}
-
 // Equals compares to public keys
 func (ePub *ECDSAPublicKey) Equals(o Key) bool {
 	oPub, ok := o.(*ECDSAPublicKey)

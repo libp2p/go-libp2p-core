@@ -101,10 +101,6 @@ type PrivKey interface {
 type PubKey interface {
 	Key
 
-	// RawFull returns an alternative, full version of the raw public key bytes
-	// May not be supported by all algorithms
-	RawFull() ([]byte, error)
-
 	// Verify that 'sig' is the signed hash of 'data'
 	Verify(data []byte, sig []byte) (bool, error)
 }
