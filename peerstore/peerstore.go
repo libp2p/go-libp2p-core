@@ -91,6 +91,7 @@ type AddrBook interface {
 	// evicted till `Unpin` has explicitly been called for the peer.
 	// However, a caller can still evict the addresses by calling `ClearAddrs`.
 	// This does not mutate the TTL, only prevents evicting addresses even if the TTL has expired.
+	// Calling `PinAddr` for a peer that does not exist in the peerstore is a no-op.
 	PinAddr(p peer.ID)
 
 	// UnpinAddr undoes the `Pin` operation for the peer.
