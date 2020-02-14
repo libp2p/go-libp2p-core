@@ -87,6 +87,16 @@ type PeerMetadata interface {
 
 // AddrBook holds the multiaddrs of peers.
 type AddrBook interface {
+	// PinAddr pins all the addresses for the peer & prevents them from being
+	// evicted till `Unpin` has explicitly been called for the peer.
+	// However, a caller can still evict the addresses by calling `ClearAddrs`.
+	// This does not mutate the TTL, only prevents evicting addresses even if the TTL has expired.
+	PinAddr(p peer.ID)
+
+	// UnpinAddr undoes the `Pin` operation for the peer.
+	// It allows addresses of a pinned peer to be evicted if the TTl has expired.
+	// Calling `UnpinAddr` for a peer which has not been pinned previously is a no-op.
+	UnpinAddr(p peer.ID)
 
 	// AddAddr calls AddAddrs(p, []ma.Multiaddr{addr}, ttl)
 	AddAddr(p peer.ID, addr ma.Multiaddr, ttl time.Duration)
