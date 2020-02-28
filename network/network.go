@@ -10,7 +10,6 @@ import (
 	"io"
 
 	"github.com/jbenet/goprocess"
-	"github.com/libp2p/go-libp2p-core/event"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/peerstore"
 
@@ -101,11 +100,6 @@ type Network interface {
 
 	// Process returns the network's Process
 	Process() goprocess.Process
-
-	// EventBus returns the network's Event Bus
-	// we can subscribe to this bus to listen for connection/disconnection of peers,
-	// opening/closing of streams etc etc
-	EventBus() event.Bus
 }
 
 // Dialer represents a service that can dial out to peers
