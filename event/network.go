@@ -6,7 +6,6 @@ import "github.com/libp2p/go-libp2p-core/network"
 // from a peer. It contains the network interface for the connection,
 // the connection handle & the new state of the connection.
 type EvtPeerConnectionStateChange struct {
-	Network    network.Network
 	Connection network.Conn
 	NewState   network.Connectedness
 }
@@ -15,7 +14,6 @@ type EvtPeerConnectionStateChange struct {
 // It contains the network interface for the connection, the stream handle &
 // the new state of the stream.
 type EvtStreamStateChange struct {
-	Network  network.Network
 	Stream   network.Stream
 	NewState network.Connectedness
 }
