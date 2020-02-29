@@ -39,9 +39,7 @@ var AcceptTimeout = 60 * time.Second
 // CapableConn provides accessors for the local and remote multiaddrs used to
 // establish the connection and an accessor for the underlying Transport.
 type CapableConn interface {
-	mux.MuxedConn
-	network.ConnSecurity
-	network.ConnMultiaddrs
+	BaseCapableConn
 
 	// Transport returns the transport to which this connection belongs.
 	Transport() Transport
@@ -75,11 +73,21 @@ type CapableConn interface {
 //
 // QCapableConn embed CapableConn but with `Quality() uint32` support.
 type QCapableConn interface {
-	CapableConn
+	BaseCapableConn
 
 	// Quality returns the Quality we can expect from the connection to this peer.
 	// That must be deterministic and fast.
 	Quality() uint32
+
+	// Transport returns the transport to which this connection belongs.
+	Transport() QTransport
+}
+
+// CapableConnBase is used to build `CapableConn` and `QCapableConn`
+type BaseCapableConn interface {
+	mux.MuxedConn
+	network.ConnSecurity
+	network.ConnMultiaddrs
 }
 
 // Score is used by transport to returns expectation about connection
