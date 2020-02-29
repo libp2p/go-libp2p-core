@@ -73,11 +73,17 @@ type CapableConn interface {
 //
 // QCapableConn embed CapableConn but with `Quality() uint32` support.
 type QCapableConn interface {
-	BaseCapableConn
+	ListenedQCapableConn
 
 	// Quality returns the Quality we can expect from the connection to this peer.
 	// That must be deterministic and fast.
 	Quality() uint32
+}
+
+// ListenedQCapableConn is like QCapableConn but is used by listener, quality is
+// managed on client side.
+type ListenedQCapableConn interface {
+	BaseCapableConn
 
 	// Transport returns the transport to which this connection belongs.
 	Transport() QTransport
@@ -124,6 +130,9 @@ type Transport interface {
 	// Dial dials a remote peer. It should try to reuse local listener
 	// addresses if possible but it may choose not to.
 	Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) (CapableConn, error)
+
+	// Listen listens on the passed multiaddr.
+	Listen(laddr ma.Multiaddr) (Listener, error)
 }
 
 type QTransport interface {
@@ -132,6 +141,9 @@ type QTransport interface {
 	// Dial dials a remote peer. It should try to reuse local listener
 	// addresses if possible but it may choose not to.
 	Dial(ctx context.Context, raddr ma.Multiaddr, p peer.ID) (QCapableConn, error)
+
+	// Listen listens on the passed multiaddr.
+	Listen(laddr ma.Multiaddr) (QListener, error)
 
 	// Score returns the Quality we can expect from the connection to this peer.
 	// That must be deterministic and fast.
@@ -146,9 +158,6 @@ type BaseTransport interface {
 	// succeed. This function should *only* be used to preemptively filter
 	// out addresses that we can't dial.
 	CanDial(addr ma.Multiaddr) bool
-
-	// Listen listens on the passed multiaddr.
-	Listen(laddr ma.Multiaddr) (Listener, error)
 
 	// Protocol returns the set of protocols handled by this transport.
 	//
@@ -167,7 +176,20 @@ type BaseTransport interface {
 // package, and also exposes a Multiaddr method as opposed to a regular Addr
 // method
 type Listener interface {
+	BaseListener
+
 	Accept() (CapableConn, error)
+}
+
+// QListener is like listener but produce QCapableConn instead of CapableConn.
+type QListener interface {
+	BaseListener
+
+	Accept() (ListenedQCapableConn, error)
+}
+
+// BaseListener is used to build `Lister` and `QListener`
+type BaseListener interface {
 	Close() error
 	Addr() net.Addr
 	Multiaddr() ma.Multiaddr
