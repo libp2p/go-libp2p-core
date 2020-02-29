@@ -2,18 +2,13 @@ package event
 
 import "github.com/libp2p/go-libp2p-core/network"
 
-// EvtPeerConnectionStateChange should be emitted when we connect to a peer or disconnect
-// from a peer. It contains the network interface for the connection,
-// the connection handle & the new state of the connection.
-type EvtPeerConnectionStateChange struct {
+// EvtPeerStateChange should be emitted when we form our first connection with a peer or drop our last
+// connection with the peer. Essentially, it is emitted in two cases:
+// a) We go from having no connection with a peer to having a connection with a peer.
+// b) We go from having a connection/s with a peer to having no connection with the peer.
+// It contains the network interface for the connection, the connection handle for the first/last connection and
+// the new connection state.
+type EvtPeerStateChange struct {
 	Connection network.Conn
 	NewState   network.Connectedness
-}
-
-// EvtStreamStateChange should be emitted when we open a new stream with a peer or close an existing stream.
-// It contains the network interface for the connection, the stream handle &
-// the new state of the stream.
-type EvtStreamStateChange struct {
-	Stream   network.Stream
-	NewState network.Connectedness
 }
