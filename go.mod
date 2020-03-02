@@ -11,7 +11,7 @@ require (
 	github.com/libp2p/go-openssl v0.0.4
 	github.com/minio/sha256-simd v0.1.1
 	github.com/mr-tron/base58 v1.1.3
-	github.com/multiformats/go-multiaddr v0.2.0
+	github.com/multiformats/go-multiaddr v0.2.1
 	github.com/multiformats/go-multihash v0.0.13
 	github.com/multiformats/go-varint v0.0.5
 	github.com/smola/gocompat v0.2.0
