@@ -22,7 +22,7 @@ var (
 	// AddressTTL is the expiration time of addresses.
 	AddressTTL = time.Hour
 
-	// TempAddrTTL is the ttl used for a short lived address
+	// TempAddrTTL is the ttl used for a short lived address.
 	TempAddrTTL = time.Minute * 2
 
 	// ProviderAddrTTL is the TTL of an address we've received from a provider.
@@ -115,10 +115,10 @@ type AddrBook interface {
 	// they will be sent along through the channel as well.
 	AddrStream(context.Context, peer.ID) <-chan ma.Multiaddr
 
-	// ClearAddresses removes all previously stored addresses
+	// ClearAddresses removes all previously stored addresses.
 	ClearAddrs(p peer.ID)
 
-	// PeersWithAddrs returns all of the peer IDs stored in the AddrBook
+	// PeersWithAddrs returns all of the peer IDs stored in the AddrBook.
 	PeersWithAddrs() peer.IDSlice
 }
 
@@ -159,7 +159,7 @@ type CertifiedAddrBook interface {
 	//
 	// If the signed PeerRecord belongs to a peer that already has certified
 	// addresses in the CertifiedAddrBook, the new addresses will replace the
-	// older ones, iff the new record has a higher sequence number than the
+	// older ones, if the new record has a higher sequence number than the
 	// existing record. Attempting to add a peer record with a
 	// sequence number that's <= an existing record for the same peer will not
 	// result in an error, but the record will be ignored, and the 'accepted'
@@ -227,7 +227,7 @@ type Metrics interface {
 	LatencyEWMA(peer.ID) time.Duration
 }
 
-// ProtoBook tracks the protocols supported by peers
+// ProtoBook tracks the protocols supported by peers.
 type ProtoBook interface {
 	GetProtocols(peer.ID) ([]string, error)
 	AddProtocols(peer.ID, ...string) error
