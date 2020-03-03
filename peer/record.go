@@ -18,12 +18,12 @@ func init() {
 	record.RegisterType(&PeerRecord{})
 }
 
-// The domain string used for peer records contained in a Envelope.
+// PeerRecordEnvelopeDomain is the domain string used for peer records contained in a Envelope.
 const PeerRecordEnvelopeDomain = "libp2p-peer-record"
 
-// The type hint used to identify peer records in a Envelope.
+// PeerRecordEnvelopePayloadType is the type hint used to identify peer records in a Envelope.
 // Defined in https://github.com/multiformats/multicodec/blob/master/table.csv
-// with name "libp2p-peer-record"
+// with name "libp2p-peer-record".
 var PeerRecordEnvelopePayloadType = []byte{0x03, 0x01}
 
 // PeerRecord contains information that is broadly useful to share with other peers,
