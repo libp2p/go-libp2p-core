@@ -96,16 +96,12 @@ type BaseCapableConn interface {
 	network.ConnMultiaddrs
 }
 
-// Score is used by transport to returns expectation about connection
+// Score is used by transport to returns expectation about connection, might be
+// different than what the connection actualy return but that DEPREACATED.
+// (that will cause weird cancel issue)
 type Score struct {
-	// Score of the future connection, must not change once the connection is
-	// actualy created
+	// Score of the future connection.
 	Quality uint32
-	// True if quality was actualy calculable (it may only be calculable with an
-	// open connection).
-	// Note: if IsQuality == true swarm will be able to cancel the dial if a
-	// better transport is found.
-	IsQuality bool
 	// Number of file descriptor expected to be open.
 	Fd uint8
 }
