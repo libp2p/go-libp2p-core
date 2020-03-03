@@ -37,7 +37,7 @@ func expectHeader(r *bufio.Reader, expected []byte) error {
 }
 
 // DecodeV1PSK reads a Multicodec encoded V1 PSK.
-func DecodeV1PSK(in io.Reader) ([]byte, error) {
+func DecodeV1PSK(in io.Reader) (PSK, error) {
 	reader := bufio.NewReader(in)
 	if err := expectHeader(reader, pathPSKv1); err != nil {
 		return nil, err
