@@ -8,7 +8,9 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/x509"
 	"fmt"
+	"reflect"
 	"testing"
 
 	btcec "github.com/btcsuite/btcd/btcec"
@@ -110,6 +112,65 @@ func TestKeyPairFromKey(t *testing.T) {
 
 			if !v {
 				t.Error("signature was not verified")
+			}
+
+			stdPub, err := PubKeyToStdKey(pub)
+			if stdPub == nil {
+				t.Errorf("err getting std public key from key: %v", err)
+			}
+
+			var stdPubBytes []byte
+
+			switch p := stdPub.(type) {
+			case *Secp256k1PublicKey:
+				stdPubBytes, err = p.Raw()
+			case ed25519.PublicKey:
+				stdPubBytes = []byte(p)
+			default:
+				stdPubBytes, err = x509.MarshalPKIXPublicKey(stdPub)
+			}
+
+			if err != nil {
+				t.Errorf("Error while marshaling %v key: %v", reflect.TypeOf(stdPub), err)
+			}
+
+			pubBytes, err := pub.Raw()
+			if err != nil {
+				t.Errorf("err getting raw bytes for %v key: %v", reflect.TypeOf(pub), err)
+			}
+			if !bytes.Equal(stdPubBytes, pubBytes) {
+				t.Errorf("err roundtripping %v key", reflect.TypeOf(pub))
+			}
+
+			stdPriv, err := PrivKeyToStdKey(priv)
+			if stdPub == nil {
+				t.Errorf("err getting std private key from key: %v", err)
+			}
+
+			var stdPrivBytes []byte
+
+			switch p := stdPriv.(type) {
+			case *Secp256k1PrivateKey:
+				stdPrivBytes, err = p.Raw()
+			case *ecdsa.PrivateKey:
+				stdPrivBytes, err = x509.MarshalECPrivateKey(p)
+			case *ed25519.PrivateKey:
+				stdPrivBytes = *p
+			case *rsa.PrivateKey:
+				stdPrivBytes = x509.MarshalPKCS1PrivateKey(p)
+			}
+
+			if err != nil {
+				t.Errorf("err marshaling %v key: %v", reflect.TypeOf(stdPriv), err)
+			}
+
+			privBytes, err := priv.Raw()
+			if err != nil {
+				t.Errorf("err getting raw bytes for %v key: %v", reflect.TypeOf(priv), err)
+			}
+
+			if !bytes.Equal(stdPrivBytes, privBytes) {
+				t.Errorf("err roundtripping %v key", reflect.TypeOf(priv))
 			}
 		})
 	}
