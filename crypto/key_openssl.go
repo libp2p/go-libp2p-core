@@ -61,7 +61,7 @@ func PrivKeyToStdKey(priv PrivKey) (crypto.PrivateKey, error) {
 	case *ECDSAPrivateKey:
 		return p.priv, nil
 	case *Ed25519PrivateKey:
-		return p.k, nil
+		return &p.k, nil
 	case *Secp256k1PrivateKey:
 		return p, nil
 	default:
