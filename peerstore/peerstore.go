@@ -88,38 +88,38 @@ type PeerMetadata interface {
 // AddrBook holds the multiaddrs of peers.
 type AddrBook interface {
 
-	// AddAddr calls AddAddrs(p, []ma.Multiaddr{addr}, ttl)
-	AddAddr(p peer.ID, addr ma.Multiaddr, ttl time.Duration)
+	// AddAddr calls AddAddrs(p, []ma.Multiaddr{addr}, ttl, opts...)
+	AddAddr(p peer.ID, addr ma.Multiaddr, ttl time.Duration, opts ...WriteOpt)
 
 	// AddAddrs gives this AddrBook addresses to use, with a given ttl
 	// (time-to-live), after which the address is no longer valid.
 	// If the manager has a longer TTL, the operation is a no-op for that address
-	AddAddrs(p peer.ID, addrs []ma.Multiaddr, ttl time.Duration)
+	AddAddrs(p peer.ID, addrs []ma.Multiaddr, ttl time.Duration, opts ...WriteOpt)
 
-	// SetAddr calls mgr.SetAddrs(p, addr, ttl)
-	SetAddr(p peer.ID, addr ma.Multiaddr, ttl time.Duration)
+	// SetAddr calls SetAddrs(p, []ma.Multiaddr{addr}, ttl, opts...)
+	SetAddr(p peer.ID, addr ma.Multiaddr, ttl time.Duration, opts ...WriteOpt)
 
 	// SetAddrs sets the ttl on addresses. This clears any TTL there previously.
 	// This is used when we receive the best estimate of the validity of an address.
-	SetAddrs(p peer.ID, addrs []ma.Multiaddr, ttl time.Duration)
+	SetAddrs(p peer.ID, addrs []ma.Multiaddr, ttl time.Duration, opts ...WriteOpt)
 
 	// UpdateAddrs updates the addresses associated with the given peer that have
 	// the given oldTTL to have the given newTTL.
-	UpdateAddrs(p peer.ID, oldTTL time.Duration, newTTL time.Duration)
+	UpdateAddrs(p peer.ID, oldTTL time.Duration, newTTL time.Duration, opts ...WriteOpt)
 
 	// Addrs returns all known (and valid) addresses for a given peer.
-	Addrs(p peer.ID) []ma.Multiaddr
+	Addrs(p peer.ID, opts ...ReadOpt) []ma.Multiaddr
 
 	// AddrStream returns a channel that gets all addresses for a given
 	// peer sent on it. If new addresses are added after the call is made
 	// they will be sent along through the channel as well.
-	AddrStream(context.Context, peer.ID) <-chan ma.Multiaddr
+	AddrStream(context.Context, peer.ID, ...ReadOpt) <-chan ma.Multiaddr
 
 	// ClearAddresses removes all previously stored addresses
-	ClearAddrs(p peer.ID)
+	ClearAddrs(p peer.ID, opts ...WriteOpt)
 
 	// PeersWithAddrs returns all of the peer IDs stored in the AddrBook
-	PeersWithAddrs() peer.IDSlice
+	PeersWithAddrs(...ReadOpt) peer.IDSlice
 }
 
 // CertifiedAddrBook manages "self-certified" addresses for remote peers.
