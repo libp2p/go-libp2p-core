@@ -53,22 +53,23 @@ const (
 	CannotConnect
 )
 
-// Routability indicates how reachable a node is.
-type Routability int
+// Reachability indicates how reachable a node is.
+type Reachability int
 
 const (
-	// RoutabilityUnknown indicates that the routability status is unknown.
-	RoutabilityUnknown = iota
+	// ReachabilityUnknown indicates that the reachability status of the
+	// node is unknown.
+	ReachabilityUnknown = iota
 
-	// RoutabilityPublic indicates that the node is reachable from the
+	// ReachabilityPublic indicates that the node is reachable from the
 	// public internet.
-	RoutabilityPublic
+	ReachabilityPublic
 
-	// RoutabilityPrivate indicates that the node is not reachable from the
+	// ReachabilityPrivate indicates that the node is not reachable from the
 	// public internet.
 	//
 	// NOTE: This node may _still_ be reachable via relays.
-	RoutabilityPrivate
+	ReachabilityPrivate
 )
 
 // Stat stores metadata pertaining to a given Stream/Conn.
