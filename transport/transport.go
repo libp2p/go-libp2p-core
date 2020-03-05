@@ -73,17 +73,11 @@ type CapableConn interface {
 //
 // QCapableConn embed CapableConn but with `Quality() uint32` support.
 type QCapableConn interface {
-	ListenedQCapableConn
+	BaseCapableConn
 
 	// Quality returns the Quality we can expect from the connection to this peer.
 	// That must be deterministic and fast.
 	Quality() uint32
-}
-
-// ListenedQCapableConn is like QCapableConn but is used by listener, quality is
-// managed on client side.
-type ListenedQCapableConn interface {
-	BaseCapableConn
 
 	// Transport returns the transport to which this connection belongs.
 	Transport() QTransport
@@ -181,7 +175,7 @@ type Listener interface {
 type QListener interface {
 	BaseListener
 
-	Accept() (ListenedQCapableConn, error)
+	Accept() (QCapableConn, error)
 }
 
 // BaseListener is used to build `Lister` and `QListener`
