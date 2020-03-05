@@ -2,6 +2,7 @@ package network
 
 import (
 	"io"
+	"time"
 
 	ic "github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -27,7 +28,16 @@ type Conn interface {
 
 	// Stat stores metadata pertaining to this conn.
 	Stat() Stat
+
+	// OnBetter is an callback when a better connection is found.
+	// OnBetter is threadsafe, it can be called even once the event raised and the
+	// callback we be yield.
+	OnBetter(OnBetterHandler)
 }
+
+// OnBetterHandler are args to pass to Conn.OnBetter The time is the deadline
+// before a hard close (fixed time not duration).
+type OnBetterHandler func(time.Time)
 
 // ConnSecurity is the interface that one can mix into a connection interface to
 // give it the security methods.
