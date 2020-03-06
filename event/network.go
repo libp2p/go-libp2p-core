@@ -5,7 +5,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 )
 
-// EvtPeerConnectednessChanged should be emitted every the "connectedness" to a
+// EvtPeerConnectednessChanged should be emitted every time the "connectedness" to a
 // given peer changes. Specifically, this event is emitted in the following
 // cases:
 //
