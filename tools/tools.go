@@ -1,6 +1,6 @@
 // +build tools
 
-package core
+package tools
 
 import (
 	_ "github.com/smola/gocompat"
