@@ -36,14 +36,14 @@ type SharedBackoffs interface {
 	// The IP timer should be cleared whenever any successful connection to this IP is established.
 	IP(ma.Multiaddr) BackoffTimer
 
-	// IPTransport returns the timer associated with a given IP address and a transport (TCP, UDP, etc.).
+	// Transport returns the timer associated with a given IP address and a transport (TCP, UDP, etc.).
 	// If the argument multiaddr does not start with an IP and transport components, a panic is thrown.
 	// The IP/Transport timer should be backed off, if it is determined that the IP is reachable but the transport is not.
 	// The IP/Transport timer should be cleared whenever any successful connection to this IP/transport pair is established.
 	// The IP/Transport timer will report a clear state whenever the IP and  IP/Transport timers are both clear.
-	IPTransport(ma.Multiaddr) BackoffTimer
+	Transport(ma.Multiaddr) BackoffTimer
 
-	// IPTransportSwarm returns the timer associated with a given IP address, a transport (TCP, UDP, etc.) and the swarm service.
+	// Swarm returns the timer associated with a given IP address, a transport (TCP, UDP, etc.) and the swarm service.
 	// If the argument multiaddr does not start with an IP and transport components, a panic is thrown.
 	// The IP/Transport/Swarm timer should be backed off, if it is determined that the IP is reachable
 	// using the given transport, but the swarm service is not supported.
@@ -51,9 +51,9 @@ type SharedBackoffs interface {
 	// and the swarm service is available.
 	// The IP/Transport/Swarm timer will report a clear state whenever the respective IP, IP/Transport and IP/Transport/Swarm
 	// timers are all clear.
-	IPTransportSwarm(ma.Multiaddr) BackoffTimer
+	Swarm(ma.Multiaddr) BackoffTimer
 
-	// IPTransportSwarmProtocol returns the timer associated with a given IP address, transport (TCP, UDP, etc.) and
+	// Protocol returns the timer associated with a given IP address, transport (TCP, UDP, etc.) and
 	// protocol, supported through the swarm service.
 	// If the argument multiaddr does not start with an IP, transport and protocol components, a panic is thrown.
 	// The IP/Transport/Swarm/Protocol timer should be backed off, if it is determined that the IP is reachable
@@ -62,7 +62,7 @@ type SharedBackoffs interface {
 	// is established through the swarm service on the given IP/transport.
 	// The IP/Transport/Swarm/Protocol timer will report a clear state whenever the respective
 	// IP, IP/Transport and IP/Transport/Swarm, and IP/Transport/Swarm/Protocol timers are all clear.
-	IPTransportSwarmProtocol(ma.Multiaddr) BackoffTimer
+	Protocol(ma.Multiaddr) BackoffTimer
 
 	// Other shared backoff timers should be added here.
 }
@@ -73,7 +73,7 @@ type BackoffTimer interface {
 	Wait()
 	// TimeToClear returns the duration remaining until the back off state is cleared.
 	// Zero or negative durations indicate that the state is already cleared.
-	TimeToClear(now time.Time) time.Duration
+	TimeToClear() time.Duration
 	// Clear clears this timer and returns instantaneously.
 	// For example, a user might call this function after a successul connection attempt.
 	Clear()
