@@ -14,7 +14,6 @@ require (
 	github.com/multiformats/go-multiaddr v0.2.1
 	github.com/multiformats/go-multihash v0.0.13
 	github.com/multiformats/go-varint v0.0.5
-	github.com/smola/gocompat v0.2.0
 	go.opencensus.io v0.22.3
 )
 
