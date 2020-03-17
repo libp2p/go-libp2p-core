@@ -20,6 +20,7 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 	sha256 "github.com/minio/sha256-simd"
+	"golang.org/x/crypto/hkdf"
 )
 
 const (
@@ -172,6 +173,20 @@ func GenerateEKeyPair(curveName string) ([]byte, GenSharedKey, error) {
 	}
 
 	return pubKey, done, nil
+}
+
+// ExpandKey expands the private key k to a key of length l using the info.
+func ExpandKey(k PrivKey, info []byte, l int) ([]byte, error) {
+	raw, err := k.Raw()
+	if err != nil {
+		return nil, err
+	}
+	b := make([]byte, l)
+	r := hkdf.New(sha256.New, raw, nil, info)
+	if _, err := io.ReadFull(r, b); err != nil {
+		return nil, err
+	}
+	return b, nil
 }
 
 // StretchedKeys ...

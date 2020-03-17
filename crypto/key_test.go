@@ -355,3 +355,17 @@ func TestPanicOnUnknownCipherType(t *testing.T) {
 	passed = true
 	KeyStretcher("Fooba", "SHA1", []byte("foo"))
 }
+
+func TestKeyExpansion(t *testing.T) {
+	priv, _, err := GenerateECDSAKeyPair(rand.Reader)
+	if err != nil {
+		t.Fatalf("err generating key:%v", err)
+	}
+	expanded, err := ExpandKey(priv, []byte("info"), 42)
+	if err != nil {
+		t.Fatalf("error expanding key: %v", err)
+	}
+	if len(expanded) != 42 {
+		t.Fatalf("unexpected expanded key length: %d", len(expanded))
+	}
+}
