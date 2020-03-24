@@ -9,6 +9,7 @@ import (
 )
 
 // AsyncEvent is emitted for every notable event that happens during a DHT async lookup.
+// AsyncEvent supports JSON marshalling because all of its fields do, recursively.
 type AsyncEvent struct {
 	// ID is a unique identifier for the lookup instance
 	ID string
