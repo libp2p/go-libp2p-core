@@ -8,6 +8,7 @@ require (
 	github.com/jbenet/goprocess v0.1.3
 	github.com/libp2p/go-buffer-pool v0.0.2
 	github.com/libp2p/go-flow-metrics v0.0.3
+	github.com/libp2p/go-libp2p-kbucket v0.3.1
 	github.com/libp2p/go-openssl v0.0.4
 	github.com/minio/sha256-simd v0.1.1
 	github.com/mr-tron/base58 v1.1.3
