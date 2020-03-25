@@ -5,7 +5,7 @@ require (
 	github.com/coreos/go-semver v0.3.0
 	github.com/gogo/protobuf v1.3.1
 	github.com/ipfs/go-cid v0.0.5
-	github.com/jbenet/goprocess v0.1.3
+	github.com/jbenet/goprocess v0.1.4
 	github.com/libp2p/go-buffer-pool v0.0.2
 	github.com/libp2p/go-flow-metrics v0.0.3
 	github.com/libp2p/go-openssl v0.0.4
