@@ -187,6 +187,19 @@ func (r *PeerRecord) Equal(other *PeerRecord) bool {
 	return true
 }
 
+// ToProtobuf returns the equivalent Protocol Buffer struct object of a PeerRecord.
+func (r *PeerRecord) ToProtobuf() (*pb.PeerRecord, error) {
+	idBytes, err := r.PeerID.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+	return &pb.PeerRecord{
+		PeerId:    idBytes,
+		Addresses: addrsToProtobuf(r.Addrs),
+		Seq:       r.Seq,
+	}, nil
+}
+
 func addrsFromProtobuf(addrs []*pb.PeerRecord_AddressInfo) []ma.Multiaddr {
 	var out []ma.Multiaddr
 	for _, addr := range addrs {
