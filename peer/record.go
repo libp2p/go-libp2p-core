@@ -153,16 +153,11 @@ func (r *PeerRecord) UnmarshalRecord(bytes []byte) error {
 // This method is called automatically when constructing a routing.Envelope
 // using Seal or PeerRecord.Sign.
 func (r *PeerRecord) MarshalRecord() ([]byte, error) {
-	idBytes, err := r.PeerID.MarshalBinary()
+	msg, err := r.ToProtobuf()
 	if err != nil {
 		return nil, err
 	}
-	msg := pb.PeerRecord{
-		PeerId:    idBytes,
-		Addresses: addrsToProtobuf(r.Addrs),
-		Seq:       r.Seq,
-	}
-	return proto.Marshal(&msg)
+	return proto.Marshal(msg)
 }
 
 // Equal returns true if the other PeerRecord is identical to this one.
