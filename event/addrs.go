@@ -55,6 +55,11 @@ type UpdatedAddress struct {
 // If the event producer is not capable or producing diffs, the Diffs field will
 // be false, the Removed list will always be empty, and the Action for each
 // UpdatedAddress in the Current list will be Unknown.
+//
+// In addition to the above, EvtLocalAddressesUpdated also contains the updated peer.PeerRecord
+// for the Current set of listen addresses, wrapped in a record.Envelope and signed by the Host's private key.
+// This record can be shared with other peers to inform them of what we believe are our  diallable addresses
+// a secure and authenticated way.
 type EvtLocalAddressesUpdated struct {
 
 	// Diffs indicates whether this event contains a diff of the Host's previous
@@ -70,13 +75,8 @@ type EvtLocalAddressesUpdated struct {
 	// Removed contains addresses that were removed from the Host.
 	// This field is only set when Diffs == true.
 	Removed []UpdatedAddress
-}
 
-// EvtLocalPeerRoutingStateUpdated should be emitted when a new signed PeerRecord
-// for the local peer has been produced. This will happen whenever the set of listen
-// addresses changes.
-type EvtLocalPeerRecordUpdated struct {
-	// Record contains the updated peer.PeerRecord, wrapped in a record.Envelope and
-	// signed by the Host's private key.
-	Record record.Envelope
+	// SignedPeerRecord contains our own updated peer.PeerRecord, listing the addresses enumerated in Current.
+	// wrapped in a record.Envelope and signed by the Host's private key.
+	SignedPeerRecord record.Envelope
 }
