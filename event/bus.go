@@ -1,6 +1,8 @@
 package event
 
-import "io"
+import (
+	"io"
+)
 
 // SubscriptionOpt represents a subscriber option. Use the options exposed by the implementation of choice.
 type SubscriptionOpt = func(interface{}) error
@@ -71,4 +73,19 @@ type Bus interface {
 	//  defer em.Close() // MUST call this after being done with the emitter
 	//  em.Emit(EventT{})
 	Emitter(eventType interface{}, opts ...EmitterOpt) (Emitter, error)
+
+	// EmitterCount returns the number of Emitters for the given event type.
+	//
+	// eventType accepts typed nil pointers, and uses the type information for looking up the number of emitters.
+	//
+	// Example:
+	//  em, err := eventbus.Emitter(new(EventT))
+	//  defer em.Close()
+	//  eventbus.EmitterCount(new(EventT) == 1.
+	//  em2, err := eventbus.Emitter(new(EventT))
+	//  defer em2.Close()
+	//  eventbus.EmitterCount(new(EventT) == 2.
+	//
+	//
+	EmitterCount(eventType interface{}) (int, error)
 }
