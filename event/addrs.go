@@ -76,7 +76,7 @@ type EvtLocalAddressesUpdated struct {
 	// This field is only set when Diffs == true.
 	Removed []UpdatedAddress
 
-	// SignedPeerRecord contains the updated peer.PeerRecord for the Current set of listen addresses,
+	// SignedPeerRecord contains our own updated peer.PeerRecord, listing the addresses enumerated in Current.
 	// wrapped in a record.Envelope and signed by the Host's private key.
 	SignedPeerRecord record.Envelope
 }
