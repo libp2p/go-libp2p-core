@@ -108,6 +108,23 @@ func PeerRecordFromAddrInfo(info AddrInfo) *PeerRecord {
 	return rec
 }
 
+// PeerRecordFromProtobuf creates a PeerRecord from a protobuf PeerRecord
+// struct.
+func PeerRecordFromProtobuf(msg *pb.PeerRecord) (*PeerRecord, error) {
+	record := &PeerRecord{}
+
+	var id ID
+	if err := id.UnmarshalBinary(msg.PeerId); err != nil {
+		return nil, err
+	}
+
+	record.PeerID = id
+	record.Addrs = addrsFromProtobuf(msg.Addresses)
+	record.Seq = msg.Seq
+
+	return record, nil
+}
+
 // TimestampSeq is a helper to generate a timestamp-based sequence number for a PeerRecord.
 func TimestampSeq() uint64 {
 	return uint64(time.Now().UnixNano())
@@ -138,14 +155,13 @@ func (r *PeerRecord) UnmarshalRecord(bytes []byte) error {
 	if err != nil {
 		return err
 	}
-	var id ID
-	err = id.UnmarshalBinary(msg.PeerId)
+
+	rPtr, err := PeerRecordFromProtobuf(&msg)
 	if err != nil {
 		return err
 	}
-	r.PeerID = id
-	r.Addrs = addrsFromProtobuf(msg.Addresses)
-	r.Seq = msg.Seq
+	*r = *rPtr
+
 	return nil
 }
 
