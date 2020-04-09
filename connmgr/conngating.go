@@ -13,8 +13,8 @@ import (
 // inbound or outbound connection gating.
 //
 // A ConnectionGater will be consulted during different states in the life-cycle of a connection and
-// the specific gating function that will be called depends on the lifecycle state of the
-// connection. Hence, it is important to implement this interface keeping in mind the specific life cycle state
+// the specific gating function that will be called depends on the life-cycle state of the
+// connection. Hence, it is important to implement this interface keeping in mind the specific life-cycle state
 // at which you'd like to gate/block the connection.
 //
 // `InterceptDial` and `InterceptPeerDial` are called when we try an outbound dial.
