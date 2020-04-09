@@ -12,9 +12,10 @@ import (
 // ConnectionGater can be implemented by a type that supports active
 // inbound or outbound connection gating.
 //
-// A ConnectionGater will be consulted at various stages in the life cycle of a connection.
-// The specific gating function that will be called depends on the lifecycle state of the
-// connection during which Gating needs to be applied.
+// A ConnectionGater will be consulted during different states in the life-cycle of a connection and
+// the specific gating function that will be called depends on the lifecycle state of the
+// connection. Hence, it is important to implement this interface keeping in mind the specific life cycle state
+// at which you'd like to gate/block the connection.
 //
 // `InterceptDial` and `InterceptPeerDial` are called when we try an outbound dial.
 //
