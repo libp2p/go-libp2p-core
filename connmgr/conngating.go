@@ -32,10 +32,12 @@ import (
 // behaviours, such as hard limiting of connections once a max count has been
 // reached.
 //
-// If you'd like to send a disconnect control message to the remote peer with an appropriate
-// reason, ONLY `InterceptUpgraded` should return reject the connection(with an appropriate reason)
-// and all other methods should allow the connection as we can ONLY open control streams
+// If you'd like to send a disconnect control message to the remote peer for a gated inbound connection,
+// ONLY `InterceptUpgraded` should reject the connection (with an appropriate disconenct reason).
+// All other methods should allow the connection as we can ONLY open control streams
 // for upgraded connections.
+// Note: There's no point in sending disconnect control messages for outbound connections, so we might
+// as well close them as early in the cycle as possible.
 type ConnectionGater interface {
 	// InterceptDial tests whether we're permitted to dial the specified multiaddr.
 	// Insofar filter.Filters is concerned, this would map to its AddrBlock method,
