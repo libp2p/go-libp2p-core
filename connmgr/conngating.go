@@ -33,7 +33,7 @@ import (
 // reached.
 //
 // If you'd like to send a disconnect control message to the remote peer for a gated inbound connection,
-// ONLY `InterceptUpgraded` should reject the connection (with an appropriate disconenct reason).
+// ONLY `InterceptUpgraded` should reject the connection (with an appropriate disconnect reason).
 // All other methods should allow the connection as we can ONLY open control streams
 // for upgraded connections.
 // Note: There's no point in sending disconnect control messages for outbound connections, so we might
