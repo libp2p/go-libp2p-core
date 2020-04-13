@@ -17,7 +17,7 @@ import (
 // connection. Hence, it is important to implement this interface keeping in mind the specific life-cycle state
 // at which you'd like to gate/block the connection.
 //
-// `InterceptDial` and `InterceptPeerDial` are called when we try an outbound dial.
+// `InterceptPeerDial` and `InterceptPeerAddrDial` are called when we try an outbound dial.
 //
 // `InterceptAccept` is called after we've accepted an inbound connection from a socket but before we
 // begin upgrading it.
@@ -39,15 +39,15 @@ import (
 // Note: There's no point in sending disconnect control messages for outbound connections, so we might
 // as well close them as early in the cycle as possible.
 type ConnectionGater interface {
-	// InterceptDial tests whether we're permitted to dial the specified multiaddr for the given peer.
-	// Insofar filter.Filters is concerned, this would map to its AddrBlock method,
-	// with the inverse condition on the given address.
-	// This is to be called by the network/swarm when dialling.
-	InterceptDial(peer.ID, ma.Multiaddr) (allow bool)
-
 	// InterceptPeerDial tests whether we're permitted to Dial the specified peer.
 	// This is to be called by the network/swarm when dialling.
 	InterceptPeerDial(p peer.ID) (allow bool)
+
+	// InterceptPeerAddrDial tests whether we're permitted to dial the specified multiaddr for the given peer.
+	// Insofar filter.Filters is concerned, this would map to its AddrBlock method,
+	// with the inverse condition on the given address.
+	// This is to be called by the network/swarm when dialling.
+	InterceptPeerAddrDial(peer.ID, ma.Multiaddr) (allow bool)
 
 	// InterceptAccept tests whether an incipient inbound connection is allowed.
 	// network.ConnMultiaddrs is what we pass to the upgrader.
