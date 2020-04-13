@@ -59,7 +59,7 @@ type Reachability int
 const (
 	// ReachabilityUnknown indicates that the reachability status of the
 	// node is unknown.
-	ReachabilityUnknown = iota
+	ReachabilityUnknown Reachability = iota
 
 	// ReachabilityPublic indicates that the node is reachable from the
 	// public internet.
