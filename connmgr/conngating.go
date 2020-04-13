@@ -39,11 +39,11 @@ import (
 // Note: There's no point in sending disconnect control messages for outbound connections, so we might
 // as well close them as early in the cycle as possible.
 type ConnectionGater interface {
-	// InterceptDial tests whether we're permitted to dial the specified multiaddr.
+	// InterceptDial tests whether we're permitted to dial the specified multiaddr for the given peer.
 	// Insofar filter.Filters is concerned, this would map to its AddrBlock method,
-	// with the inverse condition.
+	// with the inverse condition on the given address.
 	// This is to be called by the network/swarm when dialling.
-	InterceptDial(ma.Multiaddr) (allow bool)
+	InterceptDial(peer.ID, ma.Multiaddr) (allow bool)
 
 	// InterceptPeerDial tests whether we're permitted to Dial the specified peer.
 	// This is to be called by the network/swarm when dialling.
