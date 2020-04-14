@@ -5,6 +5,9 @@ import introspection_pb "github.com/libp2p/go-libp2p-core/introspection/pb"
 // ProtoVersion is the current version of the introspection protocol.
 const ProtoVersion uint32 = 1
 
+// ProtoVersionPb is the proto representation of the current introspection protocol.
+var ProtoVersionPb *introspection_pb.Version = &introspection_pb.Version{Version: ProtoVersion}
+
 // EXPERIMENTAL. Introspector allows other sub-systems/modules to register
 // metrics/data providers AND also enables clients to fetch the current state of
 // the system.
@@ -21,4 +24,8 @@ type Introspector interface {
 	// calling all known data providers and returning a merged cross-cut of the
 	// running system.
 	FetchFullState() (*introspection_pb.State, error)
+
+	// EXPERIMENTAL. FetchRuntime returns the runtime information
+	// of the system.
+	FetchRuntime() (*introspection_pb.Runtime, error)
 }

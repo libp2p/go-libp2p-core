@@ -1,14 +1,13 @@
 syntax = "proto3";
-package introspection.pb;
 
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
+
+package introspection;
 
 // Version of schema
 message Version {
-    uint32 number = 1;
+    uint32 version = 1;
 }
-
 // ResultCounter is a monotonically increasing counter that reports an ok/err breakdown of the total.
 message ResultCounter {
     uint32 total = 1;
@@ -54,14 +53,45 @@ message DataGauge {
 
 // Runtime encapsulates runtime info about a node.
 message Runtime {
+    // metadata about types of event data being sent
+    message EventType {
+      // Name of event type e.g. PeerConnecting
+      string name                        = 1;
+      repeated EventProperty properties  = 2;
+    }
+
+    // metadata about content types in event's key:value content field
+    message EventProperty {
+      // tell listener how to sort, filter or display known content properties
+      enum PropertyType {
+        // treat as a simple primitive
+        STRING      = 0; // default
+        NUMBER      = 2;
+        // apply human-readable formatting
+        TIME        = 10;
+        PEERID      = 11;
+        // embedded arrays and/or object trees
+        JSON        = 90;
+      }
+      // property name of content e.g. openTs
+      string name                 = 1;
+      PropertyType type           = 2;
+    }
+
     // e.g. go-libp2p, js-libp2p, rust-libp2p, etc.
-    string implementation   = 1;
+    string implementation           = 1;
     // e.g. 1.2.3.
-    string version          = 2;
+    string version                  = 2;
     // e.g. Windows, Unix, macOS, Chrome, Mozilla, etc.
-    string platform         = 3;
+    string platform                 = 3;
     // our peer id - the peer id of the host system
-    string peer_id          = 4;
+    string peer_id                  = 4;
+    // length of time to keep stale data
+    uint32 keep_stale_data_ms       = 5;
+    // frequency to send new states
+    uint32 send_state_interval_ms   = 6;
+    // metadata describing configured event types
+    repeated EventType event_types  = 7;
 }
 
 // EndpointPair is a pair of multiaddrs.
@@ -101,7 +131,7 @@ message StreamList {
     // doesn't support combining oneof and repeated.
     //
     // streams within this connection by reference.
-    repeated string stream_ids  = 1;
+    repeated bytes stream_ids   = 1;
     // streams within this connection by inlining.
     repeated Stream streams     = 2;
 }
@@ -111,11 +141,11 @@ message Connection {
     // Timeline contains the timestamps of the well-known milestones of a connection.
     message Timeline {
         // the instant when a connection was opened on the wire.
-        google.protobuf.Timestamp open_ts = 1 [(gogoproto.stdtime) = true];
+        google.protobuf.Timestamp open_ts = 1;
         // the instant when the upgrade process (handshake, security, multiplexing) finished.
-        google.protobuf.Timestamp upgraded_ts = 2 [(gogoproto.stdtime) = true];
+        google.protobuf.Timestamp upgraded_ts = 2;
         // the instant when this connection was terminated.
-        google.protobuf.Timestamp close_ts = 3 [(gogoproto.stdtime) = true];
+        google.protobuf.Timestamp close_ts = 3;
     }
 
     // Attributes encapsulates the attributes of this connection.
@@ -128,13 +158,13 @@ message Connection {
 
     // the id of this connection, not to be shown in user tooling,
     // used for (cross)referencing connections (e.g. relay).
-    string id               = 1;
+    bytes id                = 1;
     // the peer id of the other party.
     string peer_id          = 2;
     // the status of this connection.
     Status status           = 3;
     // a reference to the transport managing this connection.
-    string transport_id     = 4;
+    bytes transport_id      = 4;
     // the endpoints participating in this connection.
     EndpointPair endpoints  = 5;
     // the timeline of the connection, see Connection.Timeline.
@@ -148,14 +178,14 @@ message Connection {
     // the instantaneous latency of this connection in nanoseconds.
     uint64 latency_ns       = 10;
     // streams within this connection.
-    StreamList streams = 11;
+    StreamList streams      = 11;
 
     reserved 12 to 15;
 
     // if this is a relayed connection, this points to the relaying connection.
     // a default value here (empty bytes) indicates this is not a relayed connection.
     oneof relayed_over {
-        string conn_id      = 16;
+        bytes conn_id       = 16;
         Connection conn     = 17;
     }
     // user provided tags.
@@ -169,37 +199,37 @@ message Stream {
             // the parent connection inlined.
             Connection conn = 1;
             // the parent connection by reference.
-            string conn_id   = 2;
+            bytes conn_id   = 2;
         }
     }
 
     // Timeline contains the timestamps of the well-known milestones of a stream.
     message Timeline {
         // the instant when the stream was opened.
-        google.protobuf.Timestamp open_ts = 1 [(gogoproto.stdtime) = true];
+        google.protobuf.Timestamp open_ts = 1;
         // the instant when the stream was terminated.
-        google.protobuf.Timestamp close_ts = 2 [(gogoproto.stdtime) = true];
+        google.protobuf.Timestamp close_ts = 2;
     }
 
     // the id of this stream, not to be shown in user tooling,
     // used for (cross)referencing streams.
-    string id                           = 1;
+    bytes id        = 1;
     // the protocol pinned to this stream.
-    string protocol                     = 2;
+    string protocol = 2;
     // our role in this stream.
-    Role role                           = 3;
+    Role role       = 3;
     // traffic statistics.
-    Traffic traffic                     = 4;
+    Traffic traffic = 4;
     // the connection this stream is hosted under.
-    ConnectionRef conn                  = 5;
+    ConnectionRef conn  = 5;
     // the timeline of the stream, see Stream.Timeline.
-    Timeline timeline                   = 6;
+    Timeline timeline   = 6;
     // the status of this stream.
-    Status status                       = 7;
+    Status status   = 7;
 
     // the instantaneous latency of this stream in nanoseconds.
     // TODO: this is hard to calculate.
-    uint64 latency_ns                   = 16;
+    uint64 latency_ns       = 16;
     // user provided tags.
     repeated string user_provided_tags  = 99;
 }
@@ -215,47 +245,44 @@ message DHT {
     uint64 disjoint_paths       = 3;
   }
 
-  message Query {
-    // Trigger of the query.
-    enum Trigger {
-        API                     = 0;
-        DISCOVERY               = 1;
+  // Peer in DHT
+  message PeerInDHT {
+    // The DHT's relationship with this peer
+    enum Status {
+      // Connected, in a bucket, ready to send/receive queries
+      ACTIVE      = 0;
+      // Not currently connected, still "in" a bucket (e.g. temporarily disconnected)
+      MISSING     = 1;
+      // Removed from a bucket or candidate list (e.g. connection lost or too slow)
+      REJECTED    = 2;
+      // Was reachable when last checked, waiting to join a currently-full bucket
+      CANDIDATE   = 3;
     }
+    // the peer id of the host system
+    string peer_id          = 1;
+    // the peer's status when data snapshot is taken
+    Status status           = 2;
+    // age in bucket (ms)
+    uint32 age_in_bucket    = 3;
+  }
 
-    // Type of the query.
-    enum Type {
-        CONTENT                 = 0;
-        PROVIDER                = 1;
-        VALUE                   = 2;
-    }
+  // A "k-bucket" containing peers of a certain kadamelia distance
+  message Bucket {
+    // Contains peers of this distance; or, 0 is "catch-all" bucket
+    uint32 distance             = 1;
+    // Peers associated with this bucket
+    repeated PeerInDHT peers    = 2;
+    // Bucket may need more fields depending on WIP remodeling
+  }
 
-    // Status indicating the result of the query
-    enum Result {
-        SUCCESS                 = 0;
-        ERROR                   = 1;
-        TIMEOUT                 = 2;
-        // Pending queries may be absent, depending on data collection
-        PENDING                 = 3;
-    }
-
-    // id of the query; used for internal referencing (<== TODO: confirm this)
-    string id                         = 1;
-    // id of the peer being sought by this query
-    string target_peer_id             = 2;
-    // total time of the query in miliseconds
-    uint64 total_time_ms              = 3;
-    // number of iterative lookups before reaching result
-    uint64 total_steps                = 4;
-    // peers queried.
-    repeated string peer_ids          = 5;
-    // trigger of the query
-    Trigger trigger                   = 6;
-    // type of the query.
-    Type type                         = 7;
-    // status indicating the result of the query
-    Result result                     = 8;
-    // time query was dispatched
-    google.protobuf.Timestamp sent_ts = 9 [(gogoproto.stdtime) = true];
+  // Counters of query events, by status
+  message QueryGauge {
+    // Cumulative counter of queries with "SUCCESS" status
+    uint64 success    = 1;
+    // Cumulative counter of queries with "ERROR" status
+    uint64 error      = 2;
+    // Cumulative counter of queries with "TIMEOUT" status
+    uint64 timeout    = 3;
   }
 
   // DHT protocol name
@@ -263,11 +290,15 @@ message DHT {
   // protocol enabled.
   bool enabled                        = 2;
   // timestap of start up.
-  google.protobuf.Timestamp start_ts  = 3 [(gogoproto.stdtime) = true];
+  google.protobuf.Timestamp start_ts  = 3;
   // params of the dht.
   Params params                       = 4;
-  // queries data
-  repeated Query query                = 5;
+  // existing, intantiated buckets and their contents
+  repeated Bucket buckets             = 5;
+  // counts inbound queries received from other peers
+  QueryGauge incoming_queries         = 6;
+  // counts outbound queries dispatched by this peer
+  QueryGauge outgoing_queries         = 7;
 }
 
 // Subsystems encapsulates all instrumented subsystems for a libp2p host.
@@ -275,23 +306,72 @@ message Subsystems {
   // connections data, source agnostic but currently only supports the Swarm subsystem
   repeated Connection connections = 1;
   // the DHT subsystem.
-  DHT dht                         = 2;
+  DHT dht = 2;
 }
 
 // Connections and streams output for a time interval is one of these.
 message State {
-  // Version of this protobuf
-  Version version                      = 1;
-  // system information
-  Runtime runtime                      = 2;
   // list of connections
-  Subsystems subsystems                = 3;
+  Subsystems subsystems                = 1;
   // overall traffic for this peer
-  Traffic traffic                      = 4;
+  Traffic traffic                      = 2;
   // moment this data snapshot and instantaneous values were taken
-  google.protobuf.Timestamp instant_ts = 5;
+  google.protobuf.Timestamp instant_ts = 3;
   // start of included data collection (cumulative values counted from here)
-  google.protobuf.Timestamp start_ts   = 6;
+  google.protobuf.Timestamp start_ts   = 4;
   // length of time up to instant_ts covered by this data snapshot
-  uint32 snapshot_duration_ms          = 7;
+  uint32 snapshot_duration_ms          = 5;
+}
+
+// Event
+message Event {
+    string type                     = 1;
+    google.protobuf.Timestamp ts    = 2;
+    string content                  = 3; // stringified json
+}
+
+// ProtocolDataPacket wraps messages to be sent to clients to allow extension
+// based on new types of data sources
+message ProtocolDataPacket {
+  // Version of this protobuf
+  Version version     = 1;
+  // The Message this contains
+  oneof message {
+      State state     = 2;
+      Runtime runtime = 3;
+      Event event     = 4;
+  }
+}
+
+// ClientSignal is a type of message to be sent from clients to the server to signal
+// within the operation of the protocol
+message ClientSignal {
+  // The signal to be sent to the server
+  enum Signal {
+    // SEND_DATA is used for pull-based data emitters
+    SEND_DATA            = 0;
+    // START_PUSH_EMITTER, STOP_PUSH_EMITTER, PAUSE_PUSH_EMITTER & UNPAUSE_PUSH_EMITTER
+    // are all used in the operation of push-based data emitters
+    START_PUSH_EMITTER   = 1;
+    STOP_PUSH_EMITTER    = 2;
+    PAUSE_PUSH_EMITTER   = 3;
+    UNPAUSE_PUSH_EMITTER = 4;
+    
+    CONFIG_EMITTER       = 10;
+  }
+
+  // The source the data is expected to come from
+  enum DataSource {
+    STATE   = 0; // A full state snapshot
+    RUNTIME = 1; // A runtime data message
+  }
+
+  // Version of this protobuf
+  Version version           = 1;
+  // Signal to be sent
+  Signal signal             = 2;
+  // Correlated DataSource for this signal (if any)
+  DataSource data_source    = 3;
+  // Optional: JSON stringified content to be sent to the emitter
+  string content            = 4;
 }
