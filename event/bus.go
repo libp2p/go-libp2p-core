@@ -14,6 +14,10 @@ type EmitterOpt = func(interface{}) error
 // CancelFunc closes a subscriber.
 type CancelFunc = func()
 
+// WildcardSubscriptionType is the `eventType` clients of the eventbus should use
+// in the call to `Bus.Subscribe` if they want to subscribe to ALL events emitted by the eventbus.
+var WildcardSubscriptionType = reflect.TypeOf(new(interface{}))
+
 // Emitter represents an actor that emits events onto the eventbus.
 type Emitter interface {
 	io.Closer
@@ -41,6 +45,9 @@ type Bus interface {
 	// subscribe to multiple event types at once, under a single subscription (and channel).
 	//
 	// Failing to drain the channel may cause publishers to block.
+	//
+	// If you want to subscribe to ALL events emitted by the bus, please use `WildcardSubscriptionType`
+	// as the `eventType` in this call i.e. `eventbus.Subscribe(WildcardSubscriptionType)`
 	//
 	// Simple example
 	//
