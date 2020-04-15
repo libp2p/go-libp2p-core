@@ -55,27 +55,31 @@ message DataGauge {
 message Runtime {
     // metadata about types of event data being sent
     message EventType {
-      // Name of event type e.g. PeerConnecting
-      string name                        = 1;
-      repeated EventProperty properties  = 2;
+        // Name of event type e.g. PeerConnecting
+        string name                        = 1;
+        repeated EventProperty properties  = 2;
     }
 
     // metadata about content types in event's key:value content field
     message EventProperty {
-      // tell listener how to sort, filter or display known content properties
-      enum PropertyType {
-        // treat as a simple primitive
-        STRING      = 0; // default
-        NUMBER      = 2;
-        // apply human-readable formatting
-        TIME        = 10;
-        PEERID      = 11;
-        // embedded arrays and/or object trees
-        JSON        = 90;
-      }
-      // property name of content e.g. openTs
-      string name                 = 1;
-      PropertyType type           = 2;
+        // tell listener how to sort, filter or display known content properties
+        enum PropertyType {
+            // treat as a simple primitive
+            STRING      = 0; // default
+            NUMBER      = 1;
+            // apply human-readable formatting
+            TIME        = 10;
+            PEERID      = 11;
+            MULTIADDR   = 12;
+            // embedded arrays and/or object trees
+            JSON        = 90;
+        }
+        // property name of content e.g. openTs
+        string name                 = 1;
+        // type to interpret content value as
+        PropertyType type           = 2;
+        // if true, expect an array of values of type
+        bool has_multiple            = 3;
     }
 
     // e.g. go-libp2p, js-libp2p, rust-libp2p, etc.
@@ -236,91 +240,95 @@ message Stream {
 
 // DHT metrics and state.
 message DHT {
-  message Params {
-    // maximum number of requests to perform.
-    uint64 k                    = 1;
-    // concurrency of asynchronous requests.
-    uint64 alpha                = 2;
-    // number of disjoint paths to use.
-    uint64 disjoint_paths       = 3;
-  }
-
-  // Peer in DHT
-  message PeerInDHT {
-    // The DHT's relationship with this peer
-    enum Status {
-      // Connected, in a bucket, ready to send/receive queries
-      ACTIVE      = 0;
-      // Not currently connected, still "in" a bucket (e.g. temporarily disconnected)
-      MISSING     = 1;
-      // Removed from a bucket or candidate list (e.g. connection lost or too slow)
-      REJECTED    = 2;
-      // Was reachable when last checked, waiting to join a currently-full bucket
-      CANDIDATE   = 3;
+    message Params {
+        // routing table bucket size.
+        uint64 k                    = 1;
+        // concurrency of asynchronous requests.
+        uint64 alpha                = 2;
+        // number of disjoint paths to use.
+        uint64 disjoint_paths       = 3;
+        // number of peers closest to a target that must have responded
+        // in order for a given query path to complete
+        uint64 beta                 = 4;
     }
-    // the peer id of the host system
-    string peer_id          = 1;
-    // the peer's status when data snapshot is taken
-    Status status           = 2;
-    // age in bucket (ms)
-    uint32 age_in_bucket    = 3;
-  }
 
-  // A "k-bucket" containing peers of a certain kadamelia distance
-  message Bucket {
-    // Contains peers of this distance; or, 0 is "catch-all" bucket
-    uint32 distance             = 1;
-    // Peers associated with this bucket
-    repeated PeerInDHT peers    = 2;
-    // Bucket may need more fields depending on WIP remodeling
-  }
+    // Peer in DHT
+    message PeerInDHT {
+        // The DHT's relationship with this peer
+        enum Status {
+            // Connected, in a bucket, ready to send/receive queries
+            ACTIVE      = 0;
+            // Not currently connected, still "in" a bucket (e.g. temporarily disconnected)
+            MISSING     = 1;
+            // Removed from a bucket or candidate list (e.g. connection lost or too slow)
+            REJECTED    = 2;
+            // Was reachable when last checked, waiting to join a currently-full bucket
+            CANDIDATE   = 3;
+        }
+        // the peer id of the host system
+        string peer_id          = 1;
+        // the peer's status when data snapshot is taken
+        Status status           = 2;
+        // age in bucket (ms)
+        uint32 age_in_bucket    = 3;
+    }
 
-  // Counters of query events, by status
-  message QueryGauge {
-    // Cumulative counter of queries with "SUCCESS" status
-    uint64 success    = 1;
-    // Cumulative counter of queries with "ERROR" status
-    uint64 error      = 2;
-    // Cumulative counter of queries with "TIMEOUT" status
-    uint64 timeout    = 3;
-  }
+    // A "k-bucket" containing peers of a certain kadamelia distance
+    message Bucket {
+        // CPL (Common Prefix Length) is the length of the common prefix
+        // between the ids of every peer in this bucket and the DHT peer id
+        uint32 cpl                  = 1;
+        // Peers associated with this bucket
+        repeated PeerInDHT peers    = 2;
+        // Bucket may need more fields depending on WIP remodeling
+    }
 
-  // DHT protocol name
-  string protocol                     = 1;
-  // protocol enabled.
-  bool enabled                        = 2;
-  // timestap of start up.
-  google.protobuf.Timestamp start_ts  = 3;
-  // params of the dht.
-  Params params                       = 4;
-  // existing, intantiated buckets and their contents
-  repeated Bucket buckets             = 5;
-  // counts inbound queries received from other peers
-  QueryGauge incoming_queries         = 6;
-  // counts outbound queries dispatched by this peer
-  QueryGauge outgoing_queries         = 7;
+    // Counters of query events, by status
+    message QueryGauge {
+        // Cumulative counter of queries with "SUCCESS" status
+        uint64 success    = 1;
+        // Cumulative counter of queries with "ERROR" status
+        uint64 error      = 2;
+        // Cumulative counter of queries with "TIMEOUT" status
+        uint64 timeout    = 3;
+    }
+
+    // DHT protocol name
+    string protocol                     = 1;
+    // protocol enabled.
+    bool enabled                        = 2;
+    // timestap of start up.
+    google.protobuf.Timestamp start_ts  = 3;
+    // params of the dht.
+    Params params                       = 4;
+    // existing, intantiated buckets and their contents
+    repeated Bucket buckets             = 5;
+    // counts inbound queries received from other peers
+    QueryGauge incoming_queries         = 6;
+    // counts outbound queries dispatched by this peer
+    QueryGauge outgoing_queries         = 7;
 }
 
 // Subsystems encapsulates all instrumented subsystems for a libp2p host.
 message Subsystems {
-  // connections data, source agnostic but currently only supports the Swarm subsystem
-  repeated Connection connections = 1;
-  // the DHT subsystem.
-  DHT dht = 2;
+    // connections data, source agnostic but currently only supports the Swarm subsystem
+    repeated Connection connections = 1;
+    // the DHT subsystem.
+    DHT dht = 2;
 }
 
 // Connections and streams output for a time interval is one of these.
 message State {
-  // list of connections
-  Subsystems subsystems                = 1;
-  // overall traffic for this peer
-  Traffic traffic                      = 2;
-  // moment this data snapshot and instantaneous values were taken
-  google.protobuf.Timestamp instant_ts = 3;
-  // start of included data collection (cumulative values counted from here)
-  google.protobuf.Timestamp start_ts   = 4;
-  // length of time up to instant_ts covered by this data snapshot
-  uint32 snapshot_duration_ms          = 5;
+    // list of connections
+    Subsystems subsystems                = 1;
+    // overall traffic for this peer
+    Traffic traffic                      = 2;
+    // moment this data snapshot and instantaneous values were taken
+    google.protobuf.Timestamp instant_ts = 3;
+    // start of included data collection (cumulative values counted from here)
+    google.protobuf.Timestamp start_ts   = 4;
+    // length of time up to instant_ts covered by this data snapshot
+    uint32 snapshot_duration_ms          = 5;
 }
 
 // Event
@@ -333,45 +341,43 @@ message Event {
 // ProtocolDataPacket wraps messages to be sent to clients to allow extension
 // based on new types of data sources
 message ProtocolDataPacket {
-  // Version of this protobuf
-  Version version     = 1;
-  // The Message this contains
-  oneof message {
-      State state     = 2;
-      Runtime runtime = 3;
-      Event event     = 4;
-  }
+    // Version of this protobuf
+    Version version     = 1;
+    // The Message this contains
+    oneof message {
+        State state     = 2;
+        Runtime runtime = 3;
+        Event event     = 4;
+    }
 }
 
 // ClientSignal is a type of message to be sent from clients to the server to signal
 // within the operation of the protocol
 message ClientSignal {
-  // The signal to be sent to the server
-  enum Signal {
-    // SEND_DATA is used for pull-based data emitters
-    SEND_DATA            = 0;
-    // START_PUSH_EMITTER, STOP_PUSH_EMITTER, PAUSE_PUSH_EMITTER & UNPAUSE_PUSH_EMITTER
-    // are all used in the operation of push-based data emitters
-    START_PUSH_EMITTER   = 1;
-    STOP_PUSH_EMITTER    = 2;
-    PAUSE_PUSH_EMITTER   = 3;
-    UNPAUSE_PUSH_EMITTER = 4;
-    
-    CONFIG_EMITTER       = 10;
-  }
+    // The signal to be sent to the server
+    enum Signal {
+        // SEND_DATA with `data_source` requests messages from pull-based data emitters
+        SEND_DATA            = 0;
+        // PAUSE_ & UNPAUSE_PUSH_EMITTER allows control of push-based data emitters
+        PAUSE_PUSH_EMITTER   = 1;
+        UNPAUSE_PUSH_EMITTER = 2;
 
-  // The source the data is expected to come from
-  enum DataSource {
-    STATE   = 0; // A full state snapshot
-    RUNTIME = 1; // A runtime data message
-  }
+        // CONFIG_EMITTER with `content` sends a JSON object of settings to the emitter
+        CONFIG_EMITTER       = 10;
+    }
 
-  // Version of this protobuf
-  Version version           = 1;
-  // Signal to be sent
-  Signal signal             = 2;
-  // Correlated DataSource for this signal (if any)
-  DataSource data_source    = 3;
-  // Optional: JSON stringified content to be sent to the emitter
-  string content            = 4;
+    // The source the data is expected to come from
+    enum DataSource {
+        STATE   = 0; // A full state snapshot
+        RUNTIME = 1; // A runtime data message
+    }
+
+    // Version of this protobuf
+    Version version           = 1;
+    // Signal to be sent
+    Signal signal             = 2;
+    // Correlated DataSource for this signal (if any)
+    DataSource data_source    = 3;
+    // Optional: JSON stringified content to be sent to the emitter
+    string content            = 4;
 }
