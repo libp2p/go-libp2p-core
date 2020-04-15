@@ -1,6 +1,9 @@
 package event
 
-import "io"
+import (
+	"io"
+	"reflect"
+)
 
 // SubscriptionOpt represents a subscriber option. Use the options exposed by the implementation of choice.
 type SubscriptionOpt = func(interface{}) error
@@ -71,4 +74,11 @@ type Bus interface {
 	//  defer em.Close() // MUST call this after being done with the emitter
 	//  em.Emit(EventT{})
 	Emitter(eventType interface{}, opts ...EmitterOpt) (Emitter, error)
+
+	// GetAllEventTypes returns all the event types that this bus
+	// has Emitters or Subscribers for.
+	// The caller is guaranteed that this function will ONLY return non pointer types i.e.
+	// the results of calling reflect.Type.Elem() on the pointer types passed
+	// to both `Bus.Emitter` AND `Bus.Subscribe`.
+	GetAllEventTypes() []reflect.Type
 }
