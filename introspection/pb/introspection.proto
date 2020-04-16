@@ -50,38 +50,39 @@ message DataGauge {
     uint64 inst_bw      = 3;
 }
 
-
-// Runtime encapsulates runtime info about a node.
-message Runtime {
-    // metadata about types of event data being sent
-    message EventType {
-        // Name of event type e.g. PeerConnecting
-        string name                        = 1;
-        repeated EventProperty properties  = 2;
-    }
-
-    // metadata about content types in event's key:value content field
+// describes a type of event
+message EventType {
+    // metadata about content types in event's top-level content JSON
     message EventProperty {
-        // tell listener how to sort, filter or display known content properties
+        // tells client how to sort, filter or display known content properties
         enum PropertyType {
-            // treat as a simple primitive
+            // for properties to treat as a simple primitive
             STRING      = 0; // default
             NUMBER      = 1;
-            // apply human-readable formatting
+            // for properties with special human-readable formatting
             TIME        = 10;
             PEERID      = 11;
             MULTIADDR   = 12;
-            // embedded arrays and/or object trees
+            // for complex structures like nested arrays, object trees etc
             JSON        = 90;
         }
         // property name of content e.g. openTs
         string name                 = 1;
         // type to interpret content value as
         PropertyType type           = 2;
-        // if true, expect an array of values of type
-        bool has_multiple            = 3;
+        // if true, expect an array of values of `type`; else, singular
+        bool has_multiple           = 3;
     }
 
+    // name of event type, e.g. PeerConnecting
+    string name                            = 1;
+    // for runtime, send property_types for all events already seen in events list
+    // for events, only send property_types in the first event of a type not in runtime
+    repeated EventProperty property_types  = 2;
+}
+
+// Runtime encapsulates runtime info about a node.
+message Runtime {
     // e.g. go-libp2p, js-libp2p, rust-libp2p, etc.
     string implementation           = 1;
     // e.g. 1.2.3.
@@ -333,9 +334,12 @@ message State {
 
 // Event
 message Event {
-    string type                     = 1;
-    google.protobuf.Timestamp ts    = 2;
-    string content                  = 3; // stringified json
+    // definition of event type, containing only `name` unless this is first encounter of novel event
+    EventType type                     = 1;
+    // time this event occurred
+    google.protobuf.Timestamp ts       = 2;
+    // stringified json; top-level keys and value types match EventProperty definitions
+    string content                     = 3;
 }
 
 // ProtocolDataPacket wraps messages to be sent to clients to allow extension

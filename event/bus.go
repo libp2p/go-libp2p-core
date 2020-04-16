@@ -16,7 +16,7 @@ type CancelFunc = func()
 
 // WildcardSubscriptionType is the `eventType` clients of the eventbus should use
 // in the call to `Bus.Subscribe` if they want to subscribe to ALL events emitted by the eventbus.
-var WildcardSubscriptionType = reflect.TypeOf(new(interface{}))
+var WildcardSubscriptionType = new(interface{})
 
 // Emitter represents an actor that emits events onto the eventbus.
 type Emitter interface {
