@@ -22,7 +22,7 @@ script: bash <(curl -s https://raw.githubusercontent.com/ipfs/ci-helpers/master/
 jobs:
   include:
     - stage: "Test"
-      script: "./compat-check"
+      script: "./tools/compat-check"
       name: "API compatibility test"
       env:
         - GOTFLAGS=""
