@@ -16,6 +16,7 @@ require (
 	github.com/multiformats/go-multihash v0.0.13
 	github.com/multiformats/go-varint v0.0.5
 	go.opencensus.io v0.22.3
+	google.golang.org/grpc v1.20.1
 )
 
 go 1.13
