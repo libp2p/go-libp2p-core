@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-
 package introspection;
 
 // Version of schema
@@ -143,14 +141,14 @@ message StreamList {
 
 // Connection reports metrics and state of a libp2p connection.
 message Connection {
-    // Timeline contains the timestamps of the well-known milestones of a connection.
+    // Timeline contains the timestamps (ms since epoch) of the well-known milestones of a connection.
     message Timeline {
         // the instant when a connection was opened on the wire.
-        google.protobuf.Timestamp open_ts = 1;
+        uint64 open_ts = 1;
         // the instant when the upgrade process (handshake, security, multiplexing) finished.
-        google.protobuf.Timestamp upgraded_ts = 2;
+        uint64 upgraded_ts = 2;
         // the instant when this connection was terminated.
-        google.protobuf.Timestamp close_ts = 3;
+        uint64 close_ts = 3;
     }
 
     // Attributes encapsulates the attributes of this connection.
@@ -208,12 +206,12 @@ message Stream {
         }
     }
 
-    // Timeline contains the timestamps of the well-known milestones of a stream.
+    // Timeline contains the timestamps (ms since epoch) of the well-known milestones of a stream.
     message Timeline {
         // the instant when the stream was opened.
-        google.protobuf.Timestamp open_ts = 1;
+        uint64 open_ts = 1;
         // the instant when the stream was terminated.
-        google.protobuf.Timestamp close_ts = 2;
+        uint64 close_ts = 2;
     }
 
     // the id of this stream, not to be shown in user tooling,
@@ -298,8 +296,8 @@ message DHT {
     string protocol                     = 1;
     // protocol enabled.
     bool enabled                        = 2;
-    // timestap of start up.
-    google.protobuf.Timestamp start_ts  = 3;
+    // timestamp (ms since epoch) of start up.
+    uint64 start_ts                     = 3;
     // params of the dht.
     Params params                       = 4;
     // existing, intantiated buckets and their contents
@@ -325,9 +323,9 @@ message State {
     // overall traffic for this peer
     Traffic traffic                      = 2;
     // moment this data snapshot and instantaneous values were taken
-    google.protobuf.Timestamp instant_ts = 3;
+    uint64 instant_ts                    = 3;
     // start of included data collection (cumulative values counted from here)
-    google.protobuf.Timestamp start_ts   = 4;
+    uint64 start_ts                      = 4;
     // length of time up to instant_ts covered by this data snapshot
     uint32 snapshot_duration_ms          = 5;
 }
@@ -336,8 +334,8 @@ message State {
 message Event {
     // definition of event type, containing only `name` unless this is first encounter of novel event
     EventType type                     = 1;
-    // time this event occurred
-    google.protobuf.Timestamp ts       = 2;
+    // time this event occurred (ms since epoch)
+    uint64 ts                          = 2;
     // stringified json; top-level keys and value types match EventProperty definitions
     string content                     = 3;
 }
