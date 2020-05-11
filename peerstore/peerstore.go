@@ -238,7 +238,8 @@ type ProtoBook interface {
 	// If the returned error is not nil, the result is indeterminate.
 	SupportsProtocols(peer.ID, ...string) ([]string, error)
 
-	// SupportsAnyProtocol returns true if the peer supports ATLEAST ONE of the given protocols and false otherwise.
+	// FirstSupportedProtocol returns the first protocol that the peer supports among the given protocols.
+	// If the peer does not support any of the given protocols, this function will return an empty string and a nil error.
 	// If the returned error is not nil, the result is indeterminate.
-	SupportsAnyProtocol(peer.ID, ...string) (bool, error)
+	FirstSupportedProtocol(peer.ID, ...string) (string, error)
 }
