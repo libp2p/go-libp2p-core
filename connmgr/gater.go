@@ -1,12 +1,11 @@
 package connmgr
 
 import (
+	ma "github.com/multiformats/go-multiaddr"
+
 	"github.com/libp2p/go-libp2p-core/control"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/libp2p/go-libp2p-core/transport"
-
-	ma "github.com/multiformats/go-multiaddr"
 )
 
 // ConnectionGater can be implemented by a type that supports active
@@ -87,5 +86,5 @@ type ConnectionGater interface {
 	// Refer to the godoc on the ConnectionGater type for more information.
 	//
 	// NOTE: the go-libp2p implementation currently IGNORES the disconnect reason.
-	InterceptUpgraded(transport.CapableConn) (allow bool, reason control.DisconnectReason)
+	InterceptUpgraded(network.Conn) (allow bool, reason control.DisconnectReason)
 }
