@@ -34,6 +34,10 @@ const (
 	DirOutbound
 )
 
+func (d Direction) String() string {
+	return [...]string{"Unknown", "Inbound", "Outbound"}[d]
+}
+
 // Connectedness signals the capacity for a connection with a given node.
 // It is used to signal to services and other peers whether a node is reachable.
 type Connectedness int
@@ -53,6 +57,10 @@ const (
 	CannotConnect
 )
 
+func (c Connectedness) String() string {
+	return [...]string{"NotConnect", "Connected", "CanConnect", "CannotConnect"}[c]
+}
+
 // Reachability indicates how reachable a node is.
 type Reachability int
 
@@ -71,6 +79,10 @@ const (
 	// NOTE: This node may _still_ be reachable via relays.
 	ReachabilityPrivate
 )
+
+func (r Reachability) String() string {
+	return [...]string{"Unknown", "Public", "Private"}[r]
+}
 
 // Stat stores metadata pertaining to a given Stream/Conn.
 type Stat struct {
