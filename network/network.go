@@ -35,7 +35,11 @@ const (
 )
 
 func (d Direction) String() string {
-	return [...]string{"Unknown", "Inbound", "Outbound"}[d]
+	str := [...]string{"Unknown", "Inbound", "Outbound"}
+	if d < 0 || int(d) >= len(str) {
+		return "(unrecognized)"
+	}
+	return str[d]
 }
 
 // Connectedness signals the capacity for a connection with a given node.
@@ -58,7 +62,11 @@ const (
 )
 
 func (c Connectedness) String() string {
-	return [...]string{"NotConnect", "Connected", "CanConnect", "CannotConnect"}[c]
+	str := [...]string{"NotConnected", "Connected", "CanConnect", "CannotConnect"}
+	if c < 0 || int(c) >= len(str) {
+		return "(unrecognized)"
+	}
+	return str[c]
 }
 
 // Reachability indicates how reachable a node is.
@@ -81,7 +89,11 @@ const (
 )
 
 func (r Reachability) String() string {
-	return [...]string{"Unknown", "Public", "Private"}[r]
+	str := [...]string{"Unknown", "Public", "Private"}
+	if r < 0 || int(r) >= len(str) {
+		return "(unrecognized)"
+	}
+	return str[r]
 }
 
 // Stat stores metadata pertaining to a given Stream/Conn.
