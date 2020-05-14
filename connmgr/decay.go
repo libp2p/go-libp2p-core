@@ -67,8 +67,8 @@ type DecayingTag interface {
 	Interval() time.Duration
 
 	// Bump applies a delta to a tag value, calling its bump function. The bump
-	// may be applied asynchronously, in which case the returned error is used
-	// to indicate an anomaly when queuing.
+	// will be applied asynchronously, and a non-nil error indicates a fault
+	// when queuing.
 	Bump(peer peer.ID, delta int) error
 }
 
