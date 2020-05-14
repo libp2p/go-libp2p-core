@@ -20,15 +20,14 @@ import (
 // the new value.
 //
 // Such a pluggable design affords a great deal of flexibility and versatility.
-// Behaviours that are straightfoward to implement include:
+// Behaviours that are straightforward to implement include:
 //
 //  * Decay a tag by -1, or by half its current value, on every tick.
 //  * Every time a value is bumped, sum it to its current value.
 //  * Exponentially boost a score with every bump.
 //  * Sum the incoming score, but keep it within min, max bounds.
 //
-// Commonly used DecayFns and BumpFns are provided in the go-libp2p-connmgr
-// module.
+// Commonly used DecayFns and BumpFns are provided in this package.
 type Decayer interface {
 	io.Closer
 
