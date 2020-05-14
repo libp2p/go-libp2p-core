@@ -58,6 +58,14 @@ type BumpFn func(value DecayingValue, delta int) (after int)
 // DecayingTag represents a decaying tag. The tag is a long-lived general
 // object, used to operate on tag values for peers.
 type DecayingTag interface {
+	// Name returns the name of the tag.
+	Name() string
+
+	// Interval is the effective interval at which this tag will tick. Upon
+	// registration, the desired interval may be overwritten depending on the
+	// decayer's resolution, and this method allows you to obtain the effective
+	// interval.
+	Interval() time.Duration
 
 	// Bump applies a delta to a tag value, calling its bump function. The bump
 	// may be applied asynchronously, in which case the returned error is used
