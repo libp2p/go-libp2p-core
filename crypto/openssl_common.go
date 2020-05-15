@@ -3,9 +3,11 @@
 package crypto
 
 import (
+	"sync"
+
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 
-	openssl "github.com/spacemonkeygo/openssl"
+	openssl "github.com/libp2p/go-openssl"
 )
 
 // define these as separate types so we can add more key types later and reuse
@@ -13,6 +15,9 @@ import (
 
 type opensslPublicKey struct {
 	key openssl.PublicKey
+
+	cacheLk sync.Mutex
+	cached  []byte
 }
 
 type opensslPrivateKey struct {
@@ -32,7 +37,7 @@ func unmarshalOpensslPublicKey(b []byte) (opensslPublicKey, error) {
 	if err != nil {
 		return opensslPublicKey{}, err
 	}
-	return opensslPublicKey{sk}, nil
+	return opensslPublicKey{key: sk, cached: b}, nil
 }
 
 // Verify compares a signature against input data
@@ -52,7 +57,13 @@ func (pk *opensslPublicKey) Type() pb.KeyType {
 
 // Bytes returns protobuf bytes of a public key
 func (pk *opensslPublicKey) Bytes() ([]byte, error) {
-	return MarshalPublicKey(pk)
+	pk.cacheLk.Lock()
+	var err error
+	if pk.cached == nil {
+		pk.cached, err = MarshalPublicKey(pk)
+	}
+	pk.cacheLk.Unlock()
+	return pk.cached, err
 }
 
 func (pk *opensslPublicKey) Raw() ([]byte, error) {
@@ -61,7 +72,12 @@ func (pk *opensslPublicKey) Raw() ([]byte, error) {
 
 // Equals checks whether this key is equal to another
 func (pk *opensslPublicKey) Equals(k Key) bool {
-	return KeyEqual(pk, k)
+	k0, ok := k.(*RsaPublicKey)
+	if !ok {
+		return basicEquals(pk, k)
+	}
+
+	return pk.key.Equal(k0.opensslPublicKey.key)
 }
 
 // Sign returns a signature of the input data
@@ -71,7 +87,7 @@ func (sk *opensslPrivateKey) Sign(message []byte) ([]byte, error) {
 
 // GetPublic returns a public key
 func (sk *opensslPrivateKey) GetPublic() PubKey {
-	return &opensslPublicKey{sk.key}
+	return &opensslPublicKey{key: sk.key}
 }
 
 func (sk *opensslPrivateKey) Type() pb.KeyType {
@@ -94,5 +110,10 @@ func (sk *opensslPrivateKey) Raw() ([]byte, error) {
 
 // Equals checks whether this key is equal to another
 func (sk *opensslPrivateKey) Equals(k Key) bool {
-	return KeyEqual(sk, k)
+	k0, ok := k.(*RsaPrivateKey)
+	if !ok {
+		return basicEquals(sk, k)
+	}
+
+	return sk.key.Equal(k0.opensslPrivateKey.key)
 }

@@ -9,6 +9,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"io"
+	"sync"
 
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 
@@ -23,11 +24,14 @@ type RsaPrivateKey struct {
 // RsaPublicKey is an rsa public key
 type RsaPublicKey struct {
 	k rsa.PublicKey
+
+	cacheLk sync.Mutex
+	cached  []byte
 }
 
 // GenerateRSAKeyPair generates a new rsa private and public key
 func GenerateRSAKeyPair(bits int, src io.Reader) (PrivKey, PubKey, error) {
-	if bits < 512 {
+	if bits < MinRsaKeyBits {
 		return nil, nil, ErrRsaKeyTooSmall
 	}
 	priv, err := rsa.GenerateKey(src, bits)
@@ -35,7 +39,7 @@ func GenerateRSAKeyPair(bits int, src io.Reader) (PrivKey, PubKey, error) {
 		return nil, nil, err
 	}
 	pk := priv.PublicKey
-	return &RsaPrivateKey{sk: *priv}, &RsaPublicKey{pk}, nil
+	return &RsaPrivateKey{sk: *priv}, &RsaPublicKey{k: pk}, nil
 }
 
 // Verify compares a signature against input data
@@ -54,7 +58,13 @@ func (pk *RsaPublicKey) Type() pb.KeyType {
 
 // Bytes returns protobuf bytes of a public key
 func (pk *RsaPublicKey) Bytes() ([]byte, error) {
-	return MarshalPublicKey(pk)
+	pk.cacheLk.Lock()
+	var err error
+	if pk.cached == nil {
+		pk.cached, err = MarshalPublicKey(pk)
+	}
+	pk.cacheLk.Unlock()
+	return pk.cached, err
 }
 
 func (pk *RsaPublicKey) Raw() ([]byte, error) {
@@ -63,7 +73,13 @@ func (pk *RsaPublicKey) Raw() ([]byte, error) {
 
 // Equals checks whether this key is equal to another
 func (pk *RsaPublicKey) Equals(k Key) bool {
-	return KeyEqual(pk, k)
+	// make sure this is an rsa public key
+	other, ok := (k).(*RsaPublicKey)
+	if !ok {
+		return basicEquals(pk, k)
+	}
+
+	return pk.k.N.Cmp(other.k.N) == 0 && pk.k.E == other.k.E
 }
 
 // Sign returns a signature of the input data
@@ -74,7 +90,7 @@ func (sk *RsaPrivateKey) Sign(message []byte) ([]byte, error) {
 
 // GetPublic returns a public key
 func (sk *RsaPrivateKey) GetPublic() PubKey {
-	return &RsaPublicKey{sk.sk.PublicKey}
+	return &RsaPublicKey{k: sk.sk.PublicKey}
 }
 
 func (sk *RsaPrivateKey) Type() pb.KeyType {
@@ -93,7 +109,17 @@ func (sk *RsaPrivateKey) Raw() ([]byte, error) {
 
 // Equals checks whether this key is equal to another
 func (sk *RsaPrivateKey) Equals(k Key) bool {
-	return KeyEqual(sk, k)
+	// make sure this is an rsa public key
+	other, ok := (k).(*RsaPrivateKey)
+	if !ok {
+		return basicEquals(sk, k)
+	}
+
+	a := sk.sk
+	b := other.sk
+
+	// Don't care about constant time. We're only comparing the public half.
+	return a.PublicKey.N.Cmp(b.PublicKey.N) == 0 && a.PublicKey.E == b.PublicKey.E
 }
 
 // UnmarshalRsaPrivateKey returns a private key from the input x509 bytes
@@ -102,7 +128,7 @@ func UnmarshalRsaPrivateKey(b []byte) (PrivKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	if sk.N.BitLen() < 512 {
+	if sk.N.BitLen() < MinRsaKeyBits {
 		return nil, ErrRsaKeyTooSmall
 	}
 	return &RsaPrivateKey{sk: *sk}, nil
@@ -118,8 +144,9 @@ func UnmarshalRsaPublicKey(b []byte) (PubKey, error) {
 	if !ok {
 		return nil, errors.New("not actually an rsa public key")
 	}
-	if pk.N.BitLen() < 512 {
+	if pk.N.BitLen() < MinRsaKeyBits {
 		return nil, ErrRsaKeyTooSmall
 	}
-	return &RsaPublicKey{*pk}, nil
+
+	return &RsaPublicKey{k: *pk}, nil
 }
