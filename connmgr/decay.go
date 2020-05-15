@@ -70,6 +70,23 @@ type DecayingTag interface {
 	// will be applied asynchronously, and a non-nil error indicates a fault
 	// when queuing.
 	Bump(peer peer.ID, delta int) error
+
+	// Remove removes a decaying tag from a peer. The removal will be applied
+	// asynchronously, and a non-nil error indicates a fault when queuing.
+	Remove(peer peer.ID) error
+
+	// Close closes a decaying tag. The Decayer will stop tracking this tag,
+	// and the state of all peers in the Connection Manager holding this tag
+	// will be updated.
+	//
+	// The deletion is performed asynchronously.
+	//
+	// Once deleted, a tag should not be used, and further calls to Bump/Remove
+	// will error.
+	//
+	// Duplicate calls to Remove will not return errors, but a failure to queue
+	// the first actual removal, will (e.g. when the system is backlogged).
+	Close() error
 }
 
 // DecayingValue represents a value for a decaying tag.
