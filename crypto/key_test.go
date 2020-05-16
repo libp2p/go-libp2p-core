@@ -2,12 +2,22 @@ package crypto_test
 
 import (
 	"bytes"
+	"crypto"
+	"crypto/ecdsa"
+	"crypto/ed25519"
+	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"fmt"
+	"reflect"
 	"testing"
 
+	btcec "github.com/btcsuite/btcd/btcec"
 	. "github.com/libp2p/go-libp2p-core/crypto"
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 	"github.com/libp2p/go-libp2p-core/test"
+	sha256 "github.com/minio/sha256-simd"
 )
 
 func TestKeys(t *testing.T) {
@@ -16,8 +26,162 @@ func TestKeys(t *testing.T) {
 	}
 }
 
+func TestKeyPairFromKey(t *testing.T) {
+	var (
+		data   = []byte(`hello world`)
+		hashed = sha256.Sum256(data)
+	)
+
+	privk, err := btcec.NewPrivateKey(btcec.S256())
+	if err != nil {
+		t.Fatalf("err generating btcec priv key:\n%v", err)
+	}
+	sigK, err := privk.Sign(hashed[:])
+	if err != nil {
+		t.Fatalf("err generating btcec sig:\n%v", err)
+	}
+
+	eKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatalf("err generating ecdsa priv key:\n%v", err)
+	}
+	sigE, err := eKey.Sign(rand.Reader, hashed[:], crypto.SHA256)
+	if err != nil {
+		t.Fatalf("err generating ecdsa sig:\n%v", err)
+	}
+
+	rKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Fatalf("err generating rsa priv key:\n%v", err)
+	}
+	sigR, err := rKey.Sign(rand.Reader, hashed[:], crypto.SHA256)
+	if err != nil {
+		t.Fatalf("err generating rsa sig:\n%v", err)
+	}
+
+	_, edKey, err := ed25519.GenerateKey(rand.Reader)
+	sigEd := ed25519.Sign(edKey, data[:])
+	if err != nil {
+		t.Fatalf("err generating ed25519 sig:\n%v", err)
+	}
+
+	for i, tt := range []struct {
+		in  crypto.PrivateKey
+		typ pb.KeyType
+		sig []byte
+	}{
+		{
+			eKey,
+			ECDSA,
+			sigE,
+		},
+		{
+			privk,
+			Secp256k1,
+			sigK.Serialize(),
+		},
+		{
+			rKey,
+			RSA,
+			sigR,
+		},
+		{
+			&edKey,
+			Ed25519,
+			sigEd,
+		},
+	} {
+		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
+			priv, pub, err := KeyPairFromStdKey(tt.in)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if priv == nil || pub == nil {
+				t.Errorf("received nil private key or public key: %v, %v", priv, pub)
+			}
+
+			if priv == nil || priv.Type() != tt.typ {
+				t.Errorf("want %v; got %v", tt.typ, priv.Type())
+			}
+
+			v, err := pub.Verify(data[:], tt.sig)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if !v {
+				t.Error("signature was not verified")
+			}
+
+			stdPub, err := PubKeyToStdKey(pub)
+			if stdPub == nil {
+				t.Errorf("err getting std public key from key: %v", err)
+			}
+
+			var stdPubBytes []byte
+
+			switch p := stdPub.(type) {
+			case *Secp256k1PublicKey:
+				stdPubBytes, err = p.Raw()
+			case ed25519.PublicKey:
+				stdPubBytes = []byte(p)
+			default:
+				stdPubBytes, err = x509.MarshalPKIXPublicKey(stdPub)
+			}
+
+			if err != nil {
+				t.Errorf("Error while marshaling %v key: %v", reflect.TypeOf(stdPub), err)
+			}
+
+			pubBytes, err := pub.Raw()
+			if err != nil {
+				t.Errorf("err getting raw bytes for %v key: %v", reflect.TypeOf(pub), err)
+			}
+			if !bytes.Equal(stdPubBytes, pubBytes) {
+				t.Errorf("err roundtripping %v key", reflect.TypeOf(pub))
+			}
+
+			stdPriv, err := PrivKeyToStdKey(priv)
+			if stdPub == nil {
+				t.Errorf("err getting std private key from key: %v", err)
+			}
+
+			var stdPrivBytes []byte
+
+			switch p := stdPriv.(type) {
+			case *Secp256k1PrivateKey:
+				stdPrivBytes, err = p.Raw()
+			case *ecdsa.PrivateKey:
+				stdPrivBytes, err = x509.MarshalECPrivateKey(p)
+			case *ed25519.PrivateKey:
+				stdPrivBytes = *p
+			case *rsa.PrivateKey:
+				stdPrivBytes = x509.MarshalPKCS1PrivateKey(p)
+			}
+
+			if err != nil {
+				t.Errorf("err marshaling %v key: %v", reflect.TypeOf(stdPriv), err)
+			}
+
+			privBytes, err := priv.Raw()
+			if err != nil {
+				t.Errorf("err getting raw bytes for %v key: %v", reflect.TypeOf(priv), err)
+			}
+
+			if !bytes.Equal(stdPrivBytes, privBytes) {
+				t.Errorf("err roundtripping %v key", reflect.TypeOf(priv))
+			}
+		})
+	}
+}
+
 func testKeyType(typ int, t *testing.T) {
-	sk, pk, err := test.RandTestKeyPair(typ, 512)
+	bits := 512
+	if typ == RSA {
+		bits = 2048
+	}
+	sk, pk, err := test.RandTestKeyPair(typ, bits)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,20 +265,21 @@ func testKeyEncoding(t *testing.T, sk PrivKey) {
 }
 
 func testKeyEquals(t *testing.T, k Key) {
-	kb, err := k.Bytes()
-	if err != nil {
-		t.Fatal(err)
-	}
+	// kb, err := k.Raw()
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 
 	if !KeyEqual(k, k) {
 		t.Fatal("Key not equal to itself.")
 	}
 
-	if !KeyEqual(k, testkey(kb)) {
-		t.Fatal("Key not equal to key with same bytes.")
-	}
+	// bad test, relies on deep internals..
+	// if !KeyEqual(k, testkey(kb)) {
+	// 	t.Fatal("Key not equal to key with same bytes.")
+	// }
 
-	sk, pk, err := test.RandTestKeyPair(RSA, 512)
+	sk, pk, err := test.RandTestKeyPair(RSA, 2048)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -143,5 +308,50 @@ func (pk testkey) Raw() ([]byte, error) {
 }
 
 func (pk testkey) Equals(k Key) bool {
-	return KeyEqual(pk, k)
+	if pk.Type() != k.Type() {
+		return false
+	}
+	a, err := pk.Raw()
+	if err != nil {
+		return false
+	}
+
+	b, err := k.Raw()
+	if err != nil {
+		return false
+	}
+
+	return bytes.Equal(a, b)
+}
+
+func TestUnknownCurveErrors(t *testing.T) {
+	_, _, err := GenerateEKeyPair("P-256")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, _, err = GenerateEKeyPair("error-please")
+	if err == nil {
+		t.Fatal("expected invalid key type to error")
+	}
+}
+
+func TestPanicOnUnknownCipherType(t *testing.T) {
+	passed := false
+	defer func() {
+		if !passed {
+			t.Fatal("expected known cipher and hash to succeed")
+		}
+		err := recover()
+		errStr, ok := err.(string)
+		if !ok {
+			t.Fatal("expected string in panic")
+		}
+		if errStr != "Unrecognized cipher, programmer error?" {
+			t.Fatal("expected \"Unrecognized cipher, programmer error?\"")
+		}
+	}()
+	KeyStretcher("AES-256", "SHA1", []byte("foo"))
+	passed = true
+	KeyStretcher("Fooba", "SHA1", []byte("foo"))
 }

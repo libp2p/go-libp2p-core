@@ -4,12 +4,12 @@
 package crypto
 
 import (
-	"bytes"
 	"crypto/elliptic"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha1"
 	"crypto/sha512"
+	"crypto/subtle"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -143,6 +143,8 @@ func GenerateEKeyPair(curveName string) ([]byte, GenSharedKey, error) {
 		curve = elliptic.P384()
 	case "P-521":
 		curve = elliptic.P521()
+	default:
+		return nil, nil, fmt.Errorf("unknown curve name")
 	}
 
 	priv, x, y, err := elliptic.GenerateKey(curve, rand.Reader)
@@ -179,8 +181,14 @@ type StretchedKeys struct {
 	CipherKey []byte
 }
 
+// PENDING DEPRECATION:  KeyStretcher() will be deprecated with secio; for new
+// code, please use PBKDF2 (golang.org/x/crypto/pbkdf2) instead.
 // KeyStretcher returns a set of keys for each party by stretching the shared key.
-// (myIV, theirIV, myCipherKey, theirCipherKey, myMACKey, theirMACKey)
+// (myIV, theirIV, myCipherKey, theirCipherKey, myMACKey, theirMACKey).
+// This function accepts the following cipher types:
+// - AES-128
+// - AES-256
+// The function will panic upon receiving an unknown cipherType
 func KeyStretcher(cipherType string, hashType string, secret []byte) (StretchedKeys, StretchedKeys) {
 	var cipherKeySize int
 	var ivSize int
@@ -191,10 +199,8 @@ func KeyStretcher(cipherType string, hashType string, secret []byte) (StretchedK
 	case "AES-256":
 		ivSize = 16
 		cipherKeySize = 32
-	case "Blowfish":
-		ivSize = 8
-		// Note: cypherKeySize arbitrarily selected, needs more thought
-		cipherKeySize = 32
+	default:
+		panic("Unrecognized cipher, programmer error?")
 	}
 
 	hmacKeySize := 20
@@ -277,17 +283,46 @@ func UnmarshalPublicKey(data []byte) (PubKey, error) {
 		return nil, err
 	}
 
+	return PublicKeyFromProto(pmes)
+}
+
+// PublicKeyFromProto converts an unserialized protobuf PublicKey message
+// into its representative object.
+func PublicKeyFromProto(pmes *pb.PublicKey) (PubKey, error) {
 	um, ok := PubKeyUnmarshallers[pmes.GetType()]
 	if !ok {
 		return nil, ErrBadKeyType
 	}
 
-	return um(pmes.GetData())
+	data := pmes.GetData()
+
+	pk, err := um(data)
+	if err != nil {
+		return nil, err
+	}
+
+	switch tpk := pk.(type) {
+	case *RsaPublicKey:
+		tpk.cached, _ = pmes.Marshal()
+	}
+
+	return pk, nil
 }
 
 // MarshalPublicKey converts a public key object into a protobuf serialized
 // public key
 func MarshalPublicKey(k PubKey) ([]byte, error) {
+	pbmes, err := PublicKeyToProto(k)
+	if err != nil {
+		return nil, err
+	}
+
+	return proto.Marshal(pbmes)
+}
+
+// PublicKeyToProto converts a public key object into an unserialized
+// protobuf PublicKey message.
+func PublicKeyToProto(k PubKey) (*pb.PublicKey, error) {
 	pbmes := new(pb.PublicKey)
 	pbmes.Type = k.Type()
 	data, err := k.Raw()
@@ -295,8 +330,7 @@ func MarshalPublicKey(k PubKey) ([]byte, error) {
 		return nil, err
 	}
 	pbmes.Data = data
-
-	return proto.Marshal(pbmes)
+	return pbmes, nil
 }
 
 // UnmarshalPrivateKey converts a protobuf serialized private key into its
@@ -329,12 +363,12 @@ func MarshalPrivateKey(k PrivKey) ([]byte, error) {
 	return proto.Marshal(pbmes)
 }
 
-// ConfigDecodeKey decodes from b64 (for config file), and unmarshals.
+// ConfigDecodeKey decodes from b64 (for config file) to a byte array that can be unmarshalled.
 func ConfigDecodeKey(b string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(b)
 }
 
-// ConfigEncodeKey encodes to b64 (for config file), and marshals.
+// ConfigEncodeKey encodes a marshalled key to b64 (for config file).
 func ConfigEncodeKey(b []byte) string {
 	return base64.StdEncoding.EncodeToString(b)
 }
@@ -345,7 +379,21 @@ func KeyEqual(k1, k2 Key) bool {
 		return true
 	}
 
-	b1, err1 := k1.Bytes()
-	b2, err2 := k2.Bytes()
-	return bytes.Equal(b1, b2) && err1 == err2
+	return k1.Equals(k2)
+}
+
+func basicEquals(k1, k2 Key) bool {
+	if k1.Type() != k2.Type() {
+		return false
+	}
+
+	a, err := k1.Raw()
+	if err != nil {
+		return false
+	}
+	b, err := k2.Raw()
+	if err != nil {
+		return false
+	}
+	return subtle.ConstantTimeCompare(a, b) == 1
 }
