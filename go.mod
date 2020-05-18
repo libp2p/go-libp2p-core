@@ -12,7 +12,7 @@ require (
 	github.com/libp2p/go-openssl v0.0.5
 	github.com/minio/sha256-simd v0.1.1
 	github.com/mr-tron/base58 v1.1.3
-	github.com/multiformats/go-multiaddr v0.2.1
+	github.com/multiformats/go-multiaddr v0.2.2
 	github.com/multiformats/go-multihash v0.0.13
 	github.com/multiformats/go-varint v0.0.5
 	go.opencensus.io v0.22.3
