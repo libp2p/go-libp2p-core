@@ -14,8 +14,8 @@ type EmitterOpt = func(interface{}) error
 // CancelFunc closes a subscriber.
 type CancelFunc = func()
 
-// WildcardSubscriptionType is the `eventType` clients of the eventbus should use
-// in the call to `Bus.Subscribe` if they want to subscribe to ALL events emitted by the eventbus.
+// WildcardSubscriptionType is the type to subscribe to to receive all events
+// emitted in the eventbus.
 var WildcardSubscriptionType = new(interface{})
 
 // Emitter represents an actor that emits events onto the eventbus.
@@ -46,8 +46,10 @@ type Bus interface {
 	//
 	// Failing to drain the channel may cause publishers to block.
 	//
-	// If you want to subscribe to ALL events emitted by the bus, please use `WildcardSubscriptionType`
-	// as the `eventType` in this call i.e. `eventbus.Subscribe(WildcardSubscriptionType)`
+	// If you want to subscribe to ALL events emitted in the bus, use
+	// `WildcardSubscriptionType` as the `eventType`:
+	//
+	//  eventbus.Subscribe(WildcardSubscriptionType)
 	//
 	// Simple example
 	//
@@ -82,10 +84,10 @@ type Bus interface {
 	//  em.Emit(EventT{})
 	Emitter(eventType interface{}, opts ...EmitterOpt) (Emitter, error)
 
-	// GetAllEventTypes returns all the event types that this bus
-	// has Emitters or Subscribers for.
-	// The caller is guaranteed that this function will ONLY return non pointer types i.e.
-	// the results of calling reflect.Type.Elem() on the pointer types passed
-	// to both `Bus.Emitter` AND `Bus.Subscribe`.
+	// GetAllEventTypes returns all the event types that this bus knows about
+	// (having emitters and subscribers). It omits the WildcardSubscriptionType.
+	//
+	// The caller is guaranteed that this function will only return value types;
+	// no pointer types will be returned.
 	GetAllEventTypes() []reflect.Type
 }
