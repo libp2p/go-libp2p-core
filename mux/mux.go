@@ -27,6 +27,9 @@ type MuxedStream interface {
 	//
 	// Close may be asynchronous and _does not_ guarantee receipt of the
 	// data.
+	//
+	// For adherence with Go conventions, the Close method does not accept
+	// a StreamCloseError. For a detailed
 	io.Closer
 
 	// CloseWrite closes the stream for writing but leaves it open for
@@ -34,18 +37,36 @@ type MuxedStream interface {
 	//
 	// CloseWrite does not free the stream, users must still call Close or
 	// Reset.
-	CloseWrite() error
+	//
+	// Users may provide an optional StreamCloseError, to convey a detailed
+	// error to the peer, if the underlying stream muxer supports so. To check
+	// if the underlying stream muxer has used the error, call
+	// StreamCloseError.Used() on return.
+	CloseWrite(err *StreamCloseError) error
 
-	// CloseRead closes the stream for writing but leaves it open for
-	// reading.
+	// CloseRead closes the stream for reading but leaves it open for
+	// writing.
 	//
 	// CloseRead does not free the stream, users must still call Close or
 	// Reset.
-	CloseRead() error
+	//
+	// Users may provide an optional StreamCloseError, to convey a detailed
+	// error to the peer, if the underlying stream muxer supports so. To check
+	// if the underlying stream muxer has used the error, call
+	// StreamCloseError.Used() on return.
+	CloseRead(err *StreamCloseError) error
 
-	// Reset closes both ends of the stream. Use this to tell the remote
-	// side to hang up and go away.
+	// Reset closes both ends of the stream abruptly. Use this to tell the
+	// remote side to hang up and go away.
 	Reset() error
+
+	// ResetErr closes both ends of the stream abruptly, allowing the user to
+	// specify an optional StreamCloseError. If nil, the behaviour is equivalent
+	// to Reset().
+	//
+	// To check if the underlying stream muxer has used the error call
+	// StreamCloseError.Used() on return.
+	ResetErr(err *StreamCloseError) error
 
 	SetDeadline(time.Time) error
 	SetReadDeadline(time.Time) error
