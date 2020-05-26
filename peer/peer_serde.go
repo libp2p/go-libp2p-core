@@ -26,6 +26,12 @@ func (id ID) MarshalBinary() ([]byte, error) {
 	return id.Marshal()
 }
 
+// MarshalBinaryWithoutError is identical to MarshalBinary but omits the error.
+func (id ID) MarshalBinaryWithoutError() []byte {
+	b, _ := id.MarshalBinary()
+	return b
+}
+
 func (id ID) MarshalTo(data []byte) (n int, err error) {
 	return copy(data, []byte(id)), nil
 }
