@@ -70,6 +70,10 @@ type ConnManager interface {
 	// See notes on Protect() for more info.
 	Unprotect(id peer.ID, tag string) (protected bool)
 
+	// IsProtected returns true if the peer is protected for some tag; if the tag is the empty string
+	// then it will return true if the peer is protected for any tag
+	IsProtected(id peer.ID, tag string) (protected bool)
+
 	// Close closes the connection manager and stops background processes.
 	Close() error
 }
