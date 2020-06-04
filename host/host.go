@@ -78,9 +78,9 @@ type Host interface {
 // IntrospectableHost is implemented by Host implementations that are
 // introspectable, that is, that may have introspection capability.
 type IntrospectableHost interface {
-	// Introspector the introspector, or nil if one hasn't been registered. With
-	// it, the call can register data providers, and can fetch introspection
-	// data.
+	// Introspector returns the introspector, or nil if one hasn't been
+	// registered. With it, the call can register data providers, and can fetch
+	// introspection data.
 	Introspector() introspection.Introspector
 
 	// IntrospectionEndpoint returns the introspection endpoint, or nil if one

@@ -17,4 +17,12 @@ type Endpoint interface {
 
 	// ListenAddrs returns the listen addresses of this endpoint.
 	ListenAddrs() []string
+
+	// Sessions returns the ongoing sessions.
+	Sessions() []*Session
+}
+
+// Session represents an introspection session.
+type Session struct {
+	RemoteAddr string
 }
