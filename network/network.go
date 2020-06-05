@@ -8,6 +8,7 @@ package network
 import (
 	"context"
 	"io"
+	"time"
 
 	"github.com/jbenet/goprocess"
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -98,8 +99,12 @@ func (r Reachability) String() string {
 
 // Stat stores metadata pertaining to a given Stream/Conn.
 type Stat struct {
+	// Direction specifies whether this is an inbound or an outbound connection.
 	Direction Direction
-	Extra     map[interface{}]interface{}
+	// Opened is the timestamp when this connection was opened.
+	Opened time.Time
+	// Extra stores additional metadata about this connection.
+	Extra map[interface{}]interface{}
 }
 
 // StreamHandler is the type of function used to listen for
