@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package introspection;
+package pb;
 
 // Version of schema
 message Version {
