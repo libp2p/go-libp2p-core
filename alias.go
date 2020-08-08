@@ -19,7 +19,7 @@ type Multiaddr = multiaddr.Multiaddr
 // Refer to the docs on that type for more info.
 type PeerID = peer.ID
 
-// PeerID aliases protocol.ID.
+// ProtocolID aliases protocol.ID.
 //
 // Refer to the docs on that type for more info.
 type ProtocolID = protocol.ID
