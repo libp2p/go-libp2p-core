@@ -14,14 +14,23 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 )
 
-// ConnManager tracks connections to peers, and allows consumers to associate metadata
-// with each peer.
-//
-// It enables connections to be trimmed based on implementation-defined heuristics.
-// The ConnManager allows libp2p to enforce an upper bound on the total number of
-// open connections.
-type ConnManager interface {
+// SupportsDecay evaluates if the provided ConnManager supports decay, and if
+// so, it returns the Decayer object. Refer to godocs on Decayer for more info.
+func SupportsDecay(mgr ConnManager) (Decayer, bool) {
+	d, ok := mgr.(Decayer)
+	return d, ok
+}
 
+// ConnManager tracks connections to peers, and allows consumers to associate
+// metadata with each peer.
+//
+// It enables connections to be trimmed based on implementation-defined
+// heuristics. The ConnManager allows libp2p to enforce an upper bound on the
+// total number of open connections.
+//
+// ConnManagers supporting decaying tags implement Decayer. Use the
+// SupportsDecay function to safely cast an instance to Decayer, if supported.
+type ConnManager interface {
 	// TagPeer tags a peer with a string, associating a weight with the tag.
 	TagPeer(peer.ID, string, int)
 
@@ -60,6 +69,10 @@ type ConnManager interface {
 	// The return value indicates whether the peer continues to be protected after this call, by way of a different tag.
 	// See notes on Protect() for more info.
 	Unprotect(id peer.ID, tag string) (protected bool)
+
+	// IsProtected returns true if the peer is protected for some tag; if the tag is the empty string
+	// then it will return true if the peer is protected for any tag
+	IsProtected(id peer.ID, tag string) (protected bool)
 
 	// Close closes the connection manager and stops background processes.
 	Close() error
