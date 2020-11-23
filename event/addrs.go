@@ -80,3 +80,27 @@ type EvtLocalAddressesUpdated struct {
 	// wrapped in a record.Envelope and signed by the Host's private key.
 	SignedPeerRecord *record.Envelope
 }
+
+// DiscoveredAddressesSource represents the source of a new set
+// of discovered dialable addresses.
+type DiscoveredAddressesSource int
+
+const (
+	// InterfaceNewListen means that the dialable addresses are interface listen addresses.
+	InterfaceNewListen DiscoveredAddressesSource = iota
+	// ExternallyObserved means the dialable addresses are addresses observed by remote peers on connections.
+	ExternallyObserved
+	// UPnP means the dialable addresses are new addresses assigned by UPnP port mappings.
+	UPnP
+	// NetRoute means the dialable addresses are new interface addresses as determined by NetRoute.
+	NetRoute
+)
+
+// EvtDiscoveredAddresses should be emitted when a new dialable address is discovered by a system.
+// This dialable address would then be verified by a system such as AutoNAT.
+type EvtDiscoveredAddresses struct {
+	// Source contains the source system that discovers these dialable addresses.
+	Source DiscoveredAddressesSource
+	// Addresses contains the dialable addresses discovered.
+	Addresses []ma.Multiaddr
+}
