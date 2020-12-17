@@ -5,6 +5,7 @@
 package mux
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net"
@@ -74,7 +75,7 @@ type MuxedConn interface {
 	IsClosed() bool
 
 	// OpenStream creates a new stream.
-	OpenStream() (MuxedStream, error)
+	OpenStream(context.Context) (MuxedStream, error)
 
 	// AcceptStream accepts a stream opened by the other side.
 	AcceptStream() (MuxedStream, error)
