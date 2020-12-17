@@ -1,6 +1,7 @@
 package network
 
 import (
+	"context"
 	"io"
 
 	ic "github.com/libp2p/go-libp2p-core/crypto"
@@ -24,7 +25,7 @@ type Conn interface {
 	ID() string
 
 	// NewStream constructs a new Stream over this conn.
-	NewStream() (Stream, error)
+	NewStream(context.Context) (Stream, error)
 
 	// GetStreams returns all open streams over this conn.
 	GetStreams() []Stream
