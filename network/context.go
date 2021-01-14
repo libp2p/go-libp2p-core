@@ -23,12 +23,14 @@ func WithNoDial(ctx context.Context, reason string) context.Context {
 	return context.WithValue(ctx, noDial, reason)
 }
 
+// EXPERIMENTAL: We might go ahead with introducing a new API in the Network to accomplish this later on.
 // WithForceDirectDial constructs a new context with an option that instructs the network
 // to attempt to force a direct connection to a peer via a dial even if a proxied connection to it already exists.
 func WithForceDirectDial(ctx context.Context, reason string) context.Context {
 	return context.WithValue(ctx, forceDirectDial, reason)
 }
 
+// EXPERIMENTAL: We might go ahead with introducing a new API in the Network to accomplish this later on.
 // GetForceDirectDial returns true if the force direct dial option is set in the context.
 func GetForceDirectDial(ctx context.Context) (forceDirect bool, reason string) {
 	v := ctx.Value(forceDirectDial)
