@@ -16,3 +16,11 @@ const (
 	// NAT traversal via hole-punching is NOT possible with this NAT type irrespective of the remote peer's NAT type.
 	NATDeviceTypeHard
 )
+
+func (r NATDeviceType) String() string {
+	str := [...]string{"Unknown", "Easy", "Hard"}
+	if r < 0 || int(r) >= len(str) {
+		return "(unrecognized)"
+	}
+	return str[r]
+}
