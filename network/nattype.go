@@ -1,24 +1,29 @@
 package network
 
-// NATDeviceType indicates the type of the NAT device i.e. whether it is a Hard or an Easy NAT.
+// NATDeviceType indicates the type of the NAT device.
 type NATDeviceType int
 
 const (
 	// NATDeviceTypeUnknown indicates that the type of the NAT device is unknown.
 	NATDeviceTypeUnknown NATDeviceType = iota
 
-	// NATDeviceTypeEasy indicates that the NAT device is an Easy NAT i.e. it supports consistent endpoint translation.
-	// NAT traversal via hole punching is possible with this NAT type if the remote peer is also behind an Easy NAT.
-	NATDeviceTypeEasy
+	// NATDeviceTypeCone indicates that the NAT device is a Cone NAT.
+	// A Cone NAT is a NAT where all outgoing connections from the same source IP address and port are mapped by the NAT device
+	// to the same IP address and port irrespective of the destination address.
+	// With Regards to Internet Society RFC 3489, this could be either a Full Cone NAT, a Restricted Cone NAT or a
+	// Port Restricted Cone NAT. However, we do NOT differentiate between them here and simply classify all such NATs as a Cone NAT.
+	// NAT traversal with hole punching is possible with a Cone NAT if the remote peer is ALSO behind a Cone NAT.
+	NATDeviceTypeCone
 
-	// NATDeviceTypeHard indicates that the NAT device is a Hard NAT that does NOT support
-	// consistent endpoint translation.
-	// NAT traversal via hole-punching is NOT possible with this NAT type irrespective of the remote peer's NAT type.
-	NATDeviceTypeHard
+	// NATDeviceTypeHard indicates that the NAT device is a Symmetric NAT.
+	// A Symmetric NAT maps outgoing connections with different destination addresses to different IP addresses and ports
+	// even if they originate from the same source IP address and port.
+	// NAT traversal with hole-punching is currently NOT possible in libp2p with Symmetric NATs irrespective of the remote peer's NAT type.
+	NATDeviceTypeSymmetric
 )
 
 func (r NATDeviceType) String() string {
-	str := [...]string{"Unknown", "Easy", "Hard"}
+	str := [...]string{"Unknown", "Cone", "Symmetric"}
 	if r < 0 || int(r) >= len(str) {
 		return "(unrecognized)"
 	}
