@@ -12,7 +12,8 @@ const (
 	// to the same IP address and port irrespective of the destination address.
 	// With regards to RFC 3489, this could be either a Full Cone NAT, a Restricted Cone NAT or a
 	// Port Restricted Cone NAT. However, we do NOT differentiate between them here and simply classify all such NATs as a Cone NAT.
-	// NAT traversal with hole punching is possible with a Cone NAT if the remote peer is ALSO behind a Cone NAT.
+	// NAT traversal with hole punching is possible with a Cone NAT ONLY if the remote peer is ALSO behind a Cone NAT.
+	// If the remote peer is behind a Symmetric NAT, hole punching will fail.
 	NATDeviceTypeCone
 
 	// NATDeviceTypeSymmetric indicates that the NAT device is a Symmetric NAT.
@@ -23,9 +24,14 @@ const (
 )
 
 func (r NATDeviceType) String() string {
-	str := [...]string{"Unknown", "Cone", "Symmetric"}
-	if r < 0 || int(r) >= len(str) {
-		return "(unrecognized)"
+	switch r {
+	case 0:
+		return "Unknown"
+	case 1:
+		return "Cone"
+	case 2:
+		return "Symmetric"
+	default:
+		return "unrecognized"
 	}
-	return str[r]
 }
