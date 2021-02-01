@@ -10,7 +10,7 @@ const (
 	// NATDeviceTypeCone indicates that the NAT device is a Cone NAT.
 	// A Cone NAT is a NAT where all outgoing connections from the same source IP address and port are mapped by the NAT device
 	// to the same IP address and port irrespective of the destination address.
-	// With Regards to Internet Society RFC 3489, this could be either a Full Cone NAT, a Restricted Cone NAT or a
+	// With regards to RFC 3489, this could be either a Full Cone NAT, a Restricted Cone NAT or a
 	// Port Restricted Cone NAT. However, we do NOT differentiate between them here and simply classify all such NATs as a Cone NAT.
 	// NAT traversal with hole punching is possible with a Cone NAT if the remote peer is ALSO behind a Cone NAT.
 	NATDeviceTypeCone
