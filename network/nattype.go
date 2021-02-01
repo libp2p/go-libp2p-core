@@ -15,7 +15,7 @@ const (
 	// NAT traversal with hole punching is possible with a Cone NAT if the remote peer is ALSO behind a Cone NAT.
 	NATDeviceTypeCone
 
-	// NATDeviceTypeHard indicates that the NAT device is a Symmetric NAT.
+	// NATDeviceTypeSymmetric indicates that the NAT device is a Symmetric NAT.
 	// A Symmetric NAT maps outgoing connections with different destination addresses to different IP addresses and ports
 	// even if they originate from the same source IP address and port.
 	// NAT traversal with hole-punching is currently NOT possible in libp2p with Symmetric NATs irrespective of the remote peer's NAT type.
