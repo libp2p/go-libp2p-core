@@ -12,6 +12,17 @@ const (
 	NATTransportTCP
 )
 
+func (n NATTransportProtocol) String() string {
+	switch n {
+	case 0:
+		return "UDP"
+	case 1:
+		return "TCP"
+	default:
+		return "unrecognized"
+	}
+}
+
 // EvtNATDeviceTypeChanged is an event struct to be emitted when the type of the NAT device changes for a Transport Protocol.
 //
 // Note: This event is meaningful ONLY if the AutoNAT Reachability is Private.
