@@ -35,3 +35,24 @@ func (r NATDeviceType) String() string {
 		return "unrecognized"
 	}
 }
+
+// NATTransportProtocol is the transport protocol for which the NAT Device Type has been determined.
+type NATTransportProtocol int
+
+const (
+	// NATTransportUDP means that the NAT Device Type has been determined for the UDP Protocol.
+	NATTransportUDP NATTransportProtocol = iota
+	// NATTransportTCP means that the NAT Device Type has been determined for the TCP Protocol.
+	NATTransportTCP
+)
+
+func (n NATTransportProtocol) String() string {
+	switch n {
+	case 0:
+		return "UDP"
+	case 1:
+		return "TCP"
+	default:
+		return "unrecognized"
+	}
+}
