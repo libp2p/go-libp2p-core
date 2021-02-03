@@ -13,9 +13,11 @@ var DialPeerTimeout = 60 * time.Second
 type noDialCtxKey struct{}
 type dialPeerTimeoutCtxKey struct{}
 type forceDirectDialCtxKey struct{}
+type useTransientCtxKey struct{}
 
 var noDial = noDialCtxKey{}
 var forceDirectDial = forceDirectDialCtxKey{}
+var useTransient = useTransientCtxKey{}
 
 // EXPERIMENTAL
 // WithForceDirectDial constructs a new context with an option that instructs the network
@@ -65,4 +67,19 @@ func GetDialPeerTimeout(ctx context.Context) time.Duration {
 // independently.
 func WithDialPeerTimeout(ctx context.Context, timeout time.Duration) context.Context {
 	return context.WithValue(ctx, dialPeerTimeoutCtxKey{}, timeout)
+}
+
+// WithUseTransient constructs a new context with an option that instructs to network
+// that it is acceptable to use a transient connection when opening a new stream.
+func WithUseTransient(ctx context.Context) context.Context {
+	return context.WithValue(ctx, useTransient, true)
+}
+
+// GetUseTransient returns true if the use transient option is set in the context.
+func GetUseTransient(ctx context.Context) bool {
+	v := ctx.Value(useTransient)
+	if v != nil {
+		return true
+	}
+	return false
 }
