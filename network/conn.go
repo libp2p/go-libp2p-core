@@ -19,6 +19,7 @@ type Conn interface {
 
 	ConnSecurity
 	ConnMultiaddrs
+	ConnStat
 
 	// ID returns an identifier that uniquely identifies this Conn within this
 	// host, during this run. Connection IDs may repeat across restarts.
@@ -29,9 +30,6 @@ type Conn interface {
 
 	// GetStreams returns all open streams over this conn.
 	GetStreams() []Stream
-
-	// Stat stores metadata pertaining to this conn.
-	Stat() Stat
 }
 
 // ConnSecurity is the interface that one can mix into a connection interface to
@@ -60,4 +58,9 @@ type ConnMultiaddrs interface {
 	// RemoteMultiaddr returns the remote Multiaddr associated
 	// with this connection
 	RemoteMultiaddr() ma.Multiaddr
+}
+
+type ConnStat interface {
+	// Stat stores metadata pertaining to this conn.
+	Stat() Stat
 }
