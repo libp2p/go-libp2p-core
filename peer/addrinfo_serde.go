@@ -2,6 +2,7 @@ package peer
 
 import (
 	"encoding/json"
+	"errors"
 
 	ma "github.com/multiformats/go-multiaddr"
 )
@@ -22,14 +23,16 @@ func (pi *AddrInfo) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &data); err != nil {
 		return err
 	}
-	if id, ok := data["ID"]; ok {
-		if idString, ok := id.(string); ok {
-			pid, err := IDB58Decode(idString)
-			if err != nil {
-				return err
-			}
-			pi.ID = pid
+	id, ok := data["ID"]
+	if !ok {
+		return errors.New("no peer ID")
+	}
+	if idString, ok := id.(string); ok {
+		pid, err := IDB58Decode(idString)
+		if err != nil {
+			return err
 		}
+		pi.ID = pid
 	}
 	if addrsEntry, ok := data["Addrs"]; ok {
 		if addrs, ok := addrsEntry.([]interface{}); ok {

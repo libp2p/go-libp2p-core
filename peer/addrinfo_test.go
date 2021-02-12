@@ -135,19 +135,28 @@ func TestAddrInfosFromP2pAddrs(t *testing.T) {
 }
 
 func TestAddrInfoJSON(t *testing.T) {
-	ai := AddrInfo{ID: testID, Addrs: []ma.Multiaddr{maddrFull}}
-	out, err := ai.MarshalJSON()
-	if err != nil {
-		t.Fatal(err)
-	}
-	var addrInfo AddrInfo
-	if err := addrInfo.UnmarshalJSON(out); err != nil {
-		t.Fatal(err)
-	}
-	if addrInfo.ID != testID {
-		t.Fatalf("expected ID to equal %s, got %s", testID.Pretty(), addrInfo.ID.Pretty())
-	}
-	if len(addrInfo.Addrs) != 1 || !addrInfo.Addrs[0].Equal(maddrFull) {
-		t.Fatalf("expected addrs to match %v, got %v", maddrFull, addrInfo.Addrs)
-	}
+	t.Run("valid AddrInfo", func(t *testing.T) {
+		ai := AddrInfo{ID: testID, Addrs: []ma.Multiaddr{maddrFull}}
+		out, err := ai.MarshalJSON()
+		if err != nil {
+			t.Fatal(err)
+		}
+		var addrInfo AddrInfo
+		if err := addrInfo.UnmarshalJSON(out); err != nil {
+			t.Fatal(err)
+		}
+		if addrInfo.ID != testID {
+			t.Fatalf("expected ID to equal %s, got %s", testID.Pretty(), addrInfo.ID.Pretty())
+		}
+		if len(addrInfo.Addrs) != 1 || !addrInfo.Addrs[0].Equal(maddrFull) {
+			t.Fatalf("expected addrs to match %v, got %v", maddrFull, addrInfo.Addrs)
+		}
+	})
+	t.Run("missing ID", func(t *testing.T) {
+		s := []byte(`{"Addrs":["/ip4/127.0.0.1/tcp/1234/p2p/QmS3zcG7LhYZYSJMhyRZvTddvbNUqtt8BJpaSs6mi1K5Va"]}`)
+		var addrInfo AddrInfo
+		if err := addrInfo.UnmarshalJSON(s); err == nil || err.Error() != "no peer ID" {
+			t.Fatalf("expected no peer ID error, got %v", err)
+		}
+	})
 }
