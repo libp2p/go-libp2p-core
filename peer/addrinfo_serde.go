@@ -19,19 +19,23 @@ func (pi AddrInfo) MarshalJSON() ([]byte, error) {
 
 func (pi *AddrInfo) UnmarshalJSON(b []byte) error {
 	var data map[string]interface{}
-	err := json.Unmarshal(b, &data)
-	if err != nil {
+	if err := json.Unmarshal(b, &data); err != nil {
 		return err
 	}
-	pid, err := IDB58Decode(data["ID"].(string))
-	if err != nil {
-		return err
+	if id, ok := data["ID"]; ok {
+		if idString, ok := id.(string); ok {
+			pid, err := IDB58Decode(idString)
+			if err != nil {
+				return err
+			}
+			pi.ID = pid
+		}
 	}
-	pi.ID = pid
-	addrs, ok := data["Addrs"].([]interface{})
-	if ok {
-		for _, a := range addrs {
-			pi.Addrs = append(pi.Addrs, ma.StringCast(a.(string)))
+	if addrsEntry, ok := data["Addrs"]; ok {
+		if addrs, ok := addrsEntry.([]interface{}); ok {
+			for _, a := range addrs {
+				pi.Addrs = append(pi.Addrs, ma.StringCast(a.(string)))
+			}
 		}
 	}
 	return nil
