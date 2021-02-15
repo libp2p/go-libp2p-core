@@ -37,8 +37,8 @@ type MuxedStream interface {
 	// Reset.
 	CloseWrite() error
 
-	// CloseRead closes the stream for writing but leaves it open for
-	// reading.
+	// CloseRead closes the stream for reading but leaves it open for
+	// writing.
 	//
 	// CloseRead does not free the stream, users must still call Close or
 	// Reset.
