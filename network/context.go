@@ -12,8 +12,28 @@ var DialPeerTimeout = 60 * time.Second
 
 type noDialCtxKey struct{}
 type dialPeerTimeoutCtxKey struct{}
+type forceDirectDialCtxKey struct{}
 
 var noDial = noDialCtxKey{}
+var forceDirectDial = forceDirectDialCtxKey{}
+
+// EXPERIMENTAL
+// WithForceDirectDial constructs a new context with an option that instructs the network
+// to attempt to force a direct connection to a peer via a dial even if a proxied connection to it already exists.
+func WithForceDirectDial(ctx context.Context, reason string) context.Context {
+	return context.WithValue(ctx, forceDirectDial, reason)
+}
+
+// EXPERIMENTAL
+// GetForceDirectDial returns true if the force direct dial option is set in the context.
+func GetForceDirectDial(ctx context.Context) (forceDirect bool, reason string) {
+	v := ctx.Value(forceDirectDial)
+	if v != nil {
+		return true, v.(string)
+	}
+
+	return false, ""
+}
 
 // WithNoDial constructs a new context with an option that instructs the network
 // to not attempt a new dial when opening a stream.
