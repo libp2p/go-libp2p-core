@@ -71,15 +71,15 @@ func WithDialPeerTimeout(ctx context.Context, timeout time.Duration) context.Con
 
 // WithUseTransient constructs a new context with an option that instructs the network
 // that it is acceptable to use a transient connection when opening a new stream.
-func WithUseTransient(ctx context.Context) context.Context {
-	return context.WithValue(ctx, useTransient, true)
+func WithUseTransient(ctx context.Context, reason string) context.Context {
+	return context.WithValue(ctx, useTransient, reason)
 }
 
 // GetUseTransient returns true if the use transient option is set in the context.
-func GetUseTransient(ctx context.Context) bool {
+func GetUseTransient(ctx context.Context) (usetransient bool, reason string) {
 	v := ctx.Value(useTransient)
 	if v != nil {
-		return true
+		return true, v.(string)
 	}
-	return false
+	return false, ""
 }
