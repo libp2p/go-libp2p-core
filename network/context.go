@@ -14,10 +14,12 @@ type noDialCtxKey struct{}
 type dialPeerTimeoutCtxKey struct{}
 type forceDirectDialCtxKey struct{}
 type useTransientCtxKey struct{}
+type simConnectCtxKey struct{}
 
 var noDial = noDialCtxKey{}
 var forceDirectDial = forceDirectDialCtxKey{}
 var useTransient = useTransientCtxKey{}
+var simConnect = simConnectCtxKey{}
 
 // EXPERIMENTAL
 // WithForceDirectDial constructs a new context with an option that instructs the network
@@ -30,6 +32,24 @@ func WithForceDirectDial(ctx context.Context, reason string) context.Context {
 // GetForceDirectDial returns true if the force direct dial option is set in the context.
 func GetForceDirectDial(ctx context.Context) (forceDirect bool, reason string) {
 	v := ctx.Value(forceDirectDial)
+	if v != nil {
+		return true, v.(string)
+	}
+
+	return false, ""
+}
+
+// EXPERIMENTAL
+// WithSimultaneousConnect constructs a new context with an option that instructs the transport
+// to apply hole punching logic where applicable.
+func WithSimultaneousConnect(ctx context.Context, reason string) context.Context {
+	return context.WithValue(ctx, simConnect, reason)
+}
+
+// EXPERIMENTAL
+// GetSimultaneousConnect returns true if the simultaneous connect option is set in the context
+func GetSimultaneousConnect(ctx context.Context) (simconnect bool, reason string) {
+	v := ctx.Value(simConnect)
 	if v != nil {
 		return true, v.(string)
 	}
