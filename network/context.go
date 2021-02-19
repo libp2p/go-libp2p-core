@@ -47,7 +47,7 @@ func WithSimultaneousConnect(ctx context.Context, reason string) context.Context
 }
 
 // EXPERIMENTAL
-// GetSimultaneousConnect returns true if the simultaneous connect option is set in the context
+// GetSimultaneousConnect returns true if the simultaneous connect option is set in the context.
 func GetSimultaneousConnect(ctx context.Context) (simconnect bool, reason string) {
 	v := ctx.Value(simConnect)
 	if v != nil {
