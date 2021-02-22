@@ -3,6 +3,7 @@ package peer
 import (
 	"fmt"
 
+	"github.com/multiformats/go-multiaddr"
 	ma "github.com/multiformats/go-multiaddr"
 )
 
@@ -59,6 +60,16 @@ func SplitAddr(m ma.Multiaddr) (transport ma.Multiaddr, id ID) {
 	}
 	id = ID(p2ppart.RawValue()) // already validated by the multiaddr library.
 	return transport, id
+}
+
+// AddrInfoFromString builds an AddrInfo from the string representation of a Multiaddr
+func AddrInfoFromString(s string) (*AddrInfo, error) {
+	a, err := multiaddr.NewMultiaddr(s)
+	if err != nil {
+		return nil, err
+	}
+
+	return AddrInfoFromP2pAddr(a)
 }
 
 // AddrInfoFromP2pAddr converts a Multiaddr to an AddrInfo.
