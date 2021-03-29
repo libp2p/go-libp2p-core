@@ -54,6 +54,10 @@ type CapableConn interface {
 // CapableConn, which means that they have been upgraded to support
 // stream multiplexing and connection security (encryption and authentication).
 //
+// If a transport implements `io.Closer` (optional), libp2p will call `Close` on
+// shutdown. NOTE: `Dial` and `Listen` may be called after or concurrently with
+// `Close`.
+//
 // For a conceptual overview, see https://docs.libp2p.io/concepts/transport/
 type Transport interface {
 	// Dial dials a remote peer. It should try to reuse local listener
