@@ -293,37 +293,6 @@ func testKeyEquals(t *testing.T, k Key) {
 	}
 }
 
-type testkey []byte
-
-func (pk testkey) Bytes() ([]byte, error) {
-	return pk, nil
-}
-
-func (pk testkey) Type() pb.KeyType {
-	return pb.KeyType_RSA
-}
-
-func (pk testkey) Raw() ([]byte, error) {
-	return pk, nil
-}
-
-func (pk testkey) Equals(k Key) bool {
-	if pk.Type() != k.Type() {
-		return false
-	}
-	a, err := pk.Raw()
-	if err != nil {
-		return false
-	}
-
-	b, err := k.Raw()
-	if err != nil {
-		return false
-	}
-
-	return bytes.Equal(a, b)
-}
-
 func TestUnknownCurveErrors(t *testing.T) {
 	_, _, err := GenerateEKeyPair("P-256")
 	if err != nil {
