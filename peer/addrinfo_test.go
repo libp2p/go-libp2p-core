@@ -87,8 +87,7 @@ func TestAddrInfosFromP2pAddrs(t *testing.T) {
 	if len(infos) != 0 {
 		t.Fatal("expected no addrs")
 	}
-	infos, err = AddrInfosFromP2pAddrs(nil)
-	if err == nil {
+	if _, err = AddrInfosFromP2pAddrs(nil); err == nil {
 		t.Fatal("expected nil multiaddr to fail")
 	}
 
