@@ -226,7 +226,7 @@ func IDFromPublicKey(pk ic.PubKey) (ID, error) {
 	}
 	var alg uint64 = mh.SHA2_256
 	if AdvancedEnableInlining && len(b) <= maxInlineKeyLength {
-		alg = mh.ID
+		alg = mh.IDENTITY
 	}
 	hash, _ := mh.Sum(b, alg, -1)
 	return ID(hash), nil
