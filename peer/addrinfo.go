@@ -3,7 +3,6 @@ package peer
 import (
 	"fmt"
 
-	"github.com/multiformats/go-multiaddr"
 	ma "github.com/multiformats/go-multiaddr"
 )
 
@@ -64,7 +63,7 @@ func SplitAddr(m ma.Multiaddr) (transport ma.Multiaddr, id ID) {
 
 // AddrInfoFromString builds an AddrInfo from the string representation of a Multiaddr
 func AddrInfoFromString(s string) (*AddrInfo, error) {
-	a, err := multiaddr.NewMultiaddr(s)
+	a, err := ma.NewMultiaddr(s)
 	if err != nil {
 		return nil, err
 	}
