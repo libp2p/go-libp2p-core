@@ -61,7 +61,7 @@ func TestEnvelopeHappyPath(t *testing.T) {
 		t.Error("envelope has unexpected public key")
 	}
 
-	if bytes.Compare(rec.Codec(), envelope.PayloadType) != 0 {
+	if !bytes.Equal(rec.Codec(), envelope.PayloadType) {
 		t.Error("PayloadType does not match record Codec")
 	}
 
@@ -72,7 +72,7 @@ func TestEnvelopeHappyPath(t *testing.T) {
 	deserialized, rec2, err := ConsumeEnvelope(serialized, rec.Domain())
 	test.AssertNilError(t, err)
 
-	if bytes.Compare(deserialized.RawPayload, payload) != 0 {
+	if !bytes.Equal(deserialized.RawPayload, payload) {
 		t.Error("payload of envelope does not match input")
 	}
 
