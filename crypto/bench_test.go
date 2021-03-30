@@ -54,11 +54,11 @@ func runBenchmarkSign(b *testing.B, numBytes int, t int) {
 }
 
 func RunBenchmarkVerifyRSA(b *testing.B, numBytes int) {
-	runBenchmarkSign(b, numBytes, RSA)
+	runBenchmarkVerify(b, numBytes, RSA)
 }
 
 func RunBenchmarkVerifyEd25519(b *testing.B, numBytes int) {
-	runBenchmarkSign(b, numBytes, Ed25519)
+	runBenchmarkVerify(b, numBytes, Ed25519)
 }
 
 func runBenchmarkVerify(b *testing.B, numBytes int, t int) {
