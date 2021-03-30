@@ -190,7 +190,7 @@ func (r *PeerRecord) Equal(other *PeerRecord) bool {
 	if len(r.Addrs) != len(other.Addrs) {
 		return false
 	}
-	for i, _ := range r.Addrs {
+	for i := range r.Addrs {
 		if !r.Addrs[i].Equal(other.Addrs[i]) {
 			return false
 		}
