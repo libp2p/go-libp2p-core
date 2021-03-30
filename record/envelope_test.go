@@ -242,6 +242,7 @@ func TestEnvelopeValidateFailsForDifferentDomain(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	serialized, err := envelope.Marshal()
+	test.AssertNilError(t, err)
 
 	// try to open our modified envelope
 	_, _, err = ConsumeEnvelope(serialized, "wrong-domain")
