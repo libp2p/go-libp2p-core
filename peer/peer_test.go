@@ -20,7 +20,7 @@ var gen2 keyset // generated
 var man keyset  // manual
 
 func hash(b []byte) []byte {
-	h, _ := mh.Sum(b, mh.SHA2_256, -1)
+	h, _ := mh.Sum(b, DefaultIDHash, -1)
 	return []byte(h)
 }
 

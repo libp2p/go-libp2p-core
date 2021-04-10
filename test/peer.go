@@ -12,7 +12,7 @@ import (
 func RandPeerID() (peer.ID, error) {
 	buf := make([]byte, 16)
 	rand.Read(buf)
-	h, _ := mh.Sum(buf, mh.SHA2_256, -1)
+	h, _ := mh.Sum(buf, peer.DefaultIDHash, -1)
 	return peer.ID(h), nil
 }
 

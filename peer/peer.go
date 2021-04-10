@@ -13,6 +13,10 @@ import (
 	mh "github.com/multiformats/go-multihash"
 )
 
+var DefaultIDHash uint64 = mh.SHA2_256
+var DefaultHashPrefix = "Qm"
+var DefaultIdentityPrefix = "1"
+
 var (
 	// ErrEmptyPeerID is an error for empty peer ID.
 	ErrEmptyPeerID = errors.New("empty peer ID")
@@ -170,7 +174,7 @@ func IDHexEncode(id ID) string {
 // The encoded peer ID can either be a CID of a key or a raw multihash (identity
 // or sha256-256).
 func Decode(s string) (ID, error) {
-	if strings.HasPrefix(s, "Qm") || strings.HasPrefix(s, "1") {
+	if strings.HasPrefix(s, DefaultHashPrefix) || strings.HasPrefix(s, DefaultIdentityPrefix) {
 		// base58 encoded sha256 or identity multihash
 		m, err := mh.FromB58String(s)
 		if err != nil {
@@ -224,7 +228,7 @@ func IDFromPublicKey(pk ic.PubKey) (ID, error) {
 	if err != nil {
 		return "", err
 	}
-	var alg uint64 = mh.SHA2_256
+	var alg uint64 = DefaultIDHash
 	if AdvancedEnableInlining && len(b) <= maxInlineKeyLength {
 		alg = mh.IDENTITY
 	}
