@@ -113,23 +113,6 @@ func TestBandwidthCounter(t *testing.T) {
 
 	time.Sleep(time.Second)
 	close(start)
-	time.Sleep(2*time.Second + 100*time.Millisecond)
-
-	assertPeers(func(stats Stats) {
-		assertApproxEq(t, 2000, stats.RateOut)
-		assertApproxEq(t, 1000, stats.RateIn)
-	})
-
-	assertProtocols(func(stats Stats) {
-		assertApproxEq(t, 100000, stats.RateOut)
-		assertApproxEq(t, 50000, stats.RateIn)
-	})
-
-	{
-		stats := bwc.GetBandwidthTotals()
-		assertApproxEq(t, 200000, stats.RateOut)
-		assertApproxEq(t, 100000, stats.RateIn)
-	}
 
 	wg.Wait()
 	time.Sleep(1 * time.Second)
