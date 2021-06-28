@@ -26,4 +26,10 @@ message PeerRecord {
 
     // addresses is a list of public listen addresses for the peer.
     repeated AddressInfo addresses = 3;
+
+    // metric is an index of preference for a node. The default is 100, where lower numbers are 
+    // preferred. For instance, a node using low-power mode or on a metered network should raise 
+    // this higher, while a dedicated server may want to lower this. If multiple have the same 
+    // metric then one should be picked randomly.
+    uint32 metric = 4;
 }
