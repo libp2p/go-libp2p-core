@@ -1,6 +1,6 @@
 module github.com/libp2p/go-libp2p-core
 
-go 1.13
+go 1.15
 
 require (
 	github.com/btcsuite/btcd v0.20.1-beta
