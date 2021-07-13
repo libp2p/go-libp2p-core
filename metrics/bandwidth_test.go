@@ -3,6 +3,7 @@ package metrics
 import (
 	"fmt"
 	"math"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -135,6 +136,10 @@ func TestBandwidthCounter(t *testing.T) {
 }
 
 func TestResetBandwidthCounter(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		// Specifically, it fails on MacOS because we need a high precision timer.
+		t.Skip("this test is highly timing dependent and only passes reliably on Linux")
+	}
 	bwc := NewBandwidthCounter()
 
 	p := peer.ID("peer-0")
