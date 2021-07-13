@@ -1,0 +1,24 @@
+on: pull_request
+name: Go Compat
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    name: API Compatibility (go ${{ matrix.go }})
+    steps:
+      - uses: actions/checkout@v2
+      - name: Fetching merge base (${{ env.GITHUB_BASE_REF }})
+        run: git fetch --depth=1 origin "$GITHUB_BASE_REF"
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.x
+      - name: Go information
+        run: |
+          go version
+          go env
+      - name: Install Compat Check
+        run: go install github.com/smola/gocompat/cmd/gocompat@8498b97a44792a3a6063c47014726baa63e2e669 # 2021.7 (v0.3.0)
+      - name: Checking Compatibility
+        run: |
+          gocompat compare --go1compat --git-refs="$GITHUB_BASE_REF..$GITHUB_SHA" ./...
+
