@@ -2,7 +2,7 @@ package peer
 
 import (
 	"fmt"
-	"sync/atomic"
+	"sync"
 	"time"
 
 	pb "github.com/libp2p/go-libp2p-core/peer/pb"
@@ -126,20 +126,22 @@ func PeerRecordFromProtobuf(msg *pb.PeerRecord) (*PeerRecord, error) {
 	return record, nil
 }
 
-var lastTimestamp uint64
+var (
+	lastTimestampMu sync.Mutex
+	lastTimestamp   uint64
+)
 
 // TimestampSeq is a helper to generate a timestamp-based sequence number for a PeerRecord.
 func TimestampSeq() uint64 {
 	now := uint64(time.Now().UnixNano())
-	previous := atomic.LoadUint64(&lastTimestamp)
-	// If the new time is not greater than the last tiemstamp, or if someone else beats us to
-	// updateing the timestamp, just use last+1.
-	//
-	// Technically, last+1 could be before "now". But it's still strictly increasing and close
-	// enough.
-	if now <= previous || !atomic.CompareAndSwapUint64(&lastTimestamp, previous, now) {
-		now = atomic.AddUint64(&lastTimestamp, 1)
+	lastTimestampMu.Lock()
+	defer lastTimestampMu.Unlock()
+	// Not all clocks are strictly increasing, but we need these sequence numbers to be strictly
+	// increasing.
+	if now <= lastTimestamp {
+		now = lastTimestamp + 1
 	}
+	lastTimestamp = now
 	return now
 }
 
