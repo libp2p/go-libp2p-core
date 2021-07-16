@@ -52,3 +52,16 @@ func TestSignedPeerRecordFromEnvelope(t *testing.T) {
 		}
 	})
 }
+
+// This is pretty much guaranteed to pass on Linux no matter how we implement it, but Windows has
+// low clock precision. This makes sure we never get a duplicate.
+func TestTimestampSeq(t *testing.T) {
+	var last uint64
+	for i := 0; i < 1000; i++ {
+		next := TimestampSeq()
+		if next <= last {
+			t.Errorf("non-increasing timestamp found: %d <= %d", next, last)
+		}
+		last = next
+	}
+}
