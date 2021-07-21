@@ -106,3 +106,12 @@ func (pi *AddrInfo) Loggable() map[string]interface{} {
 		"addrs":  pi.Addrs,
 	}
 }
+
+// AddrInfosToIDs extracts the peer IDs from the passed AddrInfos and returns them in-order.
+func AddrInfosToIDs(pis []AddrInfo) []ID {
+	ps := make([]ID, len(pis))
+	for i, pi := range pis {
+		ps[i] = pi.ID
+	}
+	return ps
+}
