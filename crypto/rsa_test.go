@@ -95,7 +95,7 @@ func TestRSAMarshalLoop(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	privB, err := priv.Bytes()
+	privB, err := MarshalPrivateKey(priv)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,7 +109,7 @@ func TestRSAMarshalLoop(t *testing.T) {
 		t.Fatal("keys are not equal")
 	}
 
-	pubB, err := pub.Bytes()
+	pubB, err := MarshalPublicKey(pub)
 	if err != nil {
 		t.Fatal(err)
 	}

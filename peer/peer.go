@@ -186,7 +186,7 @@ func ToCid(id ID) cid.Cid {
 
 // IDFromPublicKey returns the Peer ID corresponding to the public key pk.
 func IDFromPublicKey(pk ic.PubKey) (ID, error) {
-	b, err := pk.Bytes()
+	b, err := ic.MarshalPublicKey(pk)
 	if err != nil {
 		return "", err
 	}

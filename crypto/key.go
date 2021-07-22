@@ -19,7 +19,7 @@ import (
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 
 	"github.com/gogo/protobuf/proto"
-	sha256 "github.com/minio/sha256-simd"
+	"github.com/minio/sha256-simd"
 )
 
 const (
@@ -69,10 +69,6 @@ var PrivKeyUnmarshallers = map[pb.KeyType]PrivKeyUnmarshaller{
 
 // Key represents a crypto key that can be compared to another key
 type Key interface {
-	// Bytes returns a serialized, storeable representation of this key
-	// DEPRECATED in favor of Marshal / Unmarshal
-	Bytes() ([]byte, error)
-
 	// Equals checks whether two PubKeys are the same
 	Equals(Key) bool
 
@@ -82,7 +78,7 @@ type Key interface {
 	// This function is the inverse of {Priv,Pub}KeyUnmarshaler.
 	Raw() ([]byte, error)
 
-	// Type returns the protobof key type.
+	// Type returns the protobuf key type.
 	Type() pb.KeyType
 }
 

@@ -71,7 +71,6 @@ func TestMarshalLoop(t *testing.T) {
 
 	t.Run("PrivateKey", func(t *testing.T) {
 		for name, f := range map[string]func() ([]byte, error){
-			"Bytes": priv.Bytes,
 			"Marshal": func() ([]byte, error) {
 				return MarshalPrivateKey(priv)
 			},
@@ -126,7 +125,6 @@ func TestMarshalLoop(t *testing.T) {
 
 	t.Run("PublicKey", func(t *testing.T) {
 		for name, f := range map[string]func() ([]byte, error){
-			"Bytes": pub.Bytes,
 			"Marshal": func() ([]byte, error) {
 				return MarshalPublicKey(pub)
 			},

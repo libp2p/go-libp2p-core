@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	crypto "github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/libp2p/go-libp2p-core/crypto"
 	crypto_pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 )
 
@@ -62,7 +62,7 @@ func TestFixtures(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			pubBytes2, err := pub.Bytes()
+			pubBytes2, err := crypto.MarshalPublicKey(pub)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -73,7 +73,7 @@ func TestFixtures(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			privBytes2, err := priv.Bytes()
+			privBytes2, err := crypto.MarshalPrivateKey(priv)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -113,11 +113,11 @@ func generate() {
 		if err != nil {
 			panic(err)
 		}
-		pubb, err := pub.Bytes()
+		pubb, err := crypto.MarshalPublicKey(pub)
 		if err != nil {
 			panic(err)
 		}
-		privb, err := priv.Bytes()
+		privb, err := crypto.MarshalPrivateKey(priv)
 		if err != nil {
 			panic(err)
 		}
