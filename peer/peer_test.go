@@ -52,7 +52,7 @@ func (ks *keyset) generate() error {
 		return err
 	}
 
-	bpk, err := ks.pk.Bytes()
+	bpk, err := ic.MarshalPublicKey(ks.pk)
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func (ks *keyset) load(hpkp, skBytesStr string) error {
 	}
 
 	ks.pk = ks.sk.GetPublic()
-	bpk, err := ks.pk.Bytes()
+	bpk, err := ic.MarshalPublicKey(ks.pk)
 	if err != nil {
 		return err
 	}

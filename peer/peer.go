@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	cid "github.com/ipfs/go-cid"
+	"github.com/ipfs/go-cid"
 	ic "github.com/libp2p/go-libp2p-core/crypto"
 	b58 "github.com/mr-tron/base58/base58"
 	mh "github.com/multiformats/go-multihash"
@@ -220,7 +220,7 @@ func ToCid(id ID) cid.Cid {
 
 // IDFromPublicKey returns the Peer ID corresponding to the public key pk.
 func IDFromPublicKey(pk ic.PubKey) (ID, error) {
-	b, err := pk.Bytes()
+	b, err := ic.MarshalPublicKey(pk)
 	if err != nil {
 		return "", err
 	}
