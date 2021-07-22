@@ -15,11 +15,11 @@ var (
 
 func init() {
 	var err error
-	testID, err = IDB58Decode("QmS3zcG7LhYZYSJMhyRZvTddvbNUqtt8BJpaSs6mi1K5Va")
+	testID, err = Decode("QmS3zcG7LhYZYSJMhyRZvTddvbNUqtt8BJpaSs6mi1K5Va")
 	if err != nil {
 		panic(err)
 	}
-	maddrPeer = ma.StringCast("/p2p/" + IDB58Encode(testID))
+	maddrPeer = ma.StringCast("/p2p/" + Encode(testID))
 	maddrTpt = ma.StringCast("/ip4/127.0.0.1/tcp/1234")
 	maddrFull = maddrTpt.Encapsulate(maddrPeer)
 }
