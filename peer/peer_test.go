@@ -90,7 +90,7 @@ func (ks *keyset) load(hpkp, skBytesStr string) error {
 func TestIDMatchesPublicKey(t *testing.T) {
 
 	test := func(ks keyset) {
-		p1, err := IDB58Decode(ks.hpkp)
+		p1, err := Decode(ks.hpkp)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -125,7 +125,7 @@ func TestIDMatchesPublicKey(t *testing.T) {
 func TestIDMatchesPrivateKey(t *testing.T) {
 
 	test := func(ks keyset) {
-		p1, err := IDB58Decode(ks.hpkp)
+		p1, err := Decode(ks.hpkp)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -155,7 +155,7 @@ func TestIDMatchesPrivateKey(t *testing.T) {
 
 func TestIDEncoding(t *testing.T) {
 	test := func(ks keyset) {
-		p1, err := IDB58Decode(ks.hpkp)
+		p1, err := Decode(ks.hpkp)
 		if err != nil {
 			t.Fatal(err)
 		}
