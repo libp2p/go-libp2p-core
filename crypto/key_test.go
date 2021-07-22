@@ -13,11 +13,11 @@ import (
 	"reflect"
 	"testing"
 
-	btcec "github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec"
 	. "github.com/libp2p/go-libp2p-core/crypto"
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 	"github.com/libp2p/go-libp2p-core/test"
-	sha256 "github.com/minio/sha256-simd"
+	"github.com/minio/sha256-simd"
 )
 
 func TestKeys(t *testing.T) {
@@ -303,24 +303,4 @@ func TestUnknownCurveErrors(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected invalid key type to error")
 	}
-}
-
-func TestPanicOnUnknownCipherType(t *testing.T) {
-	passed := false
-	defer func() {
-		if !passed {
-			t.Fatal("expected known cipher and hash to succeed")
-		}
-		err := recover()
-		errStr, ok := err.(string)
-		if !ok {
-			t.Fatal("expected string in panic")
-		}
-		if errStr != "Unrecognized cipher, programmer error?" {
-			t.Fatal("expected \"Unrecognized cipher, programmer error?\"")
-		}
-	}()
-	KeyStretcher("AES-256", "SHA1", []byte("foo"))
-	passed = true
-	KeyStretcher("Fooba", "SHA1", []byte("foo"))
 }
