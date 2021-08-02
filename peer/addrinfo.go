@@ -2,15 +2,28 @@ package peer
 
 import (
 	"fmt"
+	"runtime/debug"
 
+	logging "github.com/ipfs/go-log"
 	ma "github.com/multiformats/go-multiaddr"
 )
+
+var log = logging.Logger("libp2p/core")
 
 // AddrInfo is a small struct used to pass around a peer with
 // a set of addresses (and later, keys?).
 type AddrInfo struct {
 	ID    ID
 	Addrs []ma.Multiaddr
+}
+
+func DebugAddrInfo(ai AddrInfo) {
+	for _, a := range ai.Addrs {
+		if a == nil {
+			log.Errorf("AddrInfo with nil multiaddress: %s", string(debug.Stack()))
+			return
+		}
+	}
 }
 
 var _ fmt.Stringer = AddrInfo{}
