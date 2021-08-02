@@ -17,10 +17,10 @@ type AddrInfo struct {
 	Addrs []ma.Multiaddr
 }
 
-func DebugAddrInfo(ai AddrInfo) {
+func DebugAddrInfo(msg string, ai AddrInfo) {
 	for _, a := range ai.Addrs {
 		if a == nil {
-			log.Errorf("AddrInfo with nil multiaddress: %s", string(debug.Stack()))
+			log.Errorf("(%s) AddrInfo with nil multiaddress: %s", msg, string(debug.Stack()))
 			return
 		}
 	}
