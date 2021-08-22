@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestDefaultTimeout(t *testing.T) {
@@ -37,4 +39,21 @@ func TestSettingTimeout(t *testing.T) {
 	if dur != customTimeout {
 		t.Fatal("peer timeout doesn't match set timeout")
 	}
+}
+
+func TestSimultaneousConnect(t *testing.T) {
+	t.Run("for the server", func(t *testing.T) {
+		serverCtx := WithSimultaneousConnect(context.Background(), false, "foobar")
+		ok, isClient, reason := GetSimultaneousConnect(serverCtx)
+		require.True(t, ok)
+		require.False(t, isClient)
+		require.Equal(t, reason, "foobar")
+	})
+	t.Run("for the client", func(t *testing.T) {
+		serverCtx := WithSimultaneousConnect(context.Background(), true, "foo")
+		ok, isClient, reason := GetSimultaneousConnect(serverCtx)
+		require.True(t, ok)
+		require.True(t, isClient)
+		require.Equal(t, reason, "foo")
+	})
 }
