@@ -112,10 +112,6 @@ type Stat struct {
 // streams opened by the remote side.
 type StreamHandler func(Stream)
 
-// ConnHandler is the type of function used to listen for
-// connections opened by the remote side.
-type ConnHandler func(Conn)
-
 // Network is the interface used to connect to the outside world.
 // It dials and listens for connections. it uses a Swarm to pool
 // connections (see swarm pkg, and peerstream.Swarm). Connections
@@ -127,10 +123,6 @@ type Network interface {
 	// SetStreamHandler sets the handler for new streams opened by the
 	// remote side. This operation is threadsafe.
 	SetStreamHandler(StreamHandler)
-
-	// SetConnHandler sets the handler for new connections opened by the
-	// remote side. This operation is threadsafe.
-	SetConnHandler(ConnHandler)
 
 	// NewStream returns a new stream to given peer p.
 	// If there is no connection to p, attempts to create one.
