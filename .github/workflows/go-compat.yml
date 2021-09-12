@@ -4,21 +4,47 @@ name: Go Compat
 jobs:
   unit:
     runs-on: ubuntu-latest
-    name: API Compatibility (go ${{ matrix.go }})
+    name: API Compatibility
+    env:
+      GOCOMPAT: ""
     steps:
       - uses: actions/checkout@v2
-      - name: Fetching merge base (${{ env.GITHUB_BASE_REF }})
+      - name: Fetching merge base
         run: git fetch --depth=1 origin "$GITHUB_BASE_REF"
       - uses: actions/setup-go@v2
         with:
-          go-version: 1.16.x
+          go-version: 1.17.x
       - name: Go information
         run: |
           go version
           go env
       - name: Install Compat Check
         run: go install github.com/smola/gocompat/cmd/gocompat@8498b97a44792a3a6063c47014726baa63e2e669 # 2021.7 (v0.3.0)
-      - name: Checking Compatibility
+      - name: Check Compatibility
         run: |
-          gocompat compare --go1compat --git-refs="$GITHUB_BASE_REF..$GITHUB_SHA" ./...
-
+          status=0
+          output=$(gocompat compare --go1compat --git-refs="$GITHUB_BASE_REF..$GITHUB_SHA" ./...) || status=$?
+          if [[ $status != 0 ]]; then
+            echo "incompatible"
+            # dealing with multi-line strings in GitHub Actions is a pain
+            echo "GOCOMPAT<<EOF" >> $GITHUB_ENV
+            echo "$output" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          fi
+      - name: Post a comment
+        uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
+        if: env.GOCOMPAT != ''
+        with:
+          header: gocompat-comment
+          recreate: true
+          message: |
+            `gocompat` says:
+            ```
+            ${{ env.GOCOMPAT }}
+            ```
+      - name: Delete previous comment # if new commits were added that reverted an incompatible change, delete the comment
+        uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
+        if: env.GOCOMPAT == ''
+        with:
+          header: gocompat-comment
+          delete: true
