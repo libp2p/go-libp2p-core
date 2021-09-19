@@ -9,12 +9,13 @@ import (
 	"io"
 	"net"
 
+	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/sec"
-	"github.com/libp2p/go-msgio"
-
-	ci "github.com/libp2p/go-libp2p-core/crypto"
 	pb "github.com/libp2p/go-libp2p-core/sec/insecure/pb"
+
+	"github.com/libp2p/go-msgio"
+	ma "github.com/multiformats/go-multiaddr"
 )
 
 // ID is the multistream-select protocol ID that should be used when identifying
@@ -28,18 +29,26 @@ const ID = "/plaintext/2.0.0"
 // No authentication of the remote identity is performed.
 type Transport struct {
 	id  peer.ID
-	key ci.PrivKey
+	key crypto.PrivKey
 }
+
+var _ sec.SecureTransport = &Transport{}
 
 // NewWithIdentity constructs a new insecure transport. The provided private key
 // is stored and returned from LocalPrivateKey to satisfy the
 // SecureTransport interface, and the public key is sent to
 // remote peers. No security is provided.
-func NewWithIdentity(id peer.ID, key ci.PrivKey) *Transport {
+func NewWithIdentity(id peer.ID, key crypto.PrivKey) *Transport {
 	return &Transport{
 		id:  id,
 		key: key,
 	}
+}
+
+var protoPlaintextV2 = ma.ProtocolWithCode(ma.P_PLAINTEXTV2)
+
+func (t *Transport) Protocol() ma.Protocol {
+	return protoPlaintextV2
 }
 
 // LocalPeer returns the transport's local peer ID.
@@ -49,7 +58,7 @@ func (t *Transport) LocalPeer() peer.ID {
 
 // LocalPrivateKey returns the local private key.
 // This key is used only for identity generation and provides no security.
-func (t *Transport) LocalPrivateKey() ci.PrivKey {
+func (t *Transport) LocalPrivateKey() crypto.PrivKey {
 	return t.key
 }
 
@@ -114,12 +123,14 @@ type Conn struct {
 	local  peer.ID
 	remote peer.ID
 
-	localPrivKey ci.PrivKey
-	remotePubKey ci.PubKey
+	localPrivKey crypto.PrivKey
+	remotePubKey crypto.PubKey
 }
 
-func makeExchangeMessage(pubkey ci.PubKey) (*pb.Exchange, error) {
-	keyMsg, err := ci.PublicKeyToProto(pubkey)
+var _ sec.SecureConn = &Conn{}
+
+func makeExchangeMessage(pubkey crypto.PubKey) (*pb.Exchange, error) {
+	keyMsg, err := crypto.PublicKeyToProto(pubkey)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +164,7 @@ func (ic *Conn) runHandshakeSync() error {
 	}
 
 	// Pull remote ID and public key from message
-	remotePubkey, err := ci.PublicKeyFromProto(remoteMsg.Pubkey)
+	remotePubkey, err := crypto.PublicKeyFromProto(remoteMsg.Pubkey)
 	if err != nil {
 		return err
 	}
@@ -221,14 +232,11 @@ func (ic *Conn) RemotePeer() peer.ID {
 
 // RemotePublicKey returns whatever public key was given by the remote peer.
 // Note that no verification of ownership is done, as this connection is not secure.
-func (ic *Conn) RemotePublicKey() ci.PubKey {
+func (ic *Conn) RemotePublicKey() crypto.PubKey {
 	return ic.remotePubKey
 }
 
 // LocalPrivateKey returns the private key for the local peer.
-func (ic *Conn) LocalPrivateKey() ci.PrivKey {
+func (ic *Conn) LocalPrivateKey() crypto.PrivKey {
 	return ic.localPrivKey
 }
-
-var _ sec.SecureTransport = (*Transport)(nil)
-var _ sec.SecureConn = (*Conn)(nil)
