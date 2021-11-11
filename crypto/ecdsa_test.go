@@ -1,6 +1,7 @@
 package crypto
 
 import (
+	"crypto/ecdsa"
 	"crypto/rand"
 	"testing"
 )
@@ -93,4 +94,49 @@ func TestECDSAMarshalLoop(t *testing.T) {
 		t.Fatal("keys are not equal")
 	}
 
+}
+
+func TestECDSAPublicKeyFromPubKey(t *testing.T) {
+	ecdsaPrivK, err := ecdsa.GenerateKey(ECDSACurve, rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	privK, _, err := ECDSAKeyPairFromKey(ecdsaPrivK)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	data := []byte("Hello world!")
+	signature, err := privK.Sign(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pubKey, err := ECDSAPublicKeyFromPubKey(ecdsaPrivK.PublicKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ok, err := pubKey.Verify(data, signature)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !ok {
+		t.Fatal("signature didn't match")
+	}
+
+	pubB, err := MarshalPublicKey(pubKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pubNew, err := UnmarshalPublicKey(pubB)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !pubKey.Equals(pubNew) || !pubNew.Equals(pubKey) {
+		t.Fatal("keys are not equal")
+	}
 }
