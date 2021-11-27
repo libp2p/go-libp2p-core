@@ -61,6 +61,9 @@ type Peerstore interface {
 	Metrics
 	ProtoBook
 
+	// Start starts the garbage collection procedure.
+	Start()
+
 	// PeerInfo returns a peer.PeerInfo struct for given peer.ID.
 	// This is a small slice of the information Peerstore has on
 	// that peer, useful to other services.
