@@ -10,6 +10,7 @@ import (
 	"time"
 
 	ic "github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/libp2p/go-libp2p-core/eventbus"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/record"
 
@@ -60,6 +61,9 @@ type Peerstore interface {
 	PeerMetadata
 	Metrics
 	ProtoBook
+
+	// Start starts the garbage collection procedure.
+	Start(eventbus.Bus)
 
 	// PeerInfo returns a peer.PeerInfo struct for given peer.ID.
 	// This is a small slice of the information Peerstore has on
