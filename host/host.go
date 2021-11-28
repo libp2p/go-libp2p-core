@@ -7,7 +7,7 @@ import (
 	"context"
 
 	"github.com/libp2p/go-libp2p-core/connmgr"
-	"github.com/libp2p/go-libp2p-core/event"
+	"github.com/libp2p/go-libp2p-core/eventbus"
 	"github.com/libp2p/go-libp2p-core/introspection"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -72,7 +72,7 @@ type Host interface {
 	ConnManager() connmgr.ConnManager
 
 	// EventBus returns the hosts eventbus
-	EventBus() event.Bus
+	EventBus() eventbus.Bus
 }
 
 // IntrospectableHost is implemented by Host implementations that are
