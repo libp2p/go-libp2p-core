@@ -96,8 +96,15 @@ func (r Reachability) String() string {
 	return str[r]
 }
 
-// Stat stores metadata pertaining to a given Stream/Conn.
-type Stat struct {
+// ConnStats stores metadata pertaining to a given Conn.
+type ConnStats struct {
+	Stats
+	// NumStreams is the number of streams on the connection.
+	NumStreams int
+}
+
+// Stats stores metadata pertaining to a given Stream / Conn.
+type Stats struct {
 	// Direction specifies whether this is an inbound or an outbound connection.
 	Direction Direction
 	// Opened is the timestamp when this connection was opened.
