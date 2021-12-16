@@ -30,6 +30,9 @@ type Conn interface {
 
 	// GetStreams returns all open streams over this conn.
 	GetStreams() []Stream
+
+	// Scope returns the connection resource scope
+	Scope() ConnectionScope
 }
 
 // ConnSecurity is the interface that one can mix into a connection interface to
