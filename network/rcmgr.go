@@ -21,7 +21,7 @@ type ResourceManager interface {
 	// GetPeerScope retrieces the resource management scope for a specific peer.
 	GetPeerScope(peer.ID) PeerScope
 
-	// OpenConnection creates a connect scope not yet associated with any peer
+	// OpenConnection creates a connection scope not yet associated with any peer
 	OpenConnection(dir Direction, usefd bool) (ConnectionScope, error)
 
 	// Close closes the resource manager
@@ -60,6 +60,9 @@ type ProtocolScope interface {
 	Protocols() []protocol.ID
 	// IsDefault returns true if this is the default (global) scope.
 	IsDefault() bool
+
+	// AddStream adds a previously unassociated stream to this protocol scope.
+	AddStream(StreamScope) error
 }
 
 // PeerScope is the interface for peer resource scopes.
@@ -71,7 +74,7 @@ type PeerScope interface {
 
 	// OpenSconnect creates a new connection scope for this peer.
 	OpenConnection(dir Direction, usefd bool) (ConnectionScope, error)
-	// AddConnection adds a previously associated connect to this peer scope.
+	// AddConnection adds a previously associated connection to this peer scope.
 	AddConnection(ConnectionScope) error
 }
 
@@ -85,6 +88,8 @@ type ConnectionScope interface {
 	PeerScope() PeerScope
 
 	// OpenStream creates a new stream scope, with the specified protocols.
+	// An unnegotiated stream will have an empty protocol list and be initially unattached to any
+	// protocol scope.
 	OpenStream(dir Direction, proto ...protocol.ID) (StreamScope, error)
 }
 
@@ -95,7 +100,9 @@ type StreamScope interface {
 
 	// PeerScope returns the peer resource scope associated with this stream.
 	PeerScope() PeerScope
+
 	// ProtocolScope returns the protocol resource scope associated with this stream.
+	// It returns nil if the stream is not associated with any scope.
 	ProtocolScope() ProtocolScope
 }
 
