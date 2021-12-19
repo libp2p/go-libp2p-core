@@ -14,11 +14,6 @@ import (
 	ma "github.com/multiformats/go-multiaddr"
 )
 
-// DialTimeout is the maximum duration a Dial is allowed to take.
-// This includes the time between dialing the raw network connection,
-// protocol selection as well the handshake, if applicable.
-var DialTimeout = 15 * time.Second
-
 // AcceptTimeout is the maximum duration an Accept is allowed to take.
 // This includes the time between accepting the raw network connection,
 // protocol selection as well as the handshake, if applicable.
