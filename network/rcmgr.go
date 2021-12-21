@@ -14,12 +14,14 @@ var (
 
 // ResourceManager is the interface to the network resource management subsystem
 type ResourceManager interface {
-	// GetProtocolScope retrieves the resource management scope for a specific protocol.
+	// GetService retrieves a service-specific scope
+	GetService(srv string) ServiceScope
+	// GetProtocol retrieves the resource management scope for a specific protocol.
 	// If there is no configured limits for a particular protocol, then the default scope is
 	// returned.
-	GetProtocolScope(protocol.ID) ProtocolScope
-	// GetPeerScope retrieces the resource management scope for a specific peer.
-	GetPeerScope(peer.ID) PeerScope
+	GetProtocol(protocol.ID) ProtocolScope
+	// GetPeer retrieces the resource management scope for a specific peer.
+	GetPeer(peer.ID) PeerScope
 
 	// OpenConnection creates a connection scope not yet associated with any peer
 	OpenConnection(dir Direction, usefd bool) (ConnectionScope, error)
@@ -37,7 +39,9 @@ type ResourceScope interface {
 
 	// GetBuffer reserves memory and allocates a buffer through the buffer pool.
 	GetBuffer(size int) ([]byte, error)
-	// GrowBuffer grows a previous allocated buffer, reserving the appropriate memory space.
+	// GrowBuffer atomically grows a previous allocated buffer, reserving the appropriate memory space
+	// and releasing the old buffer. The copy parameter specifies the number of bytes to copy from
+	// the old buffer to the newly allocated buffer.
 	GrowBuffer(buf []byte, newsize, copy int) ([]byte, error)
 	// ReleaseBuffer releases a previous allocated buffer.
 	ReleaseBuffer(buf []byte)
@@ -52,17 +56,20 @@ type TransactionalScope interface {
 	Done()
 }
 
+// ServiceScope is the interface for service resource scopes
+type ServiceScope interface {
+	ResourceScope
+
+	// Name returns the name of this service
+	Name() string
+}
+
 // ProtocolScope is the interface for protocol resource scopes.
 type ProtocolScope interface {
 	ResourceScope
 
 	// Protocols returns the list of protocol IDs constrained by this scope.
 	Protocols() []protocol.ID
-	// IsDefault returns true if this is the default (global) scope.
-	IsDefault() bool
-
-	// AddStream adds a previously unassociated stream to this protocol scope.
-	AddStream(StreamScope) error
 }
 
 // PeerScope is the interface for peer resource scopes.
@@ -74,8 +81,11 @@ type PeerScope interface {
 
 	// OpenSconnect creates a new connection scope for this peer.
 	OpenConnection(dir Direction, usefd bool) (ConnectionScope, error)
-	// AddConnection adds a previously associated connection to this peer scope.
-	AddConnection(ConnectionScope) error
+
+	// OpenStream creates a new stream scope, with the specified protocols.
+	// An unnegotiated stream will have an empty protocol list and be initially unattached to any
+	// protocol scope.
+	OpenStream(dir Direction, proto ...protocol.ID) (StreamScope, error)
 }
 
 // ConnectionScope is the interface for connection resource scopes.
@@ -87,10 +97,8 @@ type ConnectionScope interface {
 	// It reeturns nil if the connection is not yet asociated with any peer.
 	PeerScope() PeerScope
 
-	// OpenStream creates a new stream scope, with the specified protocols.
-	// An unnegotiated stream will have an empty protocol list and be initially unattached to any
-	// protocol scope.
-	OpenStream(dir Direction, proto ...protocol.ID) (StreamScope, error)
+	// SetPeer sets the peer for a previously unassociated connection
+	SetPeer(peer.ID) error
 }
 
 // StreamScope is the interface for stream resource scopes
@@ -98,12 +106,19 @@ type StreamScope interface {
 	ResourceScope
 	TransactionalScope
 
-	// PeerScope returns the peer resource scope associated with this stream.
-	PeerScope() PeerScope
-
 	// ProtocolScope returns the protocol resource scope associated with this stream.
 	// It returns nil if the stream is not associated with any scope.
 	ProtocolScope() ProtocolScope
+	// SetProtocol sets the protocol for a previously unnegotiated stream
+	SetProtocol(proto protocol.ID) error
+
+	// ServiceScope returns the service owning the stream, if any.
+	ServiceScope() ServiceScope
+	// SetService sets the service owning this stream
+	SetService(srv string) error
+
+	// PeerScope returns the peer resource scope associated with this stream.
+	PeerScope() PeerScope
 }
 
 // ScopeStat is a struct containing resource accounting information.
