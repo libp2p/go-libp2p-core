@@ -84,7 +84,7 @@ type PeerScope interface {
 	// Peer returns the peer ID for this scope
 	Peer() peer.ID
 
-	// OpenSconnect creates a new connection scope for this peer.
+	// OpenConnection creates a new connection scope for this peer.
 	OpenConnection(dir Direction, usefd bool) (ConnectionScope, error)
 
 	// OpenStream creates a new stream scope, with the specified protocols.
