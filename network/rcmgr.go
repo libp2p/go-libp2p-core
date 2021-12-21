@@ -137,5 +137,5 @@ type ScopeStat struct {
 	NumConns   int
 	NumStreams int
 
-	Memory int
+	Memory int64
 }
