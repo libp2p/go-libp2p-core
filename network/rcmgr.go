@@ -85,7 +85,7 @@ type PeerScope interface {
 	Peer() peer.ID
 
 	// OpenConnection creates a new connection scope for this peer.
-	OpenConnection(dir Direction, usefd bool) (ConnectionScope, error)
+	OpenConnection(dir Direction, useFD bool) (ConnectionScope, error)
 
 	// OpenStream creates a new stream scope, with the specified protocols.
 	// An unnegotiated stream will have an empty protocol list and be initially unattached to any
