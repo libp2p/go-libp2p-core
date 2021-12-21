@@ -14,6 +14,8 @@ var (
 
 // ResourceManager is the interface to the network resource management subsystem
 type ResourceManager interface {
+	// GetSystem retrieves the system wide resource scope
+	GetSystem() SystemScope
 	// GetService retrieves a service-specific scope
 	GetService(srv string) ServiceScope
 	// GetProtocol retrieves the resource management scope for a specific protocol.
@@ -54,6 +56,14 @@ type ResourceScope interface {
 type TransactionalScope interface {
 	// Done ends the transaction scope and releases associated resources.
 	Done()
+}
+
+// SystemScope is the system wide resource scope
+type SystemScope interface {
+	ResourceScope
+
+	// Services retrieves a list of active services.
+	Services() []ServiceScope
 }
 
 // ServiceScope is the interface for service resource scopes
