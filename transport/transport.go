@@ -5,7 +5,6 @@ package transport
 import (
 	"context"
 	"net"
-	"time"
 
 	"github.com/libp2p/go-libp2p-core/mux"
 	"github.com/libp2p/go-libp2p-core/network"
@@ -13,11 +12,6 @@ import (
 
 	ma "github.com/multiformats/go-multiaddr"
 )
-
-// AcceptTimeout is the maximum duration an Accept is allowed to take.
-// This includes the time between accepting the raw network connection,
-// protocol selection as well as the handshake, if applicable.
-var AcceptTimeout = 15 * time.Second
 
 // A CapableConn represents a connection that has offers the basic
 // capabilities required by libp2p: stream multiplexing, encryption and
