@@ -83,10 +83,10 @@ type PeerScope interface {
 	// Peer returns the peer ID for this scope
 	Peer() peer.ID
 
-	// OpenStream creates a new stream scope, with the specified protocols.
-	// An unnegotiated stream will have an empty protocol list and be initially
-	// unattached to any protocol scope and constrained by the transient scope.
-	OpenStream(dir Direction, proto ...protocol.ID) (StreamScope, error)
+	// OpenStream creates a new stream scope, initially unnegotiated.
+	// An unnegotiated stream will be initially unattached to any protocol scope
+	// and constrained by the transient scope.
+	OpenStream(dir Direction) (StreamScope, error)
 }
 
 // ConnectionScope is the interface for connection resource scopes.
@@ -108,7 +108,7 @@ type StreamScope interface {
 	TransactionalScope
 
 	// ProtocolScope returns the protocol resource scope associated with this stream.
-	// It returns nil if the stream is not associated with any scope.
+	// It returns nil if the stream is not associated with any protocol scope.
 	ProtocolScope() ProtocolScope
 	// SetProtocol sets the protocol for a previously unnegotiated stream
 	SetProtocol(proto protocol.ID) error
