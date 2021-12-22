@@ -16,8 +16,8 @@ var (
 type ResourceManager interface {
 	// GetSystem retrieves the system wide resource scope
 	GetSystem() ResourceScope
-	// GetDMZ retrieves the DMZ resource scope
-	GetDMZ() ResourceScope
+	// GetTransient retrieves the transient (DMZ) resource scope
+	GetTransient() ResourceScope
 	// GetService retrieves a service-specific scope
 	GetService(srv string) ServiceScope
 	// GetProtocol retrieves the resource management scope for a specific protocol.
@@ -28,7 +28,7 @@ type ResourceManager interface {
 	GetPeer(peer.ID) PeerScope
 
 	// OpenConnection creates a connection scope not yet associated with any peer; the connection
-	// is scoped at the DMZ.
+	// is scoped at the transient scope.
 	OpenConnection(dir Direction, usefd bool) (ConnectionScope, error)
 
 	// Close closes the resource manager
@@ -84,12 +84,9 @@ type PeerScope interface {
 	// Peer returns the peer ID for this scope
 	Peer() peer.ID
 
-	// OpenConnection creates a new connection scope for this peer.
-	OpenConnection(dir Direction, useFD bool) (ConnectionScope, error)
-
 	// OpenStream creates a new stream scope, with the specified protocols.
-	// An unnegotiated stream will have an empty protocol list and be initially unattached to any
-	// protocol scope.
+	// An unnegotiated stream will have an empty protocol list and be initially
+	// unattached to any protocol scope and constrained by the transient scope.
 	OpenStream(dir Direction, proto ...protocol.ID) (StreamScope, error)
 }
 
