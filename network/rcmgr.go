@@ -45,9 +45,8 @@ type ResourceScope interface {
 	// GetBuffer reserves memory and allocates a buffer through the buffer pool.
 	GetBuffer(size int) ([]byte, error)
 	// GrowBuffer atomically grows a previous allocated buffer, reserving the appropriate memory space
-	// and releasing the old buffer. The copy parameter specifies the number of bytes to copy from
-	// the old buffer to the newly allocated buffer.
-	GrowBuffer(buf []byte, newsize, copy int) ([]byte, error)
+	// and releasing the old buffer; the contents of the old buffer are copied to the new one.
+	GrowBuffer(buf []byte, newsize int) ([]byte, error)
 	// ReleaseBuffer releases a previous allocated buffer.
 	ReleaseBuffer(buf []byte)
 
