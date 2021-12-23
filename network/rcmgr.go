@@ -14,18 +14,16 @@ var (
 
 // ResourceManager is the interface to the network resource management subsystem
 type ResourceManager interface {
-	// GetSystem retrieves the system wide resource scope
-	GetSystem() ResourceScope
-	// GetTransient retrieves the transient (DMZ) resource scope
-	GetTransient() ResourceScope
-	// GetService retrieves a service-specific scope
-	GetService(srv string) ServiceScope
-	// GetProtocol retrieves the resource management scope for a specific protocol.
-	// If there is no configured limits for a particular protocol, then the default scope is
-	// returned.
-	GetProtocol(protocol.ID) ProtocolScope
-	// GetPeer retrieces the resource management scope for a specific peer.
-	GetPeer(peer.ID) PeerScope
+	// Viewystem views the system wide resource scope
+	ViewSystem(func(ResourceScope) error) error
+	// ViewTransient views the transient (DMZ) resource scope
+	ViewTransient(func(ResourceScope) error) error
+	// ViewService retrieves a service-specific scope
+	ViewService(string, func(ServiceScope) error) error
+	// ViewProtocol views the resource management scope for a specific protocol.
+	ViewProtocol(protocol.ID, func(ProtocolScope) error) error
+	// ViewPeer views the resource management scope for a specific peer.
+	ViewPeer(peer.ID, func(PeerScope) error) error
 
 	// OpenConnection creates a connection scope not yet associated with any peer; the connection
 	// is scoped at the transient scope.
