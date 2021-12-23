@@ -13,7 +13,6 @@ var (
 )
 
 // ResourceManager is the interface to the network resource management subsystem
-// Implementations are required to provide a nil receiver intreface.
 type ResourceManager interface {
 	// GetSystem retrieves the system wide resource scope
 	GetSystem() ResourceScope
@@ -37,7 +36,6 @@ type ResourceManager interface {
 }
 
 // ResourceScope is the interface for all scopes.
-// Implementations are required to provide a nil receiver intreface.
 type ResourceScope interface {
 	// ReserveMemory reserves memory/buffer space in the scope.
 	ReserveMemory(size int) error
@@ -57,14 +55,12 @@ type ResourceScope interface {
 }
 
 // TransactionalScope is a mixin interface for transactional scopes.
-// Implementations are required to provide a nil receiver intreface.
 type TransactionalScope interface {
 	// Done ends the transaction scope and releases associated resources.
 	Done()
 }
 
 // ServiceScope is the interface for service resource scopes
-// Implementations are required to provide a nil receiver intreface.
 type ServiceScope interface {
 	ResourceScope
 
@@ -73,7 +69,6 @@ type ServiceScope interface {
 }
 
 // ProtocolScope is the interface for protocol resource scopes.
-// Implementations are required to provide a nil receiver intreface.
 type ProtocolScope interface {
 	ResourceScope
 
@@ -82,7 +77,6 @@ type ProtocolScope interface {
 }
 
 // PeerScope is the interface for peer resource scopes.
-// Implementations are required to provide a nil receiver intreface.
 type PeerScope interface {
 	ResourceScope
 
@@ -96,7 +90,6 @@ type PeerScope interface {
 }
 
 // ConnectionScope is the interface for connection resource scopes.
-// Implementations are required to provide a nil receiver intreface.
 type ConnectionScope interface {
 	ResourceScope
 	TransactionalScope
@@ -110,7 +103,6 @@ type ConnectionScope interface {
 }
 
 // StreamScope is the interface for stream resource scopes.
-// Implementations are required to provide a nil receiver intreface.
 type StreamScope interface {
 	ResourceScope
 	TransactionalScope
