@@ -124,9 +124,11 @@ type StreamScope interface {
 
 // ScopeStat is a struct containing resource accounting information.
 type ScopeStat struct {
-	NumPeers   int
-	NumConns   int
-	NumStreams int
+	NumStreamsInbound  int
+	NumStreamsOutbound int
+	NumConnsInbound    int
+	NumConnsOutbound   int
+	NumFD              int
 
 	Memory int64
 }
