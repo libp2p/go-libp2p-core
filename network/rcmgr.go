@@ -25,9 +25,14 @@ type ResourceManager interface {
 	// ViewPeer views the resource management scope for a specific peer.
 	ViewPeer(peer.ID, func(PeerScope) error) error
 
-	// OpenConnection creates a connection scope not yet associated with any peer; the connection
+	// OpenConnection creates a new connection scope not yet associated with any peer; the connection
 	// is scoped at the transient scope.
 	OpenConnection(dir Direction, usefd bool) (ConnectionScope, error)
+
+	// OpenStream creates a new stream scope, initially unnegotiated.
+	// An unnegotiated stream will be initially unattached to any protocol scope
+	// and constrained by the transient scope.
+	OpenStream(p peer.ID, dir Direction) (StreamScope, error)
 
 	// Close closes the resource manager
 	Close() error
@@ -50,10 +55,14 @@ type ResourceScope interface {
 
 	// Stat retrieves current resource usage for the scope.
 	Stat() ScopeStat
+
+	// BeginTxn creates a new transactional scope rooted at this scope
+	BeginTxn() (TransactionalScope, error)
 }
 
-// TransactionalScope is a mixin interface for transactional scopes.
+// TransactionalScope is a ResourceScope with transactional semantics.
 type TransactionalScope interface {
+	ResourceScope
 	// Done ends the transaction scope and releases associated resources.
 	Done()
 }
@@ -80,16 +89,10 @@ type PeerScope interface {
 
 	// Peer returns the peer ID for this scope
 	Peer() peer.ID
-
-	// OpenStream creates a new stream scope, initially unnegotiated.
-	// An unnegotiated stream will be initially unattached to any protocol scope
-	// and constrained by the transient scope.
-	OpenStream(dir Direction) (StreamScope, error)
 }
 
 // ConnectionScope is the interface for connection resource scopes.
 type ConnectionScope interface {
-	ResourceScope
 	TransactionalScope
 
 	// PeerScope returns the peer scope associated with this connection.
@@ -100,9 +103,13 @@ type ConnectionScope interface {
 	SetPeer(peer.ID) error
 }
 
+// UserConnectionScope is the user view of a ConnectionScope
+type UserConnectionScope interface {
+	ResourceScope
+}
+
 // StreamScope is the interface for stream resource scopes.
 type StreamScope interface {
-	ResourceScope
 	TransactionalScope
 
 	// ProtocolScope returns the protocol resource scope associated with this stream.
@@ -118,6 +125,14 @@ type StreamScope interface {
 
 	// PeerScope returns the peer resource scope associated with this stream.
 	PeerScope() PeerScope
+}
+
+// UserStreamScope is the user view of a StreamScope
+type UserStreamScope interface {
+	ResourceScope
+
+	// SetService sets the service owning this stream
+	SetService(srv string) error
 }
 
 // ScopeStat is a struct containing resource accounting information.

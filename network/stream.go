@@ -26,6 +26,6 @@ type Stream interface {
 	// Conn returns the connection this stream is part of.
 	Conn() Conn
 
-	// Scope returns the stream resource scope
-	Scope() StreamScope
+	// Scope returns the user's view of this stream's resource scope
+	Scope() UserStreamScope
 }
