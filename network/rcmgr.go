@@ -46,18 +46,23 @@ type ResourceScope interface {
 	ReleaseMemory(size int)
 
 	// GetBuffer reserves memory and allocates a buffer through the buffer pool.
-	GetBuffer(size int) ([]byte, error)
-	// GrowBuffer atomically grows a previous allocated buffer, reserving the appropriate memory space
-	// and releasing the old buffer; the contents of the old buffer are copied to the new one.
-	GrowBuffer(buf []byte, newsize int) ([]byte, error)
-	// ReleaseBuffer releases a previous allocated buffer.
-	ReleaseBuffer(buf []byte)
+	GetBuffer(size int) (Buffer, error)
 
 	// Stat retrieves current resource usage for the scope.
 	Stat() ScopeStat
 
 	// BeginTxn creates a new transactional scope rooted at this scope
 	BeginTxn() (TransactionalScope, error)
+}
+
+// Buffer is a wrapper for a buffer managed by a resource scope
+type Buffer interface {
+	// Data returns the byte slice for this buffer
+	Data() []byte
+	// Grow grows the buffer to a new size
+	Grow(newsize int) error
+	// Release releases the buffer
+	Release()
 }
 
 // TransactionalScope is a ResourceScope with transactional semantics.
