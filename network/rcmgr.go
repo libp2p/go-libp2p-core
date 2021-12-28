@@ -51,8 +51,8 @@ type ResourceScope interface {
 	// Stat retrieves current resource usage for the scope.
 	Stat() ScopeStat
 
-	// BeginTxn creates a new transactional scope rooted at this scope
-	BeginTxn() (TransactionalScope, error)
+	// BeginTransaction creates a new transactional scope rooted at this scope
+	BeginTransaction() (TransactionalScope, error)
 }
 
 // Buffer is a wrapper for a buffer managed by a resource scope
