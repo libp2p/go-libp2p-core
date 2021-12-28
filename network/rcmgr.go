@@ -84,7 +84,7 @@ type ServiceScope interface {
 type ProtocolScope interface {
 	ResourceScope
 
-	// Protocol returns the list of protocol IDs constrained by this scope.
+	// Protocol returns the protocol for this scope
 	Protocol() protocol.ID
 }
 
