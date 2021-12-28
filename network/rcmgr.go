@@ -27,12 +27,12 @@ type ResourceManager interface {
 
 	// OpenConnection creates a new connection scope not yet associated with any peer; the connection
 	// is scoped at the transient scope.
-	OpenConnection(dir Direction, usefd bool) (ConnectionScope, error)
+	OpenConnection(dir Direction, usefd bool) (ConnectionManagementScope, error)
 
 	// OpenStream creates a new stream scope, initially unnegotiated.
 	// An unnegotiated stream will be initially unattached to any protocol scope
 	// and constrained by the transient scope.
-	OpenStream(p peer.ID, dir Direction) (StreamScope, error)
+	OpenStream(p peer.ID, dir Direction) (StreamManagementScope, error)
 
 	// Close closes the resource manager
 	Close() error
@@ -96,8 +96,8 @@ type PeerScope interface {
 	Peer() peer.ID
 }
 
-// ConnectionScope is the interface for connection resource scopes.
-type ConnectionScope interface {
+// ConnectionManagementScope is the interface for connection resource scopes.
+type ConnectionManagementScope interface {
 	TransactionalScope
 
 	// PeerScope returns the peer scope associated with this connection.
@@ -108,13 +108,13 @@ type ConnectionScope interface {
 	SetPeer(peer.ID) error
 }
 
-// UserConnectionScope is the user view of a ConnectionScope
-type UserConnectionScope interface {
+// ConnectionScope is the user view of a connection scope
+type ConnectionScope interface {
 	ResourceScope
 }
 
-// StreamScope is the interface for stream resource scopes.
-type StreamScope interface {
+// StreamManagementScope is the interface for stream resource scopes.
+type StreamManagementScope interface {
 	TransactionalScope
 
 	// ProtocolScope returns the protocol resource scope associated with this stream.
@@ -133,7 +133,7 @@ type StreamScope interface {
 }
 
 // UserStreamScope is the user view of a StreamScope
-type UserStreamScope interface {
+type StreamScope interface {
 	ResourceScope
 
 	// SetService sets the service owning this stream
