@@ -101,7 +101,7 @@ type ConnectionScope interface {
 	TransactionalScope
 
 	// PeerScope returns the peer scope associated with this connection.
-	// It reeturns nil if the connection is not yet asociated with any peer.
+	// It returns nil if the connection is not yet asociated with any peer.
 	PeerScope() PeerScope
 
 	// SetPeer sets the peer for a previously unassociated connection
