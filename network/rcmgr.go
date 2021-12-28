@@ -14,7 +14,7 @@ var (
 
 // ResourceManager is the interface to the network resource management subsystem
 type ResourceManager interface {
-	// Viewystem views the system wide resource scope
+	// ViewSystem views the system wide resource scope
 	ViewSystem(func(ResourceScope) error) error
 	// ViewTransient views the transient (DMZ) resource scope
 	ViewTransient(func(ResourceScope) error) error
