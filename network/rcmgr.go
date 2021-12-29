@@ -1,15 +1,8 @@
 package network
 
 import (
-	"errors"
-
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
-)
-
-var (
-	ErrResourceLimitExceeded = errors.New("resource limit exceeded")
-	ErrResourceScopeClosed   = errors.New("resource scope closed")
 )
 
 // ResourceManager is the interface to the network resource management subsystem
