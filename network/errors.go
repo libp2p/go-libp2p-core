@@ -5,13 +5,13 @@ import (
 	"net"
 )
 
-type TemporaryError string
+type temporaryError string
 
-func (e TemporaryError) Error() string   { return string(e) }
-func (e TemporaryError) Temporary() bool { return true }
-func (e TemporaryError) Timeout() bool   { return false }
+func (e temporaryError) Error() string   { return string(e) }
+func (e temporaryError) Temporary() bool { return true }
+func (e temporaryError) Timeout() bool   { return false }
 
-var _ net.Error = TemporaryError("")
+var _ net.Error = temporaryError("")
 
 // ErrNoRemoteAddrs is returned when there are no addresses associated with a peer during a dial.
 var ErrNoRemoteAddrs = errors.New("no remote addresses")
@@ -26,7 +26,7 @@ var ErrTransientConn = errors.New("transient connection to peer")
 
 // ErrResourceLimitExceeded is returned when attempting to perform an operation that would
 // exceed system resource limits.
-var ErrResourceLimitExceeded = TemporaryError("resource limit exceeded")
+var ErrResourceLimitExceeded = temporaryError("resource limit exceeded")
 
 // ErrResourceScopeClosed is returned when attemptig to reserve resources in a closed resource
 // scope.
