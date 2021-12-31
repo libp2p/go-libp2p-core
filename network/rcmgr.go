@@ -130,3 +130,61 @@ type ScopeStat struct {
 
 	Memory int64
 }
+
+// NullResourceManager is a stub for tests and initialization of default values
+type NullResourceManager struct{}
+
+var _ ResourceManager = (*NullResourceManager)(nil)
+
+// NullScope is a stub for scopes used by the NullResourceManager
+type NullScope struct{}
+
+var _ ResourceScope = (*NullScope)(nil)
+var _ TransactionalScope = (*NullScope)(nil)
+var _ ServiceScope = (*NullScope)(nil)
+var _ ProtocolScope = (*NullScope)(nil)
+var _ PeerScope = (*NullScope)(nil)
+var _ ConnectionManagementScope = (*NullScope)(nil)
+var _ ConnectionScope = (*NullScope)(nil)
+var _ StreamManagementScope = (*NullScope)(nil)
+var _ StreamScope = (*NullScope)(nil)
+
+func (n *NullResourceManager) ViewSystem(f func(ResourceScope) error) error {
+	return f((*NullScope)(nil))
+}
+func (n *NullResourceManager) ViewTransient(f func(ResourceScope) error) error {
+	return f((*NullScope)(nil))
+}
+func (n *NullResourceManager) ViewService(svc string, f func(ServiceScope) error) error {
+	return f((*NullScope)(nil))
+}
+func (n *NullResourceManager) ViewProtocol(p protocol.ID, f func(ProtocolScope) error) error {
+	return f((*NullScope)(nil))
+}
+func (n *NullResourceManager) ViewPeer(p peer.ID, f func(PeerScope) error) error {
+	return f((*NullScope)(nil))
+}
+func (n *NullResourceManager) OpenConnection(dir Direction, usefd bool) (ConnectionManagementScope, error) {
+	return (*NullScope)(nil), nil
+}
+func (n *NullResourceManager) OpenStream(p peer.ID, dir Direction) (StreamManagementScope, error) {
+	return (*NullScope)(nil), nil
+}
+func (n *NullResourceManager) Close() error {
+	return nil
+}
+
+func (n *NullScope) ReserveMemory(size int) error                  { return nil }
+func (n *NullScope) ReleaseMemory(size int)                        {}
+func (n *NullScope) Stat() ScopeStat                               { return ScopeStat{} }
+func (n *NullScope) BeginTransaction() (TransactionalScope, error) { return (*NullScope)(nil), nil }
+func (n *NullScope) Done()                                         {}
+func (n *NullScope) Name() string                                  { return "" }
+func (n *NullScope) Protocol() protocol.ID                         { return "" }
+func (n *NullScope) Peer() peer.ID                                 { return "" }
+func (n *NullScope) PeerScope() PeerScope                          { return (*NullScope)(nil) }
+func (n *NullScope) SetPeer(peer.ID) error                         { return nil }
+func (n *NullScope) ProtocolScope() ProtocolScope                  { return (*NullScope)(nil) }
+func (n *NullScope) SetProtocol(proto protocol.ID) error           { return nil }
+func (n *NullScope) ServiceScope() ServiceScope                    { return (*NullScope)(nil) }
+func (n *NullScope) SetService(srv string) error                   { return nil }
