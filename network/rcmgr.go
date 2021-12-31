@@ -88,8 +88,8 @@ type ConnectionManagementScope interface {
 	SetPeer(peer.ID) error
 }
 
-// ConnectionScope is the user view of a connection scope
-type ConnectionScope interface {
+// ConnScope is the user view of a connection scope
+type ConnScope interface {
 	ResourceScope
 }
 
@@ -143,7 +143,7 @@ var _ ServiceScope = (*nullScope)(nil)
 var _ ProtocolScope = (*nullScope)(nil)
 var _ PeerScope = (*nullScope)(nil)
 var _ ConnectionManagementScope = (*nullScope)(nil)
-var _ ConnectionScope = (*nullScope)(nil)
+var _ ConnScope = (*nullScope)(nil)
 var _ StreamManagementScope = (*nullScope)(nil)
 var _ StreamScope = (*nullScope)(nil)
 
