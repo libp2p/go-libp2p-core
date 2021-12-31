@@ -67,7 +67,7 @@ type ConnStat interface {
 	Stat() ConnStats
 }
 
-// ConnScoper is the interface that one can mix into a connection interfac to give it a resource
+// ConnScoper is the interface that one can mix into a connection interface to give it a resource
 // management scope
 type ConnScoper interface {
 	// Scope returns the user view of this connection's resource scope
