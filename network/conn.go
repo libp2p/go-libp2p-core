@@ -20,6 +20,7 @@ type Conn interface {
 	ConnSecurity
 	ConnMultiaddrs
 	ConnStat
+	ConnScope
 
 	// ID returns an identifier that uniquely identifies this Conn within this
 	// host, during this run. Connection IDs may repeat across restarts.
@@ -30,9 +31,6 @@ type Conn interface {
 
 	// GetStreams returns all open streams over this conn.
 	GetStreams() []Stream
-
-	// Scope returns the user view of this connection's resource scope
-	Scope() ConnectionScope
 }
 
 // ConnSecurity is the interface that one can mix into a connection interface to
@@ -67,4 +65,11 @@ type ConnMultiaddrs interface {
 type ConnStat interface {
 	// Stat stores metadata pertaining to this conn.
 	Stat() ConnStats
+}
+
+// ConnScope is the interface that one can mix into a connection interfac to give it a resource
+// management scope
+type ConnScope interface {
+	// Scope returns the user view of this connection's resource scope
+	Scope() ConnectionScope
 }

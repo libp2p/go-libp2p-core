@@ -28,6 +28,7 @@ type CapableConn interface {
 	mux.MuxedConn
 	network.ConnSecurity
 	network.ConnMultiaddrs
+	network.ConnScope
 
 	// Transport returns the transport to which this connection belongs.
 	Transport() Transport
