@@ -20,7 +20,7 @@ type ResourceManager interface {
 
 	// OpenConnection creates a new connection scope not yet associated with any peer; the connection
 	// is scoped at the transient scope.
-	OpenConnection(dir Direction, usefd bool) (ConnectionManagementScope, error)
+	OpenConnection(dir Direction, usefd bool) (ConnManagementScope, error)
 
 	// OpenStream creates a new stream scope, initially unnegotiated.
 	// An unnegotiated stream will be initially unattached to any protocol scope
@@ -76,8 +76,8 @@ type PeerScope interface {
 	Peer() peer.ID
 }
 
-// ConnectionManagementScope is the interface for connection resource scopes.
-type ConnectionManagementScope interface {
+// ConnManagementScope is the interface for connection resource scopes.
+type ConnManagementScope interface {
 	TransactionalScope
 
 	// PeerScope returns the peer scope associated with this connection.
@@ -142,7 +142,7 @@ var _ TransactionalScope = (*nullScope)(nil)
 var _ ServiceScope = (*nullScope)(nil)
 var _ ProtocolScope = (*nullScope)(nil)
 var _ PeerScope = (*nullScope)(nil)
-var _ ConnectionManagementScope = (*nullScope)(nil)
+var _ ConnManagementScope = (*nullScope)(nil)
 var _ ConnScope = (*nullScope)(nil)
 var _ StreamManagementScope = (*nullScope)(nil)
 var _ StreamScope = (*nullScope)(nil)
@@ -164,7 +164,7 @@ func (n *nullResourceManager) ViewProtocol(p protocol.ID, f func(ProtocolScope) 
 func (n *nullResourceManager) ViewPeer(p peer.ID, f func(PeerScope) error) error {
 	return f(nullScopeObj)
 }
-func (n *nullResourceManager) OpenConnection(dir Direction, usefd bool) (ConnectionManagementScope, error) {
+func (n *nullResourceManager) OpenConnection(dir Direction, usefd bool) (ConnManagementScope, error) {
 	return nullScopeObj, nil
 }
 func (n *nullResourceManager) OpenStream(p peer.ID, dir Direction) (StreamManagementScope, error) {
