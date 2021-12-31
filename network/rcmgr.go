@@ -132,7 +132,7 @@ type ScopeStat struct {
 }
 
 // NullResourceManager is a stub for tests and initialization of default values
-var NullResourceManager ResourceManager = (*nullResourceManager)(nil)
+var NullResourceManager ResourceManager = &nullResourceManager{}
 
 type nullResourceManager struct{}
 type nullScope struct{}
@@ -147,26 +147,28 @@ var _ ConnectionScope = (*nullScope)(nil)
 var _ StreamManagementScope = (*nullScope)(nil)
 var _ StreamScope = (*nullScope)(nil)
 
+var nullScopeObj = &nullScope{}
+
 func (n *nullResourceManager) ViewSystem(f func(ResourceScope) error) error {
-	return f((*nullScope)(nil))
+	return f(nullScopeObj)
 }
 func (n *nullResourceManager) ViewTransient(f func(ResourceScope) error) error {
-	return f((*nullScope)(nil))
+	return f(nullScopeObj)
 }
 func (n *nullResourceManager) ViewService(svc string, f func(ServiceScope) error) error {
-	return f((*nullScope)(nil))
+	return f(nullScopeObj)
 }
 func (n *nullResourceManager) ViewProtocol(p protocol.ID, f func(ProtocolScope) error) error {
-	return f((*nullScope)(nil))
+	return f(nullScopeObj)
 }
 func (n *nullResourceManager) ViewPeer(p peer.ID, f func(PeerScope) error) error {
-	return f((*nullScope)(nil))
+	return f(nullScopeObj)
 }
 func (n *nullResourceManager) OpenConnection(dir Direction, usefd bool) (ConnectionManagementScope, error) {
-	return (*nullScope)(nil), nil
+	return nullScopeObj, nil
 }
 func (n *nullResourceManager) OpenStream(p peer.ID, dir Direction) (StreamManagementScope, error) {
-	return (*nullScope)(nil), nil
+	return nullScopeObj, nil
 }
 func (n *nullResourceManager) Close() error {
 	return nil
@@ -175,14 +177,14 @@ func (n *nullResourceManager) Close() error {
 func (n *nullScope) ReserveMemory(size int) error                  { return nil }
 func (n *nullScope) ReleaseMemory(size int)                        {}
 func (n *nullScope) Stat() ScopeStat                               { return ScopeStat{} }
-func (n *nullScope) BeginTransaction() (TransactionalScope, error) { return (*nullScope)(nil), nil }
+func (n *nullScope) BeginTransaction() (TransactionalScope, error) { return nullScopeObj, nil }
 func (n *nullScope) Done()                                         {}
 func (n *nullScope) Name() string                                  { return "" }
 func (n *nullScope) Protocol() protocol.ID                         { return "" }
 func (n *nullScope) Peer() peer.ID                                 { return "" }
-func (n *nullScope) PeerScope() PeerScope                          { return (*nullScope)(nil) }
+func (n *nullScope) PeerScope() PeerScope                          { return nullScopeObj }
 func (n *nullScope) SetPeer(peer.ID) error                         { return nil }
-func (n *nullScope) ProtocolScope() ProtocolScope                  { return (*nullScope)(nil) }
+func (n *nullScope) ProtocolScope() ProtocolScope                  { return nullScopeObj }
 func (n *nullScope) SetProtocol(proto protocol.ID) error           { return nil }
-func (n *nullScope) ServiceScope() ServiceScope                    { return (*nullScope)(nil) }
+func (n *nullScope) ServiceScope() ServiceScope                    { return nullScopeObj }
 func (n *nullScope) SetService(srv string) error                   { return nil }
