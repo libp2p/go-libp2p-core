@@ -111,14 +111,6 @@ type TransportNetwork interface {
 type Upgrader interface {
 	// UpgradeListener upgrades the passed multiaddr-net listener into a full libp2p-transport listener.
 	UpgradeListener(Transport, manet.Listener) Listener
-	// UpgradeOutbound upgrades the given outbound multiaddr-net connection into a
-	// full libp2p-transport connection.
-	// Deprecated: use Upgrade instead.
-	UpgradeOutbound(context.Context, Transport, manet.Conn, peer.ID) (CapableConn, error)
-	// UpgradeInbound upgrades the given inbound multiaddr-net connection into a
-	// full libp2p-transport connection.
-	// Deprecated: use Upgrade instead.
-	UpgradeInbound(context.Context, Transport, manet.Conn) (CapableConn, error)
 	// Upgrade upgrades the multiaddr/net connection into a full libp2p-transport connection.
 	Upgrade(ctx context.Context, t Transport, maconn manet.Conn, dir network.Direction, p peer.ID) (CapableConn, error)
 }
