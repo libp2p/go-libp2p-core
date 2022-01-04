@@ -11,6 +11,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 
 	ma "github.com/multiformats/go-multiaddr"
+	manet "github.com/multiformats/go-multiaddr/net"
 )
 
 // A CapableConn represents a connection that has offers the basic
@@ -87,7 +88,7 @@ type Listener interface {
 	Multiaddr() ma.Multiaddr
 }
 
-// Network is an inet.Network with methods for managing transports.
+// TransportNetwork is an inet.Network with methods for managing transports.
 type TransportNetwork interface {
 	network.Network
 
@@ -103,4 +104,13 @@ type TransportNetwork interface {
 	// transport, if any. Otherwise, it'll pick the transport registered to
 	// handle the last protocol in the multiaddr.
 	AddTransport(t Transport) error
+}
+
+// Upgrader is a multistream upgrader that can upgrade an underlying connection
+// to a full transport connection (secure and multiplexed).
+type Upgrader interface {
+	// UpgradeListener upgrades the passed multiaddr-net listener into a full libp2p-transport listener.
+	UpgradeListener(Transport, manet.Listener) Listener
+	// Upgrade upgrades the multiaddr/net connection into a full libp2p-transport connection.
+	Upgrade(ctx context.Context, t Transport, maconn manet.Conn, dir network.Direction, p peer.ID) (CapableConn, error)
 }
