@@ -113,5 +113,5 @@ type Upgrader interface {
 	// UpgradeListener upgrades the passed multiaddr-net listener into a full libp2p-transport listener.
 	UpgradeListener(Transport, manet.Listener) Listener
 	// Upgrade upgrades the multiaddr/net connection into a full libp2p-transport connection.
-	Upgrade(ctx context.Context, t Transport, maconn manet.Conn, dir network.Direction, p peer.ID, rcmgr network.ConnManagementScope) (CapableConn, error)
+	Upgrade(ctx context.Context, t Transport, maconn manet.Conn, dir network.Direction, p peer.ID, scope network.ConnManagementScope) (CapableConn, error)
 }
