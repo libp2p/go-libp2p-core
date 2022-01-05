@@ -115,10 +115,35 @@ type ResourceManager interface {
 	Close() error
 }
 
+// MemoryStatus is an indicator of the current level of available memory for scope reservations.
+type MemoryStatus int
+
+const (
+	// MemoryStatusOK indicates that the scope has sufficient memory.
+	MemoryStatusOK = iota
+	// MemoryStatusCaution indicates that the scope is using more than half its available memory.
+	MemoryStatusCaution
+	// MemoryStatusCritical indicates that the scope is using more than 80% of its available memory.
+	MemoryStatusCritical
+)
+
 // ResourceScope is the interface for all scopes.
 type ResourceScope interface {
 	// ReserveMemory reserves memory/buffer space in the scope.
-	ReserveMemory(size int) error
+	//
+	// If ReserveMemory returns an error, then no memory was reserved and the caller should handle
+	// the failure condition.
+	//
+	// If the error is nil, then the returned MemoryStatus indicates the health of the memory
+	// subsystem for the scope, _after_ the reservation.
+	// A MemoryStatus of MemoryStatusCritical (Red) indicates that the scope already uses
+	// too much memory and it should only proceed with absolutely critical memory allocations.
+	// A MemoryStatus of MemorStatusCaution (Yellow) indicates that the scope uses a lot
+	// of memory and the caller should backoff if it is an optional operation (e.g. a window
+	// buffer increase in a muxer).
+	// A MemoryStatus of MemoryStatusOK (Green) indicates that the scope has sufficient memory
+	// available and the caller is free to proceed without concerns.
+	ReserveMemory(size int) (MemoryStatus, error)
 	// ReleaseMemory explicitly releases memory previously reserved with ReserveMemory
 	ReleaseMemory(size int)
 
@@ -272,7 +297,7 @@ func (n *nullResourceManager) Close() error {
 	return nil
 }
 
-func (n *nullScope) ReserveMemory(size int) error                  { return nil }
+func (n *nullScope) ReserveMemory(size int) (MemoryStatus, error)  { return MemoryStatusOK, nil }
 func (n *nullScope) ReleaseMemory(size int)                        {}
 func (n *nullScope) Stat() ScopeStat                               { return ScopeStat{} }
 func (n *nullScope) BeginTransaction() (TransactionalScope, error) { return nullScopeObj, nil }
