@@ -116,7 +116,7 @@ type ResourceManager interface {
 }
 
 // MemoryStatus is an indicator of the current level of available memory for scope reservations.
-type MemoryStatus int
+type MemoryStatus uint8
 
 const (
 	// MemoryStatusOK indicates that the scope has sufficient memory.
