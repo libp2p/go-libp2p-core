@@ -123,10 +123,10 @@ const (
 	// memory utilization is at 60% or less.
 	ReservationPriorityMedium uint8 = 152
 	// ReservationPriorityHigh is a reservation prioirity that indicates a reservation if the scope
-	// memory utilization is at 80% or less
+	// memory utilization is at 80% or less.
 	ReservationPriorityHigh uint8 = 203
 	// ReservationPriorityAlways is a reservation that indicates a reservation if there is enough
-	// memory.
+	// memory, regardless of scope utilization.
 	ReservationPriorityAlways uint8 = 255
 )
 
