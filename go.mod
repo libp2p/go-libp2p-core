@@ -17,4 +17,5 @@ require (
 	github.com/multiformats/go-multihash v0.0.14
 	github.com/multiformats/go-varint v0.0.6
 	github.com/stretchr/testify v1.7.0
+	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
