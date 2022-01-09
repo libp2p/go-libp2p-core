@@ -18,7 +18,7 @@ type Stream interface {
 	ID() string
 
 	Protocol() protocol.ID
-	SetProtocol(id protocol.ID)
+	SetProtocol(id protocol.ID) error
 
 	// Stat returns metadata pertaining to this stream.
 	Stat() Stats
