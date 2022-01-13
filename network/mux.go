@@ -91,5 +91,5 @@ type MuxedConn interface {
 // multiple streams over the underlying net.Conn
 type Multiplexer interface {
 	// NewConn constructs a new connection
-	NewConn(c net.Conn, isServer bool) (MuxedConn, error)
+	NewConn(c net.Conn, isServer bool, scope PeerScope) (MuxedConn, error)
 }
