@@ -59,7 +59,7 @@ import (
 //
 // Typical Usage:
 //  - Low level components of the system (transports, muxers) all have access to the resource
-//    manageer and create connection and stream scopes through it. These scopes are accessible
+//    manager and create connection and stream scopes through it. These scopes are accessible
 //    to the user, albeit with a narrower interface, through Conn and Stream objects who have
 //    a Scope method.
 //  - Services typically center around streams, where the programmer can attach streams to a
