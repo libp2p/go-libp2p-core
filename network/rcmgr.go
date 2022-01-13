@@ -35,7 +35,7 @@ import (
 // appropriate scope. The resource manager gates the reservation against the scope applicable
 // limits; if the limit is exceeded, then an error (wrapping ErrResourceLimitExceeded) and it
 // is up the component to act accordingly. At the lower levels of the stack, this will normally
-// signal a filure of some sorts, like failing to opening a stream or a connection, which will
+// signal a failure of some sorts, like failing to opening a stream or a connection, which will
 // propagate to the programmer. Some components may be able to handle resource reservation failure
 // more gracefully; for instance a muxer trying to grow a buffer for a window change, will simply
 // retain the existing window size and continue to operate normally albeit with some degraded
