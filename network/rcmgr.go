@@ -52,7 +52,7 @@ import (
 // resource manager interface.
 //
 // Application programmers can also directly reserve memory in some applicable scope. In order
-// to failicate control flow delimited resource accounting, all scopes defined in the system
+// to facilitate control flow delimited resource accounting, all scopes defined in the system
 // allow for the user to create transactions. Transactions are temporary scopes rooted at some
 // other scope and release their resources when the programmer is done with them. Transaction
 // scopes can form trees, with nested transactions.
