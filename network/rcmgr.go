@@ -53,9 +53,9 @@ import (
 //
 // Application programmers can also directly reserve memory in some applicable scope. In order
 // to facilitate control flow delimited resource accounting, all scopes defined in the system
-// allow for the user to create transactions. Transactions are temporary scopes rooted at some
-// other scope and release their resources when the programmer is done with them. Transaction
-// scopes can form trees, with nested transactions.
+// allow for the user to create spans. Spans are temporary scopes rooted at some
+// other scope and release their resources when the programmer is done with them. Span
+// scopes can form trees, with nested spans.
 //
 // Typical Usage:
 //  - Low level components of the system (transports, muxers) all have access to the resource
@@ -66,7 +66,7 @@ import (
 //    particular service. They can also directly reserve memory for a service by accessing the
 //    service scope using the ResourceManager interface.
 //  - Applications that want to account for their network resource usage can reserve memory,
-//    typically using a transaction, directly in the System or a Service scope; they can also
+//    typically using a span, directly in the System or a Service scope; they can also
 //    opt to use appropriate steam scopes for streams that they create or own.
 //
 // User Serviceable Parts: the user has the option to specify their own implementation of the
@@ -153,24 +153,24 @@ type ResourceScope interface {
 	// Stat retrieves current resource usage for the scope.
 	Stat() ScopeStat
 
-	// BeginTransaction creates a new transactional scope rooted at this scope
-	BeginTransaction() (TransactionalScope, error)
+	// BeginSpan creates a new span scope rooted at this scope
+	BeginSpan() (ResourceScopeSpan, error)
 }
 
-// TransactionalScope is a ResourceScope with transactional semantics.
-// Transactional scopes are control flow delimited and release all their associated resources
+// ResourceScopeSpan is a ResourceScope with a delimited span.
+// Span scopes are control flow delimited and release all their associated resources
 // when the programmer calls Done.
 //
 // Example:
-//  txn, err := someScope.BeginTransaction()
+//  s, err := someScope.BeginSpan()
 //  if err != nil { ... }
-//  defer txn.Done()
+//  defer s.Done()
 //
-//  if err := txn.ReserveMemory(...); err != nil { ... }
+//  if err := s.ReserveMemory(...); err != nil { ... }
 //  // ... use memory
-type TransactionalScope interface {
+type ResourceScopeSpan interface {
 	ResourceScope
-	// Done ends the transaction scope and releases associated resources.
+	// Done ends the span and releases associated resources.
 	Done()
 }
 
@@ -202,7 +202,7 @@ type PeerScope interface {
 // This interface is used by the low level components of the system who create and own
 // the span of a connection scope.
 type ConnManagementScope interface {
-	TransactionalScope
+	ResourceScopeSpan
 
 	// PeerScope returns the peer scope associated with this connection.
 	// It returns nil if the connection is not yet asociated with any peer.
@@ -221,7 +221,7 @@ type ConnScope interface {
 // This interface is used by the low level components of the system who create and own
 // the span of a stream scope.
 type StreamManagementScope interface {
-	TransactionalScope
+	ResourceScopeSpan
 
 	// ProtocolScope returns the protocol resource scope associated with this stream.
 	// It returns nil if the stream is not associated with any protocol scope.
@@ -264,7 +264,7 @@ type nullResourceManager struct{}
 type nullScope struct{}
 
 var _ ResourceScope = (*nullScope)(nil)
-var _ TransactionalScope = (*nullScope)(nil)
+var _ ResourceScopeSpan = (*nullScope)(nil)
 var _ ServiceScope = (*nullScope)(nil)
 var _ ProtocolScope = (*nullScope)(nil)
 var _ PeerScope = (*nullScope)(nil)
@@ -301,17 +301,17 @@ func (n *nullResourceManager) Close() error {
 	return nil
 }
 
-func (n *nullScope) ReserveMemory(size int, prio uint8) error      { return nil }
-func (n *nullScope) ReleaseMemory(size int)                        {}
-func (n *nullScope) Stat() ScopeStat                               { return ScopeStat{} }
-func (n *nullScope) BeginTransaction() (TransactionalScope, error) { return NullScope, nil }
-func (n *nullScope) Done()                                         {}
-func (n *nullScope) Name() string                                  { return "" }
-func (n *nullScope) Protocol() protocol.ID                         { return "" }
-func (n *nullScope) Peer() peer.ID                                 { return "" }
-func (n *nullScope) PeerScope() PeerScope                          { return NullScope }
-func (n *nullScope) SetPeer(peer.ID) error                         { return nil }
-func (n *nullScope) ProtocolScope() ProtocolScope                  { return NullScope }
-func (n *nullScope) SetProtocol(proto protocol.ID) error           { return nil }
-func (n *nullScope) ServiceScope() ServiceScope                    { return NullScope }
-func (n *nullScope) SetService(srv string) error                   { return nil }
+func (n *nullScope) ReserveMemory(size int, prio uint8) error { return nil }
+func (n *nullScope) ReleaseMemory(size int)                   {}
+func (n *nullScope) Stat() ScopeStat                          { return ScopeStat{} }
+func (n *nullScope) BeginSpan() (ResourceScopeSpan, error)    { return NullScope, nil }
+func (n *nullScope) Done()                                    {}
+func (n *nullScope) Name() string                             { return "" }
+func (n *nullScope) Protocol() protocol.ID                    { return "" }
+func (n *nullScope) Peer() peer.ID                            { return "" }
+func (n *nullScope) PeerScope() PeerScope                     { return NullScope }
+func (n *nullScope) SetPeer(peer.ID) error                    { return nil }
+func (n *nullScope) ProtocolScope() ProtocolScope             { return NullScope }
+func (n *nullScope) SetProtocol(proto protocol.ID) error      { return nil }
+func (n *nullScope) ServiceScope() ServiceScope               { return NullScope }
+func (n *nullScope) SetService(srv string) error              { return nil }
