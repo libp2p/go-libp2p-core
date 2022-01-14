@@ -101,7 +101,7 @@ type ResourceManager interface {
 	// OpenConnection creates a new connection scope not yet associated with any peer; the connection
 	// is scoped at the transient scope.
 	// The caller owns the returned scope and is responsible for calling Done in order to signify
-	// the end of th scope's span.
+	// the end of the scope's span.
 	OpenConnection(dir Direction, usefd bool) (ConnManagementScope, error)
 
 	// OpenStream creates a new stream scope, initially unnegotiated.
