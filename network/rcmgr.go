@@ -132,7 +132,7 @@ const (
 
 // ResourceScope is the interface for all scopes.
 type ResourceScope interface {
-	// ReserveMemory reserves memory/buffer space in the scope.
+	// ReserveMemory reserves memory/buffer space in the scope; the unit is bytes.
 	//
 	// If ReserveMemory returns an error, then no memory was reserved and the caller should handle
 	// the failure condition.
