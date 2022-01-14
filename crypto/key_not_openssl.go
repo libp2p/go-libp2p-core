@@ -25,6 +25,11 @@ func KeyPairFromStdKey(priv crypto.PrivateKey) (PrivKey, PubKey, error) {
 	case *ecdsa.PrivateKey:
 		return &ECDSAPrivateKey{p}, &ECDSAPublicKey{&p.PublicKey}, nil
 
+	case ed25519.PrivateKey:
+		pubIfc := p.Public()
+		pub, _ := pubIfc.(ed25519.PublicKey)
+		return &Ed25519PrivateKey{p}, &Ed25519PublicKey{pub}, nil
+
 	case *ed25519.PrivateKey:
 		pubIfc := p.Public()
 		pub, _ := pubIfc.(ed25519.PublicKey)
@@ -40,8 +45,26 @@ func KeyPairFromStdKey(priv crypto.PrivateKey) (PrivKey, PubKey, error) {
 	}
 }
 
-// PrivKeyToStdKey converts libp2p/go-libp2p-core/crypto private keys to standard library (and secp256k1) private keys
+// Deprecated: use PrivKeyToStdCompatKey instead.
 func PrivKeyToStdKey(priv PrivKey) (crypto.PrivateKey, error) {
+	stdKey, err := PrivKeyToStdCompatKey(priv)
+	if err != nil {
+		return nil, err
+	}
+	// for backward compatibility
+	if val, isEd := stdKey.(ed25519.PrivateKey); isEd {
+		return &val, nil
+	}
+	return stdKey, nil
+}
+
+// PrivKeyToStdCompatKey converts libp2p/go-libp2p-core/crypto private keys to types
+// compatible with standard library (and secp256k1) private keys.
+//
+// In contrast to deprecated PrivKeyToStdKey, it returns ed25519.PrivateKey
+// instead od pointer to it. This is beacuse it's underlying type is []byte
+// and this value is used in std crypto packages.
+func PrivKeyToStdCompatKey(priv PrivKey) (crypto.PrivateKey, error) {
 	if priv == nil {
 		return nil, ErrNilPrivateKey
 	}
@@ -52,7 +75,7 @@ func PrivKeyToStdKey(priv PrivKey) (crypto.PrivateKey, error) {
 	case *ECDSAPrivateKey:
 		return p.priv, nil
 	case *Ed25519PrivateKey:
-		return &p.k, nil
+		return p.k, nil
 	case *Secp256k1PrivateKey:
 		return p, nil
 	default:

@@ -85,8 +85,13 @@ func TestKeyPairFromKey(t *testing.T) {
 			RSA,
 			sigR,
 		},
-		{
+		{ // this is kept for backward compatibility
 			&edKey,
+			Ed25519,
+			sigEd,
+		},
+		{
+			edKey,
 			Ed25519,
 			sigEd,
 		},
@@ -142,7 +147,7 @@ func TestKeyPairFromKey(t *testing.T) {
 				t.Errorf("err roundtripping %v key", reflect.TypeOf(pub))
 			}
 
-			stdPriv, err := PrivKeyToStdKey(priv)
+			stdPriv, err := PrivKeyToStdCompatKey(priv)
 			if stdPub == nil {
 				t.Errorf("err getting std private key from key: %v", err)
 			}
@@ -154,8 +159,8 @@ func TestKeyPairFromKey(t *testing.T) {
 				stdPrivBytes, err = p.Raw()
 			case *ecdsa.PrivateKey:
 				stdPrivBytes, err = x509.MarshalECPrivateKey(p)
-			case *ed25519.PrivateKey:
-				stdPrivBytes = *p
+			case ed25519.PrivateKey:
+				stdPrivBytes = p
 			case *rsa.PrivateKey:
 				stdPrivBytes = x509.MarshalPKCS1PrivateKey(p)
 			}
@@ -174,6 +179,26 @@ func TestKeyPairFromKey(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPrivKeyToStdKey(t *testing.T) {
+	t.Run("check if backward compatible behaviour of deprecated function is preserved", func(t *testing.T) {
+		_, privEd, err := ed25519.GenerateKey(rand.Reader)
+		if err != nil {
+			t.Fatalf("generate Ed25519 key: %s", err.Error())
+		}
+		priv, _, err := KeyPairFromStdKey(privEd)
+		if err != nil {
+			t.Fatalf("key pair from std key: %s", err.Error())
+		}
+		gotStdPriv, err := PrivKeyToStdKey(priv)
+		if err != nil {
+			t.Fatalf("get std ed key from deprecated PrivKeyToStdKey function: %s", err.Error())
+		}
+		if _, ok := gotStdPriv.(*ed25519.PrivateKey); !ok {
+			t.Fatalf("get std ed key from deprecated PrivKeyToStdKey function: expected to be of *ed25519.PrivateKey type but got: %T", gotStdPriv)
+		}
+	})
 }
 
 func testKeyType(typ int, t *testing.T) {
