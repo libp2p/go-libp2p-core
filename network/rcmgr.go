@@ -73,6 +73,9 @@ import (
 // interface. We provide a canonical implementation in the go-libp2p-resource-manager package.
 // The user of that package can specify limits for the various scopes, which can be static
 // or dynamic.
+//
+// WARNING The ResourceManager interface is considered experimental and subject to change
+//         in subsequent releases.
 type ResourceManager interface {
 	ResourceScopeViewer
 
