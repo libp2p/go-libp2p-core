@@ -74,6 +74,28 @@ import (
 // The user of that package can specify limits for the various scopes, which can be static
 // or dynamic.
 type ResourceManager interface {
+	ResourceScopeViewer
+
+	// OpenConnection creates a new connection scope not yet associated with any peer; the connection
+	// is scoped at the transient scope.
+	// The caller owns the returned scope and is responsible for calling Done in order to signify
+	// the end of the scope's span.
+	OpenConnection(dir Direction, usefd bool) (ConnManagementScope, error)
+
+	// OpenStream creates a new stream scope, initially unnegotiated.
+	// An unnegotiated stream will be initially unattached to any protocol scope
+	// and constrained by the transient scope.
+	// The caller owns the returned scope and is responsible for calling Done in order to signify
+	// the end of th scope's span.
+	OpenStream(p peer.ID, dir Direction) (StreamManagementScope, error)
+
+	// Close closes the resource manager
+	Close() error
+}
+
+// ResourceScopeViewer is a mixin interface providing view methods for accessing top level
+// scopes.
+type ResourceScopeViewer interface {
 	// ViewSystem views the system wide resource scope.
 	// The system scope is the top level scope that accounts for global
 	// resource usage at all levels of the system. This scope constrains all
@@ -97,22 +119,6 @@ type ResourceManager interface {
 
 	// ViewPeer views the resource management scope for a specific peer.
 	ViewPeer(peer.ID, func(PeerScope) error) error
-
-	// OpenConnection creates a new connection scope not yet associated with any peer; the connection
-	// is scoped at the transient scope.
-	// The caller owns the returned scope and is responsible for calling Done in order to signify
-	// the end of the scope's span.
-	OpenConnection(dir Direction, usefd bool) (ConnManagementScope, error)
-
-	// OpenStream creates a new stream scope, initially unnegotiated.
-	// An unnegotiated stream will be initially unattached to any protocol scope
-	// and constrained by the transient scope.
-	// The caller owns the returned scope and is responsible for calling Done in order to signify
-	// the end of th scope's span.
-	OpenStream(p peer.ID, dir Direction) (StreamManagementScope, error)
-
-	// Close closes the resource manager
-	Close() error
 }
 
 const (
