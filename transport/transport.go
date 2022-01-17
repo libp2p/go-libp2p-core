@@ -6,7 +6,6 @@ import (
 	"context"
 	"net"
 
-	"github.com/libp2p/go-libp2p-core/mux"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 
@@ -26,9 +25,10 @@ import (
 // CapableConn provides accessors for the local and remote multiaddrs used to
 // establish the connection and an accessor for the underlying Transport.
 type CapableConn interface {
-	mux.MuxedConn
+	network.MuxedConn
 	network.ConnSecurity
 	network.ConnMultiaddrs
+	network.ConnScoper
 
 	// Transport returns the transport to which this connection belongs.
 	Transport() Transport
@@ -112,5 +112,5 @@ type Upgrader interface {
 	// UpgradeListener upgrades the passed multiaddr-net listener into a full libp2p-transport listener.
 	UpgradeListener(Transport, manet.Listener) Listener
 	// Upgrade upgrades the multiaddr/net connection into a full libp2p-transport connection.
-	Upgrade(ctx context.Context, t Transport, maconn manet.Conn, dir network.Direction, p peer.ID) (CapableConn, error)
+	Upgrade(ctx context.Context, t Transport, maconn manet.Conn, dir network.Direction, p peer.ID, scope network.ConnManagementScope) (CapableConn, error)
 }

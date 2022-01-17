@@ -145,6 +145,9 @@ type Network interface {
 	// listens. It expands "any interface" addresses (/ip4/0.0.0.0, /ip6/::) to
 	// use the known local interfaces.
 	InterfaceListenAddresses() ([]ma.Multiaddr, error)
+
+	// ResourceManager returns the ResourceManager associated with this network
+	ResourceManager() ResourceManager
 }
 
 // Dialer represents a service that can dial out to peers
