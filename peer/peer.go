@@ -209,3 +209,11 @@ type IDSlice []ID
 func (es IDSlice) Len() int           { return len(es) }
 func (es IDSlice) Swap(i, j int)      { es[i], es[j] = es[j], es[i] }
 func (es IDSlice) Less(i, j int) bool { return string(es[i]) < string(es[j]) }
+
+func (es IDSlice) String() string {
+	peersStrings := make([]string, len(es))
+	for i, id := range es {
+		peersStrings[i] = id.String()
+	}
+	return strings.Join(peersStrings, ", ")
+}
