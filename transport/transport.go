@@ -65,10 +65,10 @@ type Transport interface {
 	// Listen listens on the passed multiaddr.
 	Listen(laddr ma.Multiaddr) (Listener, error)
 
-	// Protocol returns the set of protocols handled by this transport.
-	//
+	// Protocols returns the set of protocols handled by this transport.
+	// If protocols A and B are returned, this means that this transport supports running B on top of A.
 	// See the Network interface for an explanation of how this is used.
-	Protocols() []int
+	Protocols() []ma.Protocol
 
 	// Proxy returns true if this is a proxy transport.
 	//
