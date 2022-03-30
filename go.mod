@@ -14,6 +14,7 @@ require (
 	github.com/minio/sha256-simd v0.1.1
 	github.com/mr-tron/base58 v1.2.0
 	github.com/multiformats/go-multiaddr v0.4.1
+	github.com/multiformats/go-multicodec v0.4.1
 	github.com/multiformats/go-multihash v0.0.14
 	github.com/multiformats/go-varint v0.0.6
 	github.com/stretchr/testify v1.7.0
