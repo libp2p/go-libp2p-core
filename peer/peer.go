@@ -165,7 +165,7 @@ func Encode(id ID) string {
 func FromCid(c cid.Cid) (ID, error) {
 	code := mc.Code(c.Type())
 	if code != mc.Libp2pKey {
-		return "", fmt.Errorf("can't convert CID of type %s to a peer ID", code.String())
+		return "", fmt.Errorf("can't convert CID of type %q to a peer ID", code)
 	}
 	return ID(c.Hash()), nil
 }
