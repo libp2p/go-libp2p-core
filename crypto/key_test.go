@@ -13,7 +13,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/btcsuite/btcd/btcec"
+	btcec "github.com/btcsuite/btcd/btcec/v2"
+	btcececdsa "github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	. "github.com/libp2p/go-libp2p-core/crypto"
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 	"github.com/libp2p/go-libp2p-core/test"
@@ -32,14 +33,11 @@ func TestKeyPairFromKey(t *testing.T) {
 		hashed = sha256.Sum256(data)
 	)
 
-	privk, err := btcec.NewPrivateKey(btcec.S256())
+	privk, err := btcec.NewPrivateKey()
 	if err != nil {
 		t.Fatalf("err generating btcec priv key:\n%v", err)
 	}
-	sigK, err := privk.Sign(hashed[:])
-	if err != nil {
-		t.Fatalf("err generating btcec sig:\n%v", err)
-	}
+	sigK := btcececdsa.Sign(privk, hashed[:])
 
 	eKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
