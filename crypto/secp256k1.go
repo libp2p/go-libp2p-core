@@ -8,7 +8,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/internal/catch"
 
 	btcec "github.com/btcsuite/btcd/btcec/v2"
-	ecdsa "github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	btcececdsa "github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"github.com/minio/sha256-simd"
 )
 
@@ -76,7 +76,7 @@ func (k *Secp256k1PrivateKey) Sign(data []byte) (_sig []byte, err error) {
 	defer func() { catch.HandlePanic(recover(), &err, "secp256k1 signing") }()
 	key := (*btcec.PrivateKey)(k)
 	hash := sha256.Sum256(data)
-	sig := ecdsa.Sign(key, hash[:])
+	sig := btcececdsa.Sign(key, hash[:])
 
 	return sig.Serialize(), nil
 }
@@ -117,7 +117,7 @@ func (k *Secp256k1PublicKey) Verify(data []byte, sigStr []byte) (success bool, e
 			success = false
 		}
 	}()
-	sig, err := ecdsa.ParseDERSignature(sigStr)
+	sig, err := btcececdsa.ParseDERSignature(sigStr)
 	if err != nil {
 		return false, err
 	}
