@@ -85,39 +85,3 @@ func TestDisconnected(T *testing.T) {
 		T.Fatal("Disconnected should have been called")
 	}
 }
-
-func TestOpenedStream(T *testing.T) {
-	var notifee NotifyBundle
-	notifee.OpenedStream(nil, nil)
-
-	called := false
-	notifee.OpenedStreamF = func(Network, Stream) {
-		called = true
-	}
-	if called {
-		T.Fatal("called should be false")
-	}
-
-	notifee.OpenedStream(nil, nil)
-	if !called {
-		T.Fatal("OpenedStream should have been called")
-	}
-}
-
-func TestClosedStream(T *testing.T) {
-	var notifee NotifyBundle
-	notifee.ClosedStream(nil, nil)
-
-	called := false
-	notifee.ClosedStreamF = func(Network, Stream) {
-		called = true
-	}
-	if called {
-		T.Fatal("called should be false")
-	}
-
-	notifee.ClosedStream(nil, nil)
-	if !called {
-		T.Fatal("ClosedStream should have been called")
-	}
-}
