@@ -7,8 +7,7 @@ import (
 	pb "github.com/libp2p/go-libp2p-core/crypto/pb"
 	"github.com/libp2p/go-libp2p-core/internal/catch"
 
-	btcec "github.com/btcsuite/btcd/btcec/v2"
-	btcececdsa "github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	"github.com/btcsuite/btcd/btcec"
 	"github.com/minio/sha256-simd"
 )
 
@@ -20,7 +19,7 @@ type Secp256k1PublicKey btcec.PublicKey
 
 // GenerateSecp256k1Key generates a new Secp256k1 private and public key pair
 func GenerateSecp256k1Key(src io.Reader) (PrivKey, PubKey, error) {
-	privk, err := btcec.NewPrivateKey()
+	privk, err := btcec.NewPrivateKey(btcec.S256())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -36,14 +35,14 @@ func UnmarshalSecp256k1PrivateKey(data []byte) (k PrivKey, err error) {
 	}
 	defer func() { catch.HandlePanic(recover(), &err, "secp256k1 private-key unmarshal") }()
 
-	privk, _ := btcec.PrivKeyFromBytes(data)
+	privk, _ := btcec.PrivKeyFromBytes(btcec.S256(), data)
 	return (*Secp256k1PrivateKey)(privk), nil
 }
 
 // UnmarshalSecp256k1PublicKey returns a public key from bytes
 func UnmarshalSecp256k1PublicKey(data []byte) (_k PubKey, err error) {
 	defer func() { catch.HandlePanic(recover(), &err, "secp256k1 public-key unmarshal") }()
-	k, err := btcec.ParsePubKey(data)
+	k, err := btcec.ParsePubKey(data, btcec.S256())
 	if err != nil {
 		return nil, err
 	}
@@ -74,9 +73,11 @@ func (k *Secp256k1PrivateKey) Equals(o Key) bool {
 // Sign returns a signature from input data
 func (k *Secp256k1PrivateKey) Sign(data []byte) (_sig []byte, err error) {
 	defer func() { catch.HandlePanic(recover(), &err, "secp256k1 signing") }()
-	key := (*btcec.PrivateKey)(k)
 	hash := sha256.Sum256(data)
-	sig := btcececdsa.Sign(key, hash[:])
+	sig, err := (*btcec.PrivateKey)(k).Sign(hash[:])
+	if err != nil {
+		return nil, err
+	}
 
 	return sig.Serialize(), nil
 }
@@ -117,7 +118,7 @@ func (k *Secp256k1PublicKey) Verify(data []byte, sigStr []byte) (success bool, e
 			success = false
 		}
 	}()
-	sig, err := btcececdsa.ParseDERSignature(sigStr)
+	sig, err := btcec.ParseDERSignature(sigStr, btcec.S256())
 	if err != nil {
 		return false, err
 	}
