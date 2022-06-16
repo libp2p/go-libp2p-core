@@ -9,8 +9,8 @@ import (
 )
 
 func TestLogs(t *testing.T) {
-	LogMisbehavingPeer(test.RandPeerIDFatal(t), multiaddr.StringCast("/ip4/1.2.3.4"), fmt.Errorf("something"), "hi")
-	LogMisbehavingPeerNetAddr(test.RandPeerIDFatal(t), dummyNetAddr{}, fmt.Errorf("something"), "hi")
+	LogMisbehavingPeer(test.RandPeerIDFatal(t), multiaddr.StringCast("/ip4/1.2.3.4"), "somecomponent", fmt.Errorf("something"), "hi")
+	LogMisbehavingPeerNetAddr(test.RandPeerIDFatal(t), dummyNetAddr{}, "somecomponent", fmt.Errorf("something"), "hi")
 }
 
 type dummyNetAddr struct{}
