@@ -1,6 +1,7 @@
 package canonicallog
 
 import (
+	"fmt"
 	"math/rand"
 	"net"
 	"strings"
@@ -17,7 +18,7 @@ var log = logging.WithSkip(logging.Logger("canonical-log"), 1)
 // Protocols should use this to identify a misbehaving peer to allow the end
 // user to easily identify these nodes across protocols and libp2p.
 func LogMisbehavingPeer(p peer.ID, peerAddr multiaddr.Multiaddr, component string, err error, msg string) {
-	log.Warnf("CANONICAL_MISBEHAVING_PEER: peer=%s addr=%s component=%s err=%v msg=%s", p, peerAddr.String(), component, err, msg)
+	log.Warnf("CANONICAL_MISBEHAVING_PEER: peer=%s addr=%s component=%s err=%q msg=%q", p, peerAddr.String(), component, err, msg)
 }
 
 // LogMisbehavingPeerNetAddr is the canonical way to log a misbehaving peer.
@@ -26,11 +27,11 @@ func LogMisbehavingPeer(p peer.ID, peerAddr multiaddr.Multiaddr, component strin
 func LogMisbehavingPeerNetAddr(p peer.ID, peerAddr net.Addr, component string, originalErr error, msg string) {
 	ma, err := manet.FromNetAddr(peerAddr)
 	if err != nil {
-		log.Warnf("CANONICAL_MISBEHAVING_PEER: peer=%s netAddr=%s component=%s err=%v msg=%s", p, peerAddr.String(), component, originalErr, msg)
+		log.Warnf("CANONICAL_MISBEHAVING_PEER: peer=%s netAddr=%s component=%s err=%q msg=%q", p, peerAddr.String(), component, originalErr, msg)
 		return
 	}
 
-	log.Warnf("CANONICAL_MISBEHAVING_PEER: peer=%s addr=%s component=%s err=%v msg=%s", p, ma, component, originalErr, msg)
+	LogMisbehavingPeer(p, ma, component, originalErr, msg)
 }
 
 // LogPeerStatus logs any useful information about a peer. It takes in a sample
@@ -45,11 +46,9 @@ func LogPeerStatus(sampleRate int, p peer.ID, peerAddr multiaddr.Multiaddr, keyV
 		keyValsStr := strings.Builder{}
 		for i, kOrV := range keyVals {
 			if i%2 == 0 {
-				keyValsStr.WriteByte(' ')
-				keyValsStr.WriteString(kOrV)
-				keyValsStr.WriteByte('=')
+				fmt.Fprintf(&keyValsStr, " %v=", kOrV)
 			} else {
-				keyValsStr.WriteString(kOrV)
+				fmt.Fprintf(&keyValsStr, "%q", kOrV)
 			}
 		}
 		log.Infof("CANONICAL_PEER_STATUS: peer=%s addr=%s sample_rate=%v%s", p, peerAddr.String(), sampleRate, keyValsStr.String())
