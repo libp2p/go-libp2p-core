@@ -27,7 +27,7 @@ func LogMisbehavingPeer(p peer.ID, peerAddr multiaddr.Multiaddr, component strin
 func LogMisbehavingPeerNetAddr(p peer.ID, peerAddr net.Addr, component string, originalErr error, msg string) {
 	ma, err := manet.FromNetAddr(peerAddr)
 	if err != nil {
-		log.Warnf("CANONICAL_MISBEHAVING_PEER: peer=%s netAddr=%s component=%s err=%q msg=%q", p, peerAddr.String(), component, originalErr, msg)
+		log.Warnf("CANONICAL_MISBEHAVING_PEER: peer=%s net_addr=%s component=%s err=%q msg=%q", p, peerAddr.String(), component, originalErr, msg)
 		return
 	}
 
