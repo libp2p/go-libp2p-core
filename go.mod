@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.1.3
 	github.com/coreos/go-semver v0.3.0
-	github.com/gogo/protobuf v1.3.1
+	github.com/gogo/protobuf v1.3.2
 	github.com/ipfs/go-cid v0.2.0
 	github.com/ipfs/go-log/v2 v2.5.1
 	github.com/libp2p/go-buffer-pool v0.0.2
