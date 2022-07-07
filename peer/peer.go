@@ -55,7 +55,7 @@ func (id ID) Loggable() map[string]interface{} {
 }
 
 func (id ID) String() string {
-	return Encode(id)
+	return b58.Encode([]byte(id))
 }
 
 // ShortString prints out the peer ID.
@@ -158,8 +158,10 @@ func Decode(s string) (ID, error) {
 //
 // At the moment, it base58 encodes the peer ID but, in the future, it will
 // switch to encoding it as a CID by default.
+//
+// Deprecated: use id.String instead.
 func Encode(id ID) string {
-	return b58.Encode([]byte(id))
+	return id.String()
 }
 
 // FromCid converts a CID to a peer ID, if possible.
