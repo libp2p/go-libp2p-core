@@ -88,7 +88,6 @@ func (ks *keyset) load(hpkp, skBytesStr string) error {
 }
 
 func TestIDMatchesPublicKey(t *testing.T) {
-
 	test := func(ks keyset) {
 		p1, err := Decode(ks.hpkp)
 		if err != nil {
@@ -109,11 +108,11 @@ func TestIDMatchesPublicKey(t *testing.T) {
 		}
 
 		if p1 != p2 {
-			t.Error("p1 and p2 differ", p1.Pretty(), p2.Pretty())
+			t.Error("p1 and p2 differ", p1.String(), p2.String())
 		}
 
-		if p2.Pretty() != ks.hpkp {
-			t.Error("hpkp and p2.Pretty differ", ks.hpkp, p2.Pretty())
+		if p2.String() != ks.hpkp {
+			t.Error("hpkp and p2.String differ", ks.hpkp, p2.String())
 		}
 	}
 
@@ -144,7 +143,7 @@ func TestIDMatchesPrivateKey(t *testing.T) {
 		}
 
 		if p1 != p2 {
-			t.Error("p1 and p2 differ", p1.Pretty(), p2.Pretty())
+			t.Error("p1 and p2 differ", p1.String(), p2.String())
 		}
 	}
 
