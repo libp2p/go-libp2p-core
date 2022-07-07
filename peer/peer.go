@@ -42,19 +42,20 @@ const maxInlineKeyLength = 42
 type ID string
 
 // Pretty returns a base58-encoded string representation of the ID.
+// Deprecated: use String() instead.
 func (id ID) Pretty() string {
-	return Encode(id)
+	return id.String()
 }
 
 // Loggable returns a pretty peer ID string in loggable JSON format.
 func (id ID) Loggable() map[string]interface{} {
 	return map[string]interface{}{
-		"peerID": id.Pretty(),
+		"peerID": id.String(),
 	}
 }
 
 func (id ID) String() string {
-	return id.Pretty()
+	return Encode(id)
 }
 
 // ShortString prints out the peer ID.
@@ -64,7 +65,7 @@ func (id ID) String() string {
 // IDs safely. Then any peer.ID type found in the
 // codebase is known to be correct.
 func (id ID) ShortString() string {
-	pid := id.Pretty()
+	pid := id.String()
 	if len(pid) <= 10 {
 		return fmt.Sprintf("<peer.ID %s>", pid)
 	}
