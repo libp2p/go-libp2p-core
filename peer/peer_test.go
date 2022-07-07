@@ -176,7 +176,7 @@ func TestIDEncoding(t *testing.T) {
 			t.Fatal("failed to round trip through CID string")
 		}
 
-		if ks.hpkp != Encode(p1) {
+		if ks.hpkp != p1.String() {
 			t.Fatal("should always encode peer IDs as base58 by default")
 		}
 	}
