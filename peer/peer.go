@@ -114,15 +114,6 @@ func (id ID) Validate() error {
 	return nil
 }
 
-// IDFromString casts a string to the ID type, and validates
-// the value to make sure it is a multihash.
-func IDFromString(s string) (ID, error) {
-	if _, err := mh.Cast([]byte(s)); err != nil {
-		return ID(""), err
-	}
-	return ID(s), nil
-}
-
 // IDFromBytes casts a byte slice to the ID type, and validates
 // the value to make sure it is a multihash.
 func IDFromBytes(b []byte) (ID, error) {
