@@ -5,7 +5,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -46,15 +46,15 @@ func fname(kt crypto_pb.KeyType, ext string) string {
 func TestFixtures(t *testing.T) {
 	for _, tc := range keyTypes {
 		t.Run(tc.keyType.String(), func(t *testing.T) {
-			pubBytes, err := ioutil.ReadFile(fname(tc.keyType, "pub"))
+			pubBytes, err := os.ReadFile(fname(tc.keyType, "pub"))
 			if err != nil {
 				t.Fatal(err)
 			}
-			privBytes, err := ioutil.ReadFile(fname(tc.keyType, "priv"))
+			privBytes, err := os.ReadFile(fname(tc.keyType, "priv"))
 			if err != nil {
 				t.Fatal(err)
 			}
-			sigBytes, err := ioutil.ReadFile(fname(tc.keyType, "sig"))
+			sigBytes, err := os.ReadFile(fname(tc.keyType, "sig"))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -125,8 +125,8 @@ func generate() {
 		if err != nil {
 			panic(err)
 		}
-		ioutil.WriteFile(fname(tc.keyType, "pub"), pubb, 0666)
-		ioutil.WriteFile(fname(tc.keyType, "priv"), privb, 0666)
-		ioutil.WriteFile(fname(tc.keyType, "sig"), sig, 0666)
+		os.WriteFile(fname(tc.keyType, "pub"), pubb, 0666)
+		os.WriteFile(fname(tc.keyType, "priv"), privb, 0666)
+		os.WriteFile(fname(tc.keyType, "sig"), sig, 0666)
 	}
 }
