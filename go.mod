@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/benbjohnson/clock v1.3.0
-	github.com/btcsuite/btcd/btcec/v2 v2.1.3
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0
 	github.com/gogo/protobuf v1.3.1
 	github.com/ipfs/go-cid v0.2.0
 	github.com/ipfs/go-log/v2 v2.5.1
@@ -22,9 +22,7 @@ require (
 )
 
 require (
-	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.4 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/minio/blake2b-simd v0.0.0-20160723061019-3f5f724cb5b1 // indirect
