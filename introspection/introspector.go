@@ -1,9 +1,7 @@
 package introspection
 
 import (
-	"io"
-
-	"github.com/libp2p/go-libp2p-core/introspection/pb"
+	"github.com/libp2p/go-libp2p/core/introspection"
 )
 
 // Introspector is the interface to be satisfied by components that are capable
@@ -19,21 +17,5 @@ import (
 // embedding or testing.
 //
 // Experimental.
-type Introspector interface {
-	io.Closer
-
-	// FetchRuntime returns the runtime information of the system.
-	FetchRuntime() (*pb.Runtime, error)
-
-	// FetchFullState returns the full state cross-cut of the running system.
-	FetchFullState() (*pb.State, error)
-
-	// EventChan returns the channel where all eventbus events are dumped,
-	// decorated with their corresponding event metadata, ready to send over
-	// the wire.
-	EventChan() <-chan *pb.Event
-
-	// EventMetadata returns the metadata of all events known to the
-	// Introspector.
-	EventMetadata() []*pb.EventType
-}
+// Deprecated: use github.com/libp2p/go-libp2p/core/introspection.Introspector instead
+type Introspector = introspection.Introspector

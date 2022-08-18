@@ -2,18 +2,16 @@ package test
 
 import (
 	"testing"
+
+	"github.com/libp2p/go-libp2p/core/test"
 )
 
+// Deprecated: use github.com/libp2p/go-libp2p/core/test.AssertNilError instead
 func AssertNilError(t *testing.T, err error) {
-	t.Helper()
-	if err != nil {
-		t.Errorf("unexpected error: %v", err)
-	}
+	test.AssertNilError(t, err)
 }
 
+// Deprecated: use github.com/libp2p/go-libp2p/core/test.ExpectError instead
 func ExpectError(t *testing.T, err error, msg string) {
-	t.Helper()
-	if err == nil {
-		t.Error(msg)
-	}
+	test.ExpectError(t, err, msg)
 }
